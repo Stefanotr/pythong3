@@ -11,7 +11,10 @@ class MainPageView():
 
         pygame.init()
 
-        self.screen = pygame.display.set_mode((800, 600))
+        pygame.display.get_desktop_sizes
+        
+
+        self.screen = pygame.display.set_mode((1600, 1400))
         pygame.display.set_caption("Johnny Fuzz - Integration Test")
 
         johnny = CaracterModel("Johnny Fuzz",60,60,"PLAYER")
