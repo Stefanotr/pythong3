@@ -1,8 +1,8 @@
-from Views import MainPageView
+from Views.MainPageView import MainPageView
 
 def main():
     
-    MainPageView()
+    view=MainPageView()
 
 
 if __name__ == "__main__":
