@@ -1,8 +1,8 @@
 import pygame
 
-class MainpageView():
+class MainPageView():
 
-    def __init__():
+    def __init__(self):
 
         pygame.init()
 

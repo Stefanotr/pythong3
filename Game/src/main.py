@@ -2,7 +2,7 @@ from Views.MainPageView import MainPageView
 
 def main():
     
-    view=MainPageView()
+    MainPageView()
 
 
 if __name__ == "__main__":
