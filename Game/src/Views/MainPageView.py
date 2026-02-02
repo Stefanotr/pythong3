@@ -6,7 +6,7 @@ class MainPageView():
 
         pygame.init()
 
-        pygame.display.set_mode((400, 400))
+        pygame.display.set_mode((800, 600))
 
         running = True
 
