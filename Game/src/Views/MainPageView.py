@@ -2,6 +2,7 @@ import pygame
 from Models.PlayerModel import PlayerModel
 from Controllers.PlayerController import PlayerController
 from Views.PlayerView import PlayerView
+from Models.BouteilleModel import BouteilleModel
 
 class MainPageView():
 
@@ -9,7 +10,7 @@ class MainPageView():
 
         pygame.init()
 
-        self.screen = pygame.display.set_mode((400, 400))
+        self.screen = pygame.display.set_mode((800, 600))
         pygame.display.set_caption("Johnny Fuzz - Integration Test")
 
         self.johnny = PlayerModel("Johnny Fuzz")
@@ -32,3 +33,7 @@ class MainPageView():
             clock.tick(60)
 
         pygame.quit()
+
+biere = BouteilleModel("Bière", 10, 2, 5, 2)
+vodka = BouteilleModel("Vodka", 35, 8, 20, 25)
+hampagne = BouteilleModel("Champagne", 20, 4, 8, 5)
