@@ -1,3 +1,5 @@
+from Utils.Logger import Logger
+
 class CaracterModel:
     def __init__(self, name, x=175, y=175, type="PNJ"):
 
