@@ -1,4 +1,7 @@
 import pygame
+from Models.PlayerModel import PlayerModel
+from Controllers.PlayerController import PlayerController
+from Views.PlayerView import PlayerView
 
 class MainPageView():
 
@@ -6,7 +9,14 @@ class MainPageView():
 
         pygame.init()
 
-        pygame.display.set_mode((400, 400))
+        self.screen = pygame.display.set_mode((400, 400))
+        pygame.display.set_caption("Johnny Fuzz - Integration Test")
+
+        self.johnny = PlayerModel("Johnny Fuzz")
+        self.controller = PlayerController(self.johnny)
+        self.player_view = PlayerView()
+
+        clock = pygame.time.Clock()
 
         running = True
 
@@ -14,6 +24,11 @@ class MainPageView():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                self.controller.handle_input(event)
+            
+            self.screen.fill((30, 30, 30))
+            self.player_view.draw(self.screen, self.johnny)
+            pygame.display.flip()
+            clock.tick(60)
 
         pygame.quit()
-
