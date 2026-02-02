@@ -1,14 +1,19 @@
 import pygame
 
-pygame.init()
+class MainpageView():
 
-pygame.display.set_mode((400, 400))
+    def __init__():
 
-running = True
+        pygame.init()
 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+        pygame.display.set_mode((400, 400))
 
-pygame.quit()
+        running = True
+
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+        pygame.quit()
+
