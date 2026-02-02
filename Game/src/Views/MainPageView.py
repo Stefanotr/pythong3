@@ -3,6 +3,7 @@ from Models.PlayerModel import PlayerModel
 from Controllers.PlayerController import PlayerController
 from Views.PlayerView import PlayerView
 from Models.BouteilleModel import BouteilleModel
+from Views.BossView import BossView
 
 class MainPageView():
 
@@ -18,6 +19,9 @@ class MainPageView():
         self.player_view = PlayerView()
 
         clock = pygame.time.Clock()
+        
+        
+        boss_view=BossView(self.screen)
 
         running = True
 
@@ -29,6 +33,8 @@ class MainPageView():
             
             self.screen.fill((30, 30, 30))
             self.player_view.draw(self.screen, self.johnny)
+            
+            boss_view.afficherBoss()
             pygame.display.flip()
             clock.tick(60)
 
