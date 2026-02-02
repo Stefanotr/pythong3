@@ -9,7 +9,7 @@ class MainPageView():
 
         pygame.init()
 
-        self.screen = pygame.display.set_mode((400, 400))
+        self.screen = pygame.display.set_mode((800, 600))
         pygame.display.set_caption("Johnny Fuzz - Integration Test")
 
         self.johnny = PlayerModel("Johnny Fuzz")
