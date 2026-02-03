@@ -1,8 +1,8 @@
 import pygame
-
+from Utils.Logger import Logger
 
 class PlayerController:
-    def __init__(self, player):
+    def __init__(self, screen, player):
         self.player = player
         self.SCREEN_SIZE = 400
         self.PLAYER_SIZE = 50 
@@ -13,7 +13,7 @@ class PlayerController:
             
             current_x = self.player.getX()
             current_y = self.player.getY()
-            current_alcool = self.player.getAlcoholLevel()
+            
 
             # GAUCHE
             if event.key == pygame.K_LEFT: 
@@ -37,6 +37,7 @@ class PlayerController:
 
             # BOIRE 
             if event.key == pygame.K_b:
-                self.player.setAlcoholLevel(current_alcool + 10)
                 
-                print(f"🍺 Glouglou ! Ivre à {self.player.getAlcoholLevel()}%")
+                self.player.drink(self.player.getSelectedBottle)
+                
+                Logger.debug("PlayerController.handleInput",f"🍺 Glouglou ! Ivre à {self.player.getDrunkenness()}%")

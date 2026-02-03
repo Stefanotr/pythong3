@@ -24,7 +24,7 @@ class CaracterView:
     
         if caracter.getType() == "PLAYER":
             
-            alcohol = caracter.getAlcoholLevel()
+            alcohol = caracter.getDrunkenness()
             text_content = f"Alcohol: {alcohol}%"
             text_surface = self.font.render(text_content, True, (255, 255, 255))
             screen.blit(text_surface, (10, 10))

@@ -1,0 +1,22 @@
+
+============================================================
+Date        : 2026-02-03 02:01:50
+Fonction    : CaracterModel.drink
+Erreur      : TypeError
+Message     : selected_bottle is not a BottleModel
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 143, in drink
+    raise TypeError("selected_bottle is not a BottleModel")
+TypeError: selected_bottle is not a BottleModel
+
+============================================================
+Date        : 2026-02-03 02:03:31
+Fonction    : CaracterModel.drink
+Erreur      : TypeError
+Message     : selected_bottle is not a BottleModel
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 143, in drink
+    raise TypeError("selected_bottle is not a BottleModel")
+TypeError: selected_bottle is not a BottleModel
