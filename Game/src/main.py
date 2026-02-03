@@ -1,11 +1,13 @@
-from Views.MainPageView import MainPageView
+from Views.WelcomePageView import WelcomPageView
 
 def main():
     
-    MainPageView()
+    menu = WelcomPageView()
+    menu.run()
 
 
 if __name__ == "__main__":
+    
     main()
 
 

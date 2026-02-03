@@ -186,3 +186,5 @@
 [2026-02-03 13:06:35] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 70%
 [2026-02-03 13:16:07] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
 [2026-02-03 13:16:07] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 14:04:36] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 14:04:36] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
