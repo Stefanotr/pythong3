@@ -229,3 +229,179 @@ Traceback (most recent call last):
   File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
     raise ValueError("Accuracy can't be negative")
 ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:26
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:27
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:27
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:27
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:27
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:27
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:27
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:27
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:28
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:28
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:23:28
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:50:37
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:50:38
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:50:38
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:50:38
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 09:50:38
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
