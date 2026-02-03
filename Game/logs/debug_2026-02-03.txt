@@ -68,3 +68,7 @@
 [2026-02-03 02:12:46] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x0000020059E8E9D0>
 [2026-02-03 02:12:46] CaracterModel.drink | Johnny Fuzz drink Beer
 [2026-02-03 02:12:46] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 100%
+[2026-02-03 02:18:06] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 02:18:06] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 02:18:55] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 02:18:55] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png

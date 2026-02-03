@@ -12,11 +12,14 @@ class MainPageView():
 
         pygame.init()
 
-        pygame.display.get_desktop_sizes
+        pygame.display.get_desktop_sizes()
+
+        screen_width=1920
+        screen_height=1080
         
 
-        self.screen = pygame.display.set_mode((1080, 1400))
-        pygame.display.set_caption("Johnny Fuzz - Integration Test")
+        self.screen = pygame.display.set_mode((screen_width, screen_height))
+        pygame.display.set_caption("Guitaroholic - Integration Test")
 
         johnny = CaracterModel("Johnny Fuzz",60,60,"PLAYER")
         gros_bill=CaracterModel("Gros Bill",80,80,"BOSS")
