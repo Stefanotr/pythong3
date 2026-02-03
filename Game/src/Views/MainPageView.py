@@ -2,8 +2,9 @@ import pygame
 from Models.CaracterModel import CaracterModel
 from Controllers.PlayerController import PlayerController
 from Views.CaracterView import CaracterView
-from Models.CaracterModel import CaracterModel
 from Models.BottleModel import BottleModel
+from Models.PlayerModel import PlayerModel
+from Models.BossModel import BossModel
 
 
 class MainPageView():
@@ -21,8 +22,8 @@ class MainPageView():
         self.screen = pygame.display.set_mode((screen_size.current_w,screen_size.current_h))
         pygame.display.set_caption("Guitaroholic - Integration Test")
 
-        johnny = CaracterModel("Johnny Fuzz",60,60,"PLAYER")
-        gros_bill=CaracterModel("Gros Bill",80,80,"BOSS")
+        johnny = PlayerModel("Johnny Fuzz",60,60)
+        gros_bill=BossModel("Gros Bill",80,80)
         beer = BottleModel("Beer", 10, 2, 5)
         vodka = BottleModel("Vodka", 35, 8, 20)
         champagne = BottleModel("Champagne", 20, 4, 8)

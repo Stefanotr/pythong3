@@ -1,5 +1,6 @@
 import pygame
 from Utils.Logger import Logger
+from Models.PlayerModel import PlayerModel
 
 class CaracterView:
     def __init__(self,image_path):
@@ -22,7 +23,7 @@ class CaracterView:
         screen.blit(self.sprite, (x, y))
 
     
-        if caracter.getType() == "PLAYER":
+        if isinstance(caracter, PlayerModel):
             
             alcohol = caracter.getDrunkenness()
             text_content = f"Alcohol: {alcohol}%"
