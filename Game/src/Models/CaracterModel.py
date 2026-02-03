@@ -114,9 +114,9 @@ class CaracterModel:
             Logger.error("CaracterModel.setSelectedBottle",e)
 
 
+    def attack(caracter1,caracter2):
 
-
-
+        caracter1.setHealth(caracter1.getHealth()-caracter2.getDamage())
 
 
     def scale(self, player_level):
