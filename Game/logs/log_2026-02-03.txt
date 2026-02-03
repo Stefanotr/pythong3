@@ -819,3 +819,302 @@ Traceback (most recent call last):
   File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 59, in setAccuracy
     raise ValueError("Accuracy can't be negative")
 ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:12
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:12
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:13
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:13
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:13
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:13
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:13
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:13
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:13
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:13
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:13
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:13
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:14
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:14
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:14
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:14
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:14
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:14
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:14
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:14
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:14
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:14
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:19
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:19
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 21:50:19
+Fonction    : CaracterModel.drink
+Erreur      : AttributeError
+Message     : 'PlayerModel' object has no attribute 'getType'
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\PlayerModel.py", line 271, in drink
+    if self.getType() != "PLAYER":
+       ^^^^^^^^^^^^
+AttributeError: 'PlayerModel' object has no attribute 'getType'
+
+============================================================
+Date        : 2026-02-03 21:50:19
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 201, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative

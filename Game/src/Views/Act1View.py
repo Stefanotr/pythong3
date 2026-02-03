@@ -169,15 +169,22 @@ class Act1View:
 
 # === TEST STANDALONE ===
 if __name__ == "__main__":
-    pygame.init()
+    try:
+        pygame.init()
+        
+        screen_info = pygame.display.Info()
+        screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h))
+        pygame.display.set_caption("Acte 1 - Le Gosier Sec")
+        
+        act1 = Act1View(screen)
+        result = act1.run()
     
-    screen_info = pygame.display.Info()
-    screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h))
-    pygame.display.set_caption("Acte 1 - Le Gosier Sec")
-    
-    act1 = Act1View(screen)
-    result = act1.run()
-    
-    print(f"Résultat de l'Acte 1 : {result}")
-    
-    pygame.quit()
+        Logger.debug("Act1View.__main__", "Act 1 result", result=result)
+            
+    except Exception as e:
+        Logger.error("Act1View.__main__", e)
+    finally:
+        try:
+            pygame.quit()
+        except Exception:
+            pass

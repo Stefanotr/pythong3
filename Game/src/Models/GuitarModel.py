@@ -1,10 +1,44 @@
+"""
+GuitarModel Module
+
+Represents guitar weapons in the game.
+Manages guitar properties like base damage, special effects, and effect chances.
+"""
+
 from Utils.Logger import Logger
+
+
+# === GUITAR MODEL CLASS ===
 
 class GuitarModel:
     """
-    Modèle pour les guitares (armes du jeu)
+    Model for guitar weapons in the game.
+    Tracks base damage, special effects (paralyze, bleed, stun), and effect probabilities.
     """
+    
+    # === INITIALIZATION ===
+    
     def __init__(self, name, base_damage, special_effect=None, effect_chance=0):
+        """
+        Initialize the guitar model.
+        
+        Args:
+            name: Guitar name
+            base_damage: Base damage value
+            special_effect: Special effect type ("paralyze", "bleed", "stun") or None
+            effect_chance: Probability of special effect (0-100)
+        """
+        try:
+            self._name = name
+            self._base_damage = base_damage
+            self._special_effect = special_effect
+            self._effect_chance = effect_chance
+            Logger.debug("GuitarModel.__init__", "Guitar model initialized", 
+                       name=name, base_damage=base_damage, 
+                       special_effect=special_effect, effect_chance=effect_chance)
+        except Exception as e:
+            Logger.error("GuitarModel.__init__", e)
+            raise
         self._name = name
         self._base_damage = base_damage
         self._special_effect = special_effect  # "paralyze", "bleed", "stun"
@@ -50,28 +84,74 @@ class GuitarModel:
             Logger.error("GuitarModel.setEffectChance", e)
     
     def getDescription(self):
-        """Retourne une description de la guitare"""
-        desc = f"{self._name} (Dégâts: {self._base_damage})"
-        if self._special_effect:
-            desc += f"\nEffet spécial: {self._special_effect} ({self._effect_chance}% chance)"
-        return desc
+        """
+        Get a description of the guitar.
+        
+        Returns:
+            str: Formatted description string
+        """
+        try:
+            desc = f"{self._name} (Dégâts: {self._base_damage})"
+            if self._special_effect:
+                desc += f"\nEffet spécial: {self._special_effect} ({self._effect_chance}% chance)"
+            return desc
+        except Exception as e:
+            Logger.error("GuitarModel.getDescription", e)
+            return "Unknown Guitar"
 
 
-# Guitares prédéfinies pour le jeu
+# === GUITAR FACTORY CLASS ===
+
 class GuitarFactory:
-    """Factory pour créer les différentes guitares du jeu"""
+    """
+    Factory class for creating predefined guitars in the game.
+    Provides static methods to create different guitar types.
+    """
     
     @staticmethod
     def create_la_pelle():
-        """Guitare de départ - La Pelle"""
-        return GuitarModel("La Pelle", 5)
+        """
+        Create the starting guitar - La Pelle.
+        
+        Returns:
+            GuitarModel: Starting guitar instance
+        """
+        try:
+            guitar = GuitarModel("La Pelle", 5)
+            Logger.debug("GuitarFactory.create_la_pelle", "La Pelle created")
+            return guitar
+        except Exception as e:
+            Logger.error("GuitarFactory.create_la_pelle", e)
+            raise
     
     @staticmethod
     def create_electro_choc():
-        """Guitare électrique - L'Électro-Choc"""
-        return GuitarModel("L'Électro-Choc", 12, "paralyze", 25)
+        """
+        Create the electric guitar - L'Électro-Choc.
+        
+        Returns:
+            GuitarModel: Electric guitar instance with paralyze effect
+        """
+        try:
+            guitar = GuitarModel("L'Électro-Choc", 12, "paralyze", 25)
+            Logger.debug("GuitarFactory.create_electro_choc", "L'Électro-Choc created")
+            return guitar
+        except Exception as e:
+            Logger.error("GuitarFactory.create_electro_choc", e)
+            raise
     
     @staticmethod
     def create_hache_de_guerre():
-        """Guitare ultime - La Hache de Guerre"""
-        return GuitarModel("La Hache de Guerre", 20, "bleed", 40)
+        """
+        Create the ultimate guitar - La Hache de Guerre.
+        
+        Returns:
+            GuitarModel: Ultimate guitar instance with bleed effect
+        """
+        try:
+            guitar = GuitarModel("La Hache de Guerre", 20, "bleed", 40)
+            Logger.debug("GuitarFactory.create_hache_de_guerre", "La Hache de Guerre created")
+            return guitar
+        except Exception as e:
+            Logger.error("GuitarFactory.create_hache_de_guerre", e)
+            raise

@@ -1,7 +1,60 @@
+"""
+RhythmController Module
+
+Handles rhythm game input and note timing.
+Manages note movement, hit detection, scoring, and combo system.
+"""
+
 import pygame
+from Utils.Logger import Logger
+
+
+# === RHYTHM CONTROLLER CLASS ===
 
 class RhythmController:
+    """
+    Controller for managing rhythm game mechanics.
+    Handles note updates, input processing, hit detection, and scoring.
+    """
+    
+    # === INITIALIZATION ===
+    
     def __init__(self, rhythm_model, character_model, screen_height, view):
+        """
+        Initialize the rhythm controller.
+        
+        Args:
+            rhythm_model: RhythmModel instance containing game state
+            character_model: Character model for health updates
+            screen_height: Screen height for adaptive speed calculation
+            view: RhythmView instance for particle effects
+        """
+        try:
+            self.rhythm = rhythm_model
+            self.character = character_model
+            self.view = view
+            self.speed = screen_height * 0.006  # Adaptive speed
+            
+            # Adjust hit line based on screen height
+            self.rhythm.hit_line_y = int(screen_height * 0.75)
+            
+            try:
+                pygame.mixer.init()
+                Logger.debug("RhythmController.__init__", "Pygame mixer initialized")
+            except Exception as e:
+                Logger.error("RhythmController.__init__", e)
+            
+            # Key mapping for the 4 guitar strings
+            self.key_map = {
+                pygame.K_c: "LANE1",
+                pygame.K_v: "LANE2",
+                pygame.K_b: "LANE3",
+                pygame.K_n: "LANE4"
+            }
+            Logger.debug("RhythmController.__init__", "Rhythm controller initialized", speed=self.speed)
+        except Exception as e:
+            Logger.error("RhythmController.__init__", e)
+            raise
         self.rhythm = rhythm_model
         self.character = character_model
         self.view = view

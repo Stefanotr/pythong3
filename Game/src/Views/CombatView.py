@@ -1,73 +1,167 @@
+"""
+CombatView Module
+
+Handles the visual representation of turn-based combat interface.
+Manages rendering of combat UI, health bars, status effects, and combat log.
+"""
+
 import pygame
 import math
+from Utils.Logger import Logger
+
+
+# === COMBAT VIEW CLASS ===
 
 class CombatView:
     """
-    Vue pour afficher l'interface du combat tour par tour
+    View class for rendering turn-based combat interface.
+    Displays fighter information, health bars, status effects, action menu, and combat log.
     """
+    
+    # === INITIALIZATION ===
+    
     def __init__(self, screen_width, screen_height):
-        self.screen_width = screen_width
-        self.screen_height = screen_height
+        """
+        Initialize the combat view with screen dimensions.
         
-        # Fonts
-        self.title_font = pygame.font.SysFont("Arial", int(screen_height * 0.05), bold=True)
-        self.font = pygame.font.SysFont("Arial", int(screen_height * 0.025), bold=True)
-        self.small_font = pygame.font.SysFont("Arial", int(screen_height * 0.02))
-        self.log_font = pygame.font.SysFont("Courier New", int(screen_height * 0.018))
+        Args:
+            screen_width: Width of the screen in pixels
+            screen_height: Height of the screen in pixels
+        """
+        try:
+            self.screen_width = screen_width
+            self.screen_height = screen_height
+            Logger.debug("CombatView.__init__", "Initializing combat view", 
+                        width=screen_width, height=screen_height)
+            
+            # === FONTS INITIALIZATION ===
+            
+            try:
+                self.title_font = pygame.font.SysFont("Arial", int(screen_height * 0.05), bold=True)
+                self.font = pygame.font.SysFont("Arial", int(screen_height * 0.025), bold=True)
+                self.small_font = pygame.font.SysFont("Arial", int(screen_height * 0.02))
+                self.log_font = pygame.font.SysFont("Courier New", int(screen_height * 0.018))
+                Logger.debug("CombatView.__init__", "Fonts initialized")
+            except Exception as e:
+                Logger.error("CombatView.__init__", e)
+                # Use default fonts if SysFont fails
+                self.title_font = pygame.font.Font(None, 48)
+                self.font = pygame.font.Font(None, 24)
+                self.small_font = pygame.font.Font(None, 20)
+                self.log_font = pygame.font.Font(None, 18)
+            
+            # === COLORS ===
+            
+            self.bg_color = (20, 15, 30)
+            self.panel_color = (40, 30, 50)
+            self.text_color = (255, 255, 255)
+            self.player_color = (50, 255, 50)
+            self.enemy_color = (255, 50, 50)
+            self.gold_color = (255, 215, 0)
+            
+            # === ANIMATION ===
+            
+            self.time = 0
+            self.shake_offset = 0
+            self.flash_alpha = 0
+            
+            Logger.debug("CombatView.__init__", "Combat view initialization completed")
+            
+        except Exception as e:
+            Logger.error("CombatView.__init__", e)
+            raise
         
-        # Couleurs
-        self.bg_color = (20, 15, 30)
-        self.panel_color = (40, 30, 50)
-        self.text_color = (255, 255, 255)
-        self.player_color = (50, 255, 50)
-        self.enemy_color = (255, 50, 50)
-        self.gold_color = (255, 215, 0)
-        
-        # Animation
-        self.time = 0
-        self.shake_offset = 0
-        self.flash_alpha = 0
-        
+    # === MAIN RENDERING ===
+    
     def draw(self, screen, combat_model):
-        """Dessiner l'interface de combat"""
-        self.time += 1
+        """
+        Main draw method for the combat view.
+        Renders all combat UI elements including background, fighters, menus, and effects.
         
-        # Fond dégradé
-        self.draw_background(screen)
-        
-        # Titre du combat
-        self.draw_title(screen, combat_model)
-        
-        # Informations des combattants
-        self.draw_fighters_info(screen, combat_model)
-        
-        # Log de combat
-        self.draw_combat_log(screen, combat_model)
-        
-        # Actions disponibles
-        if combat_model.isPlayerTurn() and not combat_model.isCombatFinished():
-            self.draw_action_menu(screen, combat_model)
-        
-        # Écran de fin
-        if combat_model.isCombatFinished():
-            self.draw_combat_end(screen, combat_model)
-        
-        # Indicateur de tour
-        self.draw_turn_indicator(screen, combat_model)
-        
-        # Effets visuels
-        if self.flash_alpha > 0:
-            self.draw_flash(screen)
-            self.flash_alpha -= 10
+        Args:
+            screen: Pygame surface to draw on
+            combat_model: CombatModel instance containing combat state
+        """
+        try:
+            self.time += 1
+            
+            # Draw background gradient
+            try:
+                self.draw_background(screen)
+            except Exception as e:
+                Logger.error("CombatView.draw", e)
+            
+            # Draw combat title
+            try:
+                self.draw_title(screen, combat_model)
+            except Exception as e:
+                Logger.error("CombatView.draw", e)
+            
+            # Draw fighter information
+            try:
+                self.draw_fighters_info(screen, combat_model)
+            except Exception as e:
+                Logger.error("CombatView.draw", e)
+            
+            # Draw combat log
+            try:
+                self.draw_combat_log(screen, combat_model)
+            except Exception as e:
+                Logger.error("CombatView.draw", e)
+            
+            # Draw action menu (if player's turn)
+            try:
+                if combat_model.isPlayerTurn() and not combat_model.isCombatFinished():
+                    self.draw_action_menu(screen, combat_model)
+            except Exception as e:
+                Logger.error("CombatView.draw", e)
+            
+            # Draw combat end screen
+            try:
+                if combat_model.isCombatFinished():
+                    self.draw_combat_end(screen, combat_model)
+            except Exception as e:
+                Logger.error("CombatView.draw", e)
+            
+            # Draw turn indicator
+            try:
+                self.draw_turn_indicator(screen, combat_model)
+            except Exception as e:
+                Logger.error("CombatView.draw", e)
+            
+            # Draw visual effects
+            try:
+                if self.flash_alpha > 0:
+                    self.draw_flash(screen)
+                    self.flash_alpha -= 10
+            except Exception as e:
+                Logger.error("CombatView.draw", e)
+                
+        except Exception as e:
+            Logger.error("CombatView.draw", e)
+    
+    # === RENDERING METHODS ===
     
     def draw_background(self, screen):
-        """Dessiner le fond avec dégradé"""
-        for y in range(self.screen_height):
-            ratio = y / self.screen_height
-            r = int(20 + math.sin(self.time * 0.01 + ratio * 2) * 10)
-            g = int(15 + math.cos(self.time * 0.015 + ratio * 1.5) * 8)
-            b = int(30 + math.sin(self.time * 0.008 + ratio) * 15)
-            pygame.draw.line(screen, (r, g, b), (0, y), (self.screen_width, y))
+        """
+        Draw animated gradient background.
+        
+        Args:
+            screen: Pygame surface to draw on
+        """
+        try:
+            for y in range(self.screen_height):
+                try:
+                    ratio = y / self.screen_height
+                    r = int(20 + math.sin(self.time * 0.01 + ratio * 2) * 10)
+                    g = int(15 + math.cos(self.time * 0.015 + ratio * 1.5) * 8)
+                    b = int(30 + math.sin(self.time * 0.008 + ratio) * 15)
+                    pygame.draw.line(screen, (r, g, b), (0, y), (self.screen_width, y))
+                except Exception as e:
+                    Logger.error("CombatView.draw_background", e)
+                    continue
+        except Exception as e:
+            Logger.error("CombatView.draw_background", e)
     
     def draw_title(self, screen, combat_model):
         """Dessiner le titre du combat"""

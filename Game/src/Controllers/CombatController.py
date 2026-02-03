@@ -1,12 +1,44 @@
+"""
+CombatController Module
+
+Handles turn-based combat logic and player/enemy actions.
+Manages combat flow, status effects, and turn switching.
+"""
+
 import pygame
 import random
 from Utils.Logger import Logger
 
+
+# === COMBAT CONTROLLER CLASS ===
+
 class CombatController:
     """
-    Contrôleur pour gérer la logique du combat tour par tour
+    Controller for managing turn-based combat logic.
+    Handles player actions, enemy AI, status effects, and combat flow.
     """
+    
+    # === INITIALIZATION ===
+    
     def __init__(self, combat_model):
+        """
+        Initialize the combat controller.
+        
+        Args:
+            combat_model: CombatModel instance containing combat state
+        """
+        try:
+            self.combat = combat_model
+            self.player = combat_model.getPlayer()
+            self.enemy = combat_model.getEnemy()
+            
+            self.action_delay = 0  # Delay to prevent actions that are too fast
+            self.action_cooldown = 30  # frames (0.5 sec at 60fps)
+            Logger.debug("CombatController.__init__", "Combat controller initialized", 
+                        player=self.player.getName(), enemy=self.enemy.getName())
+        except Exception as e:
+            Logger.error("CombatController.__init__", e)
+            raise
         self.combat = combat_model
         self.player = combat_model.getPlayer()
         self.enemy = combat_model.getEnemy()
