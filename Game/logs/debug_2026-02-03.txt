@@ -151,3 +151,38 @@
 [2026-02-03 10:26:59] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x000001D728035790>
 [2026-02-03 10:26:59] CaracterModel.drink | Johnny Fuzz drink Beer
 [2026-02-03 10:26:59] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 70%
+[2026-02-03 12:05:05] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 12:05:05] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 12:06:28] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 12:06:28] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 12:09:51] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 12:09:51] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 13:02:07] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 13:02:07] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 13:04:33] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 13:04:33] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 13:06:26] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 13:06:26] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 13:06:34] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x000001B7DCE06010>
+[2026-02-03 13:06:34] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 13:06:34] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 10%
+[2026-02-03 13:06:34] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x000001B7DCE06010>
+[2026-02-03 13:06:34] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 13:06:34] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 20%
+[2026-02-03 13:06:34] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x000001B7DCE06010>
+[2026-02-03 13:06:34] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 13:06:34] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 30%
+[2026-02-03 13:06:34] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x000001B7DCE06010>
+[2026-02-03 13:06:34] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 13:06:34] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 40%
+[2026-02-03 13:06:34] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x000001B7DCE06010>
+[2026-02-03 13:06:34] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 13:06:34] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 50%
+[2026-02-03 13:06:34] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x000001B7DCE06010>
+[2026-02-03 13:06:34] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 13:06:34] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 60%
+[2026-02-03 13:06:35] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x000001B7DCE06010>
+[2026-02-03 13:06:35] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 13:06:35] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 70%
+[2026-02-03 13:16:07] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 13:16:07] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
