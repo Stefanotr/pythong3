@@ -1,7 +1,7 @@
 """
 Act1View Module
 
-Handles Act 1: "Le Gosier Sec" (The Dry Throat Bar).
+Handles Act 1: "The Dry Throat" Bar.
 Manages the combat sequence against Gros Bill, including intro screen and combat interface.
 """
 
@@ -13,6 +13,8 @@ from Models.GuitarModel import GuitarFactory
 from Models.CombatModel import CombatModel
 from Controllers.CombatController import CombatController
 from Views.CombatView import CombatView
+from Views.PauseMenuView import PauseMenuView
+from Views.CaracterView import CaracterView
 from Utils.Logger import Logger
 
 
@@ -20,18 +22,19 @@ from Utils.Logger import Logger
 
 class Act1View:
     """
-    View class for Act 1: "Le Gosier Sec" (The Dry Throat Bar).
+    View class for Act 1: "The Dry Throat" Bar.
     Manages the intro sequence, combat against Gros Bill, and act completion.
     """
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen):
+    def __init__(self, screen, player=None):
         """
         Initialize Act 1 view with screen and game entities.
         
         Args:
             screen: Pygame surface for rendering
+            player: Optional PlayerModel instance to preserve state (if None, creates new)
         """
         try:
             self.screen = screen
@@ -48,45 +51,47 @@ class Act1View:
                 # Fallback to screen size
                 self.screen_width, self.screen_height = screen.get_size()
             
-            Logger.debug("Act1View.__init__", "Starting Act 1: Le Gosier Sec")
+            Logger.debug("Act1View.__init__", "Starting Act 1: The Dry Throat")
             
             # === CREATE JOHNNY (PLAYER) ===
             
             try:
-                self.johnny = PlayerModel("Johnny Fuzz", 60, 60)
-                self.johnny.setHealth(100)
-                self.johnny.setDamage(10)
-                self.johnny.setAccuracy(0.85)  # 85% accuracy
-                self.johnny.setDrunkenness(0)
-                self.johnny.setComaRisk(10)
-                Logger.debug("Act1View.__init__", "Player created", 
-                           name=self.johnny.getName(), 
-                           health=self.johnny.getHealth(),
-                           damage=self.johnny.getDamage())
+                if player is not None:
+                    # Use provided player to preserve state (drunkenness, etc.)
+                    self.johnny = player
+                    # Ensure health is full for combat (but keep drunkenness)
+                    self.johnny.setHealth(100)
+                    Logger.debug("Act1View.__init__", "Using provided player", 
+                               name=self.johnny.getName(), 
+                               health=self.johnny.getHealth(),
+                               damage=self.johnny.getDamage(),
+                               drunkenness=self.johnny.getDrunkenness())
+                else:
+                    # Create new player if none provided
+                    self.johnny = PlayerModel("Johnny Fuzz", 60, 60)
+                    self.johnny.setHealth(100)
+                    self.johnny.setDamage(10)
+                    self.johnny.setAccuracy(0.85)
+                    self.johnny.setDrunkenness(0)
+                    self.johnny.setComaRisk(10)
+                    
+                    # Equip Johnny with La Pelle (starting guitar)
+                    la_pelle = GuitarFactory.createLaPelle()
+                    
+                    # Give a bottle to Johnny
+                    beer = BottleModel("Beer", 15, 3, 5)
+                    self.johnny.setSelectedBottle(beer)
+                    Logger.debug("Act1View.__init__", "New player created", 
+                               name=self.johnny.getName())
             except Exception as e:
                 Logger.error("Act1View.__init__", e)
                 raise
-            
-            # Equip Johnny with La Pelle (starting guitar)
-            try:
-                la_pelle = GuitarFactory.create_la_pelle()
-                Logger.debug("Act1View.__init__", f"Johnny equipped with {la_pelle.getName()}")
-            except Exception as e:
-                Logger.error("Act1View.__init__", e)
-            
-            # Give a bottle to Johnny
-            try:
-                beer = BottleModel("Beer", 15, 3, 5)
-                self.johnny.setSelectedBottle(beer)
-                Logger.debug("Act1View.__init__", "Player bottle selected", bottle=beer.getName())
-            except Exception as e:
-                Logger.error("Act1View.__init__", e)
             
             # === CREATE GROS BILL (BOSS) ===
             
             try:
                 self.gros_bill = CaracterModel("Gros Bill", 80, 80)
-                self.gros_bill.setHealth(80)
+                self.gros_bill.setHealth(100)  # Full health for boss
                 self.gros_bill.setDamage(8)
                 self.gros_bill.setAccuracy(0.75)  # 75% accuracy
                 
@@ -108,6 +113,24 @@ class Act1View:
             except Exception as e:
                 Logger.error("Act1View.__init__", e)
                 raise
+            
+            # === CHARACTER VIEWS FOR STATIC DISPLAY ===
+            
+            try:
+                # Create character views for visual display
+                self.player_view = CaracterView("Game/Assets/guitare.png")
+                self.boss_view = CaracterView("Game/Assets/boss.png")
+                
+                # Set static positions for display
+                self.johnny.setX(self.screen_width // 4)  # Left side
+                self.johnny.setY(self.screen_height // 2)
+                self.gros_bill.setX(self.screen_width * 3 // 4)  # Right side
+                self.gros_bill.setY(self.screen_height // 2)
+                
+                Logger.debug("Act1View.__init__", "Character views created for static display")
+            except Exception as e:
+                Logger.error("Act1View.__init__", e)
+                # Continue even if character views fail
             
             # === ACT STATE ===
             
@@ -148,6 +171,23 @@ class Act1View:
                         if event.type == pygame.QUIT:
                             Logger.debug("Act1View.run", "QUIT event received")
                             return "QUIT"
+                        
+                        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                            # Open pause menu
+                            try:
+                                pause_menu = PauseMenuView(self.screen)
+                                pause_result = pause_menu.run()
+                                
+                                if pause_result == "quit":
+                                    Logger.debug("Act1View.run", "Quit requested from pause menu")
+                                    return "QUIT"
+                                elif pause_result == "main_menu":
+                                    Logger.debug("Act1View.run", "Main menu requested from pause menu")
+                                    return "MAIN_MENU"
+                                # If "continue", just resume the game loop
+                                Logger.debug("Act1View.run", "Resuming from pause menu")
+                            except Exception as e:
+                                Logger.error("Act1View.run", e)
                         
                         elif event.type == pygame.VIDEORESIZE:
                             # Handle window resize
@@ -207,15 +247,21 @@ class Act1View:
                         except Exception as e:
                             Logger.error("Act1View.run", e)
                     
-                    # === RENDERING ===
-                    
-                    try:
-                        if self.show_intro:
-                            self.draw_intro()
-                        else:
-                            self.combat_view.draw(self.screen, self.combat_model)
-                    except Exception as e:
-                        Logger.error("Act1View.run", e)
+                            # === RENDERING ===
+                            
+                            try:
+                                if self.show_intro:
+                                    self.drawIntro()
+                                else:
+                                    self.combat_view.draw(self.screen, self.combat_model)
+                                    # Draw static character sprites
+                                    try:
+                                        self.player_view.drawCaracter(self.screen, self.johnny)
+                                        self.boss_view.drawCaracter(self.screen, self.gros_bill)
+                                    except Exception as e:
+                                        Logger.error("Act1View.run", e)
+                            except Exception as e:
+                                Logger.error("Act1View.run", e)
                     
                     pygame.display.flip()
                     clock.tick(60)
@@ -230,7 +276,7 @@ class Act1View:
             try:
                 if self.combat_model.getWinner() == "PLAYER":
                     Logger.debug("Act1View.run", "Act 1 completed - VICTORY")
-                    return "ACT2"  # Proceed to Act 2
+                    return "MAP"  # Return to map
                 else:
                     Logger.debug("Act1View.run", "Act 1 completed - DEFEAT")
                     return "GAME_OVER"
@@ -244,7 +290,7 @@ class Act1View:
     
     # === RENDERING ===
     
-    def draw_intro(self):
+    def drawIntro(self):
         """
         Draw the Act 1 introduction screen.
         Displays story text, title, and instructions.
@@ -254,7 +300,7 @@ class Act1View:
             try:
                 self.screen.fill((10, 10, 15))
             except Exception as e:
-                Logger.error("Act1View.draw_intro", e)
+                Logger.error("Act1View.drawIntro", e)
             
             # Fonts
             try:
@@ -262,7 +308,7 @@ class Act1View:
                 text_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.025))
                 small_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.02))
             except Exception as e:
-                Logger.error("Act1View.draw_intro", e)
+                Logger.error("Act1View.drawIntro", e)
                 # Use default fonts if SysFont fails
                 title_font = pygame.font.Font(None, 72)
                 text_font = pygame.font.Font(None, 30)
@@ -270,7 +316,7 @@ class Act1View:
             
             # Title
             try:
-                title_text = "🎸 ACTE I : LE GOSIER SEC 🍺"
+                title_text = "🎸 ACT I : THE DRY THROAT 🍺"
                 title_surf = title_font.render(title_text, True, (255, 215, 0))
                 title_shadow = title_font.render(title_text, True, (100, 80, 0))
                 
@@ -280,7 +326,7 @@ class Act1View:
                 self.screen.blit(title_shadow, (title_x + 3, title_y + 3))
                 self.screen.blit(title_surf, (title_x, title_y))
             except Exception as e:
-                Logger.error("Act1View.draw_intro", e)
+                Logger.error("Act1View.drawIntro", e)
             
             # Story
             try:
@@ -303,11 +349,11 @@ class Act1View:
                             line_x = self.screen_width // 2 - line_surf.get_width() // 2
                             self.screen.blit(line_surf, (line_x, story_y))
                         except Exception as e:
-                            Logger.error("Act1View.draw_intro", e)
+                            Logger.error("Act1View.drawIntro", e)
                             continue
                     story_y += 40
             except Exception as e:
-                Logger.error("Act1View.draw_intro", e)
+                Logger.error("Act1View.drawIntro", e)
             
             # Instructions
             try:
@@ -316,7 +362,7 @@ class Act1View:
                 inst_x = self.screen_width // 2 - inst_surf.get_width() // 2
                 self.screen.blit(inst_surf, (inst_x, self.screen_height - 100))
             except Exception as e:
-                Logger.error("Act1View.draw_intro", e)
+                Logger.error("Act1View.drawIntro", e)
             
             # Blinking animation
             try:
@@ -326,7 +372,7 @@ class Act1View:
                     skip_x = self.screen_width // 2 - skip_surf.get_width() // 2
                     self.screen.blit(skip_surf, (skip_x, self.screen_height - 70))
             except Exception as e:
-                Logger.error("Act1View.draw_intro", e)
+                Logger.error("Act1View.drawIntro", e)
                 
         except Exception as e:
             Logger.error("Act1View.draw_intro", e)
@@ -352,7 +398,7 @@ if __name__ == "__main__":
         try:
             screen_info = pygame.display.Info()
             screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h), pygame.RESIZABLE)
-            pygame.display.set_caption("Act 1 - Le Gosier Sec")
+            pygame.display.set_caption("Act 1 - The Dry Throat")
             Logger.debug("Act1View.__main__", "Display created", 
                        width=screen_info.current_w, height=screen_info.current_h)
         except Exception as e:

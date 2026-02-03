@@ -87,7 +87,7 @@ class PageView:
 
     # === BACKGROUND RESCALING ===
     
-    def _rescale_background(self, new_width, new_height):
+    def rescaleBackground(self, new_width, new_height):
         """
         Rescale the background image to match new window dimensions.
         
@@ -103,16 +103,16 @@ class PageView:
             # Rescale background if original image exists
             if self._original_background is not None:
                 self.background = pygame.transform.scale(self._original_background, (new_width, new_height))
-                Logger.debug("PageView._rescale_background", "Background rescaled", 
+                Logger.debug("PageView.rescaleBackground", "Background rescaled", 
                            width=new_width, height=new_height)
             else:
                 # Create new default background if no original image
                 self.background = pygame.Surface((new_width, new_height))
                 self.background.fill((0, 0, 0))
-                Logger.debug("PageView._rescale_background", "Default background resized", 
+                Logger.debug("PageView.rescaleBackground", "Default background resized", 
                            width=new_width, height=new_height)
         except Exception as e:
-            Logger.error("PageView._rescale_background", e)
+            Logger.error("PageView.rescaleBackground", e)
 
     # === RENDERING ===
     
@@ -127,7 +127,7 @@ class PageView:
             
             # Rescale if dimensions don't match
             if current_width != self.width or current_height != self.height:
-                self._rescale_background(current_width, current_height)
+                self.rescaleBackground(current_width, current_height)
             
             # Draw background, scaling to fit if needed
             try:
@@ -135,7 +135,7 @@ class PageView:
             except Exception as e:
                 # If blit fails, try rescaling and blitting again
                 Logger.debug("PageView.draw", "Blit failed, rescaling background", error=str(e))
-                self._rescale_background(current_width, current_height)
+                self.rescaleBackground(current_width, current_height)
                 self.screen.blit(self.background, (0, 0))
         except Exception as e:
             Logger.error("PageView.draw", e)

@@ -10,7 +10,10 @@ from Utils.Logger import Logger
 from Controllers.ButtonController import ButtonController
 from Views.PageView import PageView
 from Views.ButtonView import ButtonView
+from Views.MapPageView import MapPageView
 from Views.Act1View import Act1View
+from Views.Act2View import Act2View
+from Views.RhythmPageView import RhythmPageView
 
 
 # === WELCOME PAGE VIEW CLASS ===
@@ -101,7 +104,7 @@ class WelcomPageView(PageView):
                                 new_width = event.w
                                 new_height = event.h
                                 self.screen = pygame.display.set_mode((new_width, new_height), self.resizable)
-                                self._rescale_background(new_width, new_height)
+                                self.rescaleBackground(new_width, new_height)
                                 Logger.debug("WelcomPageView.run", "Window resized", 
                                           width=new_width, height=new_height)
                             except Exception as e:
@@ -111,14 +114,20 @@ class WelcomPageView(PageView):
                             for button_controller in self.buttons_controllers:
                                 action = button_controller.handleEvents(event)
                                 if action == "start_game":
-                                    # Exit welcome page loop and start Act 1
-                                    running = False
-                                    Logger.debug("WelcomPageView.run", "Start game action received, transitioning to Act1View")
-                                    self._startAct1()
-                                    return
+                                    # Start game flow - if it returns, we continue the welcome page loop
+                                    Logger.debug("WelcomPageView.run", "Start game action received, transitioning to MapPageView")
+                                    try:
+                                        self._startGameFlow()
+                                        # After game flow ends, continue welcome page loop (don't quit)
+                                        Logger.debug("WelcomPageView.run", "Returned from game flow, showing menu again")
+                                    except Exception as e:
+                                        Logger.error("WelcomPageView.run", e)
+                                    # Continue the loop to show menu again (don't set running = False)
                                 elif action == "quit_game":
-                                    # Quit game (handled in ButtonController)
-                                    return
+                                    # Quit game
+                                    running = False
+                                    Logger.debug("WelcomPageView.run", "Quit game action received")
+                                    break
 
                     # === RENDERING ===
                     
@@ -135,7 +144,7 @@ class WelcomPageView(PageView):
                     continue
 
             Logger.debug("WelcomPageView.run", "Welcome page loop ended")
-            pygame.quit()
+            # Don't quit here - let the caller handle it
             
         except Exception as e:
             Logger.error("WelcomPageView.run", e)
@@ -144,27 +153,27 @@ class WelcomPageView(PageView):
     
     # === GAME TRANSITION ===
     
-    def _startAct1(self):
+    def _startGameFlow(self):
         """
-        Transition to Act 1 view.
-        Creates and runs the Act1View with proper screen initialization.
+        Start the complete game flow: Map → Act1 → Map → Act2 → Map → Rhythm.
+        Manages all transitions between game states.
         """
         try:
-            Logger.debug("WelcomPageView._startAct1", "Starting Act 1")
+            Logger.debug("WelcomPageView._startGameFlow", "Starting game flow")
             
             # Close current window
             try:
                 pygame.quit()
-                Logger.debug("WelcomPageView._startAct1", "Previous window closed")
+                Logger.debug("WelcomPageView._startGameFlow", "Previous window closed")
             except Exception as e:
-                Logger.error("WelcomPageView._startAct1", e)
+                Logger.error("WelcomPageView._startGameFlow", e)
             
-            # Initialize pygame for Act 1
+            # Initialize pygame for game
             try:
                 pygame.init()
-                Logger.debug("WelcomPageView._startAct1", "Pygame reinitialized")
+                Logger.debug("WelcomPageView._startGameFlow", "Pygame reinitialized")
             except Exception as e:
-                Logger.error("WelcomPageView._startAct1", e)
+                Logger.error("WelcomPageView._startGameFlow", e)
                 raise
             
             # Get screen info and create resizable window
@@ -174,33 +183,128 @@ class WelcomPageView(PageView):
                     (screen_info.current_w, screen_info.current_h), 
                     pygame.RESIZABLE
                 )
-                pygame.display.set_caption("Guitaroholic - Act 1")
-                Logger.debug("WelcomPageView._startAct1", "Screen created for Act 1", 
+                pygame.display.set_caption("Six-String Hangover")
+                Logger.debug("WelcomPageView._startGameFlow", "Screen created", 
                            width=screen_info.current_w, height=screen_info.current_h)
             except Exception as e:
-                Logger.error("WelcomPageView._startAct1", e)
+                Logger.error("WelcomPageView._startGameFlow", e)
                 raise
             
-            # Create and run Act 1 view
+            # Create player once - will be passed through all views to preserve state
             try:
-                act1_view = Act1View(screen)
-                result = act1_view.run()
-                Logger.debug("WelcomPageView._startAct1", "Act 1 completed", result=result)
+                from Models.PlayerModel import PlayerModel
+                from Models.BottleModel import BottleModel
+                from Models.GuitarModel import GuitarFactory
                 
-                # Handle Act 1 result (for future expansion)
-                if result == "ACT2":
-                    Logger.debug("WelcomPageView._startAct1", "Act 2 should start (not yet implemented)")
-                elif result == "GAME_OVER":
-                    Logger.debug("WelcomPageView._startAct1", "Game over")
-                elif result == "QUIT":
-                    Logger.debug("WelcomPageView._startAct1", "Quit requested")
-                    
+                player = PlayerModel("Johnny Fuzz", 60, 60)
+                player.setHealth(100)
+                player.setDamage(10)
+                player.setAccuracy(0.85)
+                player.setDrunkenness(0)  # Start at 0, but will persist after this
+                player.setComaRisk(10)
+                
+                # Equip with starting guitar
+                la_pelle = GuitarFactory.createLaPelle()
+                
+                # Give starting bottle
+                beer = BottleModel("Beer", 15, 3, 5)
+                player.setSelectedBottle(beer)
+                
+                Logger.debug("WelcomPageView._startGameFlow", "Player created and initialized")
             except Exception as e:
-                Logger.error("WelcomPageView._startAct1", e)
+                Logger.error("WelcomPageView._startGameFlow", e)
                 raise
+            
+            # Game flow: Map → Act1 → Map → Act2 → Map → Rhythm
+            current_act = 1
+            
+            while True:
+                try:
+                    # === MAP PHASE ===
+                    try:
+                        map_view = MapPageView(screen, current_act, player)
+                        result = map_view.run()
+                        Logger.debug("WelcomPageView._startGameFlow", "Map completed", result=result, current_act=current_act)
+                        
+                        if result == "QUIT":
+                            Logger.debug("WelcomPageView._startGameFlow", "Quit requested from map")
+                            break
+                        elif result == "MAIN_MENU":
+                            Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from map")
+                            # Return to main menu (exit game flow)
+                            return
+                    except Exception as e:
+                        Logger.error("WelcomPageView._startGameFlow", e)
+                        break
+                    
+                    # === ACT 1 ===
+                    if result == "ACT1":
+                        try:
+                            act1_view = Act1View(screen, player)
+                            act1_result = act1_view.run()
+                            Logger.debug("WelcomPageView._startGameFlow", "Act 1 completed", result=act1_result)
+                            
+                            if act1_result == "GAME_OVER":
+                                Logger.debug("WelcomPageView._startGameFlow", "Game over")
+                                break
+                            elif act1_result == "QUIT":
+                                Logger.debug("WelcomPageView._startGameFlow", "Quit requested")
+                                break
+                            elif act1_result == "MAP":
+                                # Continue to next map phase
+                                current_act = 2
+                                continue
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                            break
+                    
+                    # === ACT 2 ===
+                    elif result == "ACT2":
+                        try:
+                            act2_view = Act2View(screen, player)
+                            act2_result = act2_view.run()
+                            Logger.debug("WelcomPageView._startGameFlow", "Act 2 completed", result=act2_result)
+                            
+                            if act2_result == "GAME_OVER":
+                                Logger.debug("WelcomPageView._startGameFlow", "Game over")
+                                break
+                            elif act2_result == "QUIT":
+                                Logger.debug("WelcomPageView._startGameFlow", "Quit requested")
+                                break
+                            elif act2_result == "MAP":
+                                # Continue to next map phase
+                                current_act = 3
+                                continue
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                            break
+                    
+                    # === RHYTHM (FINAL) ===
+                    elif result == "RHYTHM":
+                        try:
+                            rhythm_view = RhythmPageView(screen, player)
+                            rhythm_result = rhythm_view.run()
+                            Logger.debug("WelcomPageView._startGameFlow", "Rhythm completed", result=rhythm_result)
+                            
+                            # Game complete
+                            if rhythm_result == "COMPLETE":
+                                Logger.debug("WelcomPageView._startGameFlow", "Game completed successfully!")
+                            break
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                            break
+                    
+                    else:
+                        # Unknown result, exit
+                        Logger.debug("WelcomPageView._startGameFlow", "Unknown result, exiting", result=result)
+                        break
+                        
+                except Exception as e:
+                    Logger.error("WelcomPageView._startGameFlow", e)
+                    break
             
         except Exception as e:
-            Logger.error("WelcomPageView._startAct1", e)
+            Logger.error("WelcomPageView._startGameFlow", e)
             try:
                 pygame.quit()
             except Exception:

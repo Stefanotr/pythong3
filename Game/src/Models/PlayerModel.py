@@ -135,7 +135,7 @@ class PlayerModel(CaracterModel):
         except Exception as e:
             Logger.error("PlayerModel.setDrunkenness", e)
 
-    def geLevel(self):
+    def getLevel(self):
         """
         Get the player level.
         
@@ -145,7 +145,7 @@ class PlayerModel(CaracterModel):
         try:
             return self._level
         except Exception as e:
-            Logger.error("PlayerModel.geLevel", e)
+            Logger.error("PlayerModel.getLevel", e)
             return 0
 
     def setLevel(self, level):
@@ -206,7 +206,9 @@ class PlayerModel(CaracterModel):
             # Update damage and accuracy
             try:
                 self.setDamage(self.getDamage() + selected_bottle.getBonusDamage())
-                self.setAccuracy(self.getAccuracy() - selected_bottle.getAccuracyPenalty())
+                # Clamp accuracy to minimum 0.1 (10%) to prevent negative values
+                new_accuracy = self.getAccuracy() - selected_bottle.getAccuracyPenalty()
+                self.setAccuracy(max(0.1, new_accuracy))
             except Exception as e:
                 Logger.error("PlayerModel.drink", e)
 
@@ -257,7 +259,7 @@ class PlayerModel(CaracterModel):
         else:
             self._drunkenness = drunkenness
     
-    def geLevel(self):
+    def getLevel(self):
         return self._level
 
     def setLevel(self, level):
@@ -268,8 +270,7 @@ class PlayerModel(CaracterModel):
         Logger.debug("CaracterModel.drink",selected_bottle)
 
         try:
-            if self.getType() != "PLAYER":
-                raise TypeError("Caracter is not PLAYER")
+            # PlayerModel is always a PLAYER, no need to check getType()
             try:
                 if not isinstance(selected_bottle, BottleModel):
                     raise TypeError("selected_bottle is not a BottleModel")
@@ -290,7 +291,9 @@ class PlayerModel(CaracterModel):
 
         
         self.setDamage(self.getDamage() + selected_bottle.getBonusDamage())
-        self.setAccuracy(self.getAccuracy() - selected_bottle.getAccuracyPenalty())
+        # Clamp accuracy to minimum 0.1 (10%) to prevent negative values
+        new_accuracy = self.getAccuracy() - selected_bottle.getAccuracyPenalty()
+        self.setAccuracy(max(0.1, new_accuracy))
 
     
         tirage = random.randint(1, 100)

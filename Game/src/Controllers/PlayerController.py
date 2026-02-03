@@ -29,9 +29,13 @@ class PlayerController:
         """
         try:
             self.player = player
-            self.SCREEN_SIZE = 400
+            # Get screen dimensions for boundary checking
+            screen_width, screen_height = screen.get_size()
+            self.SCREEN_SIZE = max(screen_width, screen_height)  # Use larger dimension
             self.PLAYER_SIZE = 50
             self.SPEED = 10
+            self.screen_width = screen_width
+            self.screen_height = screen_height
             Logger.debug("PlayerController.__init__", "Player controller initialized", player_name=player.getName())
         except Exception as e:
             Logger.error("PlayerController.__init__", e)
@@ -67,16 +71,16 @@ class PlayerController:
                         Logger.error("PlayerController.handleInput", e)
 
                 # RIGHT
-                if event.key == pygame.K_RIGHT:
+                elif event.key == pygame.K_RIGHT:
                     try:
-                        if current_x < (self.SCREEN_SIZE - self.PLAYER_SIZE):
-                            self.player.setX(current_x + self.SPEED)
-                            Logger.debug("PlayerController.handleInput", "Player moved right", x=self.player.getX())
+                        # Allow movement within map bounds (no hard limit for now)
+                        self.player.setX(current_x + self.SPEED)
+                        Logger.debug("PlayerController.handleInput", "Player moved right", x=self.player.getX())
                     except Exception as e:
                         Logger.error("PlayerController.handleInput", e)
 
                 # UP
-                if event.key == pygame.K_UP:
+                elif event.key == pygame.K_UP:
                     try:
                         if current_y > 0:
                             self.player.setY(current_y - self.SPEED)
@@ -85,11 +89,11 @@ class PlayerController:
                         Logger.error("PlayerController.handleInput", e)
 
                 # DOWN
-                if event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_DOWN:
                     try:
-                        if current_y < (self.SCREEN_SIZE - self.PLAYER_SIZE):
-                            self.player.setY(current_y + self.SPEED)
-                            Logger.debug("PlayerController.handleInput", "Player moved down", y=self.player.getY())
+                        # Allow movement within map bounds (no hard limit for now)
+                        self.player.setY(current_y + self.SPEED)
+                        Logger.debug("PlayerController.handleInput", "Player moved down", y=self.player.getY())
                     except Exception as e:
                         Logger.error("PlayerController.handleInput", e)
 

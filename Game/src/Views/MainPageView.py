@@ -138,7 +138,7 @@ class MainPageView(PageView):
                                 new_width = event.w
                                 new_height = event.h
                                 self.screen = pygame.display.set_mode((new_width, new_height), self.resizable)
-                                self._rescale_background(new_width, new_height)
+                                self.rescaleBackground(new_width, new_height)
                                 Logger.debug("MainPageView.run", "Window resized", 
                                           width=new_width, height=new_height)
                             except Exception as e:
@@ -153,7 +153,9 @@ class MainPageView(PageView):
                     
                     try:
                         self.draw()
-                        MapView(self.screen, self.map)
+                        # Create and draw map view
+                        map_view = MapView(self.map)
+                        map_view.draw(self.screen)
                         self.player_view.drawCaracter(self.screen, self.johnny)
                         self.boss_view.drawCaracter(self.screen, self.gros_bill)
                     except Exception as e:

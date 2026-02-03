@@ -17,48 +17,58 @@ class MapView:
     Draws all tiles from the map model to the screen.
     """
     
-    # === INITIALIZATION AND RENDERING ===
+    # === INITIALIZATION ===
     
-    def __init__(self, screen, map):
+    def __init__(self, map):
         """
-        Initialize and render the map view.
-        Draws all tiles from the map model to the screen.
+        Initialize the map view.
         
         Args:
-            screen: Pygame surface to draw on
             map: MapModel instance containing tile data
         """
         try:
-            Logger.debug("MapView.__init__", "Rendering map", tile_count=len(map.tiles) if hasattr(map, 'tiles') else 0)
-            
-            # Render each tile
-            try:
-                for y, row in enumerate(map.tiles):
-                    for x, tile in enumerate(row):
-                        try:
-                            location = (x * map.tile_size, y * map.tile_size)
-                            
-                            # Get tile image
-                            if tile in map.tile_kinds:
-                                image = map.tile_kinds[tile].image
-                                screen.blit(image, location)
-                            else:
-                                Logger.debug("MapView.__init__", "Unknown tile type", tile=tile, position=(x, y))
-                                
-                        except Exception as e:
-                            Logger.error("MapView.__init__", e)
-                            # Continue rendering other tiles even if one fails
-                            continue
-                            
-                Logger.debug("MapView.__init__", "Map rendering completed")
-                
-            except AttributeError as e:
-                Logger.error("MapView.__init__", e)
-                Logger.debug("MapView.__init__", "Map model missing required attributes")
-            except Exception as e:
-                Logger.error("MapView.__init__", e)
-                raise
-                
+            self.map = map
+            Logger.debug("MapView.__init__", "Map view initialized", 
+                        tile_count=len(map.tiles) if hasattr(map, 'tiles') else 0)
         except Exception as e:
             Logger.error("MapView.__init__", e)
             raise
+    
+    # === RENDERING ===
+    
+    def draw(self, screen):
+        """
+        Draw the map to the screen.
+        Should be called every frame.
+        
+        Args:
+            screen: Pygame surface to draw on
+        """
+        try:
+            # Render each tile
+            try:
+                for y, row in enumerate(self.map.tiles):
+                    for x, tile in enumerate(row):
+                        try:
+                            location = (x * self.map.tile_size, y * self.map.tile_size)
+                            
+                            # Get tile image
+                            if tile in self.map.tile_kinds:
+                                image = self.map.tile_kinds[tile].image
+                                screen.blit(image, location)
+                            else:
+                                Logger.debug("MapView.draw", "Unknown tile type", tile=tile, position=(x, y))
+                                
+                        except Exception as e:
+                            Logger.error("MapView.draw", e)
+                            # Continue rendering other tiles even if one fails
+                            continue
+                            
+            except AttributeError as e:
+                Logger.error("MapView.draw", e)
+                Logger.debug("MapView.draw", "Map model missing required attributes")
+            except Exception as e:
+                Logger.error("MapView.draw", e)
+                
+        except Exception as e:
+            Logger.error("MapView.draw", e)

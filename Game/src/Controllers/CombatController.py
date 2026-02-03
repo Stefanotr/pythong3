@@ -287,7 +287,9 @@ class CombatController:
             # Check coma risk
             try:
                 if self.player.getHealth() <= 0:
-                    self.combat.addToCombatLog(f"💀 ALCOHOLIC COMA! {self.player.getName()} collapses...")
+                    # Set coma death flag before checking combat end
+                    self.combat.setDiedFromComa(True)
+                    self.combat.addToCombatLog(f"💀 ALCOHOLIC COMA! {self.player.getName()} collapses from drinking too much!")
                     Logger.debug("CombatController.playerDrink", "Alcoholic coma triggered")
                     self.combat.checkCombatEnd()
                     return

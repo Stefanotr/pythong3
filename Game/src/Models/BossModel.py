@@ -53,7 +53,7 @@ class BossModel(CaracterModel):
             
             # Get player level
             try:
-                player_level = player.geLevel()
+                player_level = player.getLevel()
                 if player_level <= 0:
                     player_level = 1  # Minimum level of 1
                 Logger.debug("BossModel.scale", "Scaling boss", player_level=player_level)

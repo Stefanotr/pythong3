@@ -19,7 +19,7 @@ class RhythmController:
     
     # === INITIALIZATION ===
     
-    def __init__(self, rhythm_model, character_model, screen_height, view):
+    def __init__(self, rhythm_model, character_model, screen_height, view, boss_model=None):
         """
         Initialize the rhythm controller.
         
@@ -28,6 +28,7 @@ class RhythmController:
             character_model: Character model for health updates
             screen_height: Screen height for adaptive speed calculation
             view: RhythmView instance for particle effects
+            boss_model: Optional boss model for attack simulation on missed notes
         """
         try:
             self.rhythm = rhythm_model
@@ -35,8 +36,20 @@ class RhythmController:
             self.view = view
             self.speed = screen_height * 0.006  # Adaptive speed
             
+            # Boss model for attack simulation
+            self.boss = boss_model
+            if self.boss is None:
+                # Create default boss if none provided
+                from Models.CaracterModel import CaracterModel
+                self.boss = CaracterModel("Boss", 80, 80)
+                self.boss.setDamage(8)  # Default boss damage
+                Logger.debug("RhythmController.__init__", "Default boss created for rhythm game")
+            else:
+                Logger.debug("RhythmController.__init__", "Using provided boss model", 
+                           boss_name=self.boss.getName(), boss_damage=self.boss.getDamage())
+            
             # Adjust hit line based on screen height
-            self.rhythm.hit_line_y = int(screen_height * 0.75)
+            self.rhythm.setHitLineY(int(screen_height * 0.75))
             
             try:
                 pygame.mixer.init()
@@ -65,14 +78,14 @@ class RhythmController:
         """
         try:
             # Decrement feedback timer
-            if self.rhythm.feedback_timer > 0:
-                self.rhythm.feedback_timer -= 1
+            if self.rhythm.getFeedbackTimer() > 0:
+                self.rhythm.setFeedbackTimer(self.rhythm.getFeedbackTimer() - 1)
             else:
-                self.rhythm.feedback = ""
+                self.rhythm.setFeedback("")
             
             # Update notes
             try:
-                for note in self.rhythm.notes:
+                for note in self.rhythm.getNotes():
                     if note.get("active", False):
                         try:
                             note["y"] += self.speed
@@ -80,19 +93,28 @@ class RhythmController:
                             Logger.error("RhythmController.update", e)
                             continue
                     
-                    # Missed note
+                    # Missed note - simulate boss attack
                     try:
-                        if note.get("y", 0) > self.rhythm.hit_line_y + 80 and note.get("active", False):
+                        if note.get("y", 0) > self.rhythm.getHitLineY() + 80 and note.get("active", False):
                             note["active"] = False
-                            self.rhythm.feedback = "MISS!"
-                            self.rhythm.feedback_timer = 30
-                            self.rhythm.score = max(0, self.rhythm.score - 10)
-                            self.rhythm.combo = 0
+                            self.rhythm.setFeedback("MISS!")
+                            self.rhythm.setFeedbackTimer(30)
+                            self.rhythm.setScore(max(0, self.rhythm.getScore() - 10))
+                            self.rhythm.setCombo(0)
                             
+                            # Simulate boss attack instead of passive HP loss
                             try:
+                                boss_damage = self.boss.getDamage()
                                 current_hp = self.character.getHealth()
-                                self.character.setHealth(max(0, current_hp - 2))
-                                Logger.debug("RhythmController.update", "Note missed, player took damage")
+                                new_hp = max(0, current_hp - boss_damage)
+                                self.character.setHealth(new_hp)
+                                
+                                # Update feedback to show boss attack
+                                self.rhythm.setFeedback(f"{self.boss.getName()} attacks! -{boss_damage} HP!")
+                                Logger.debug("RhythmController.update", "Note missed, boss attack simulated", 
+                                           boss_name=self.boss.getName(), 
+                                           damage=boss_damage, 
+                                           player_hp=new_hp)
                             except Exception as e:
                                 Logger.error("RhythmController.update", e)
                     except Exception as e:
@@ -105,7 +127,7 @@ class RhythmController:
 
     # === INPUT HANDLING ===
     
-    def handle_input(self, event):
+    def handleInput(self, event):
         """
         Handle input events for rhythm game.
         
@@ -117,15 +139,15 @@ class RhythmController:
                 if event.key in self.key_map:
                     try:
                         lane = self.key_map[event.key]
-                        self.check_hit(lane)
+                        self.checkHit(lane)
                     except Exception as e:
-                        Logger.error("RhythmController.handle_input", e)
+                        Logger.error("RhythmController.handleInput", e)
         except Exception as e:
-            Logger.error("RhythmController.handle_input", e)
+            Logger.error("RhythmController.handleInput", e)
 
     # === HIT DETECTION ===
     
-    def check_hit(self, lane):
+    def checkHit(self, lane):
         """
         Check if a note was hit in the specified lane.
         Calculates score based on timing accuracy.
@@ -140,10 +162,10 @@ class RhythmController:
             
             hit_found = False
 
-            for note in self.rhythm.notes:
+            for note in self.rhythm.getNotes():
                 try:
                     if note.get("active", False) and note.get("lane") == lane:
-                        distance = abs(note.get("y", 0) - self.rhythm.hit_line_y)
+                        distance = abs(note.get("y", 0) - self.rhythm.getHitLineY())
                         
                         if distance < ok_margin:
                             note["active"] = False
@@ -151,11 +173,11 @@ class RhythmController:
                             
                             # Note position for particles
                             try:
-                                lane_index = self.rhythm.lanes.index(lane)
+                                lane_index = self.rhythm.getLanes().index(lane)
                                 x_pos = self.view.lane_x[lane_index]
                                 color = self.view.lane_colors[lane_index]
                             except Exception as e:
-                                Logger.error("RhythmController.check_hit", e)
+                                Logger.error("RhythmController.checkHit", e)
                                 x_pos = 0
                                 color = (255, 255, 255)
                             
@@ -163,36 +185,36 @@ class RhythmController:
                             try:
                                 if distance < perfect_margin:
                                     points = 200
-                                    self.rhythm.feedback = "PERFECT!"
+                                    self.rhythm.setFeedback("PERFECT!")
                                     hp_gain = 4
-                                    self.view.create_particles(x_pos, self.rhythm.hit_line_y, color)
+                                    self.view.createParticles(x_pos, self.rhythm.getHitLineY(), color)
                                 elif distance < good_margin:
                                     points = 125
-                                    self.rhythm.feedback = "EXCELLENT!"
+                                    self.rhythm.setFeedback("EXCELLENT!")
                                     hp_gain = 3
-                                    self.view.create_particles(x_pos, self.rhythm.hit_line_y, color)
+                                    self.view.createParticles(x_pos, self.rhythm.getHitLineY(), color)
                                 else:
                                     points = 60
-                                    self.rhythm.feedback = "GOOD"
+                                    self.rhythm.setFeedback("GOOD")
                                     hp_gain = 1
                                 
-                                Logger.debug("RhythmController.check_hit", "Note hit", 
+                                Logger.debug("RhythmController.checkHit", "Note hit", 
                                            lane=lane, distance=distance, points=points)
                             except Exception as e:
-                                Logger.error("RhythmController.check_hit", e)
+                                Logger.error("RhythmController.checkHit", e)
                             
                             # Combo bonus
                             try:
-                                self.rhythm.combo += 1
-                                if self.rhythm.combo > self.rhythm.max_combo:
-                                    self.rhythm.max_combo = self.rhythm.combo
+                                self.rhythm.setCombo(self.rhythm.getCombo() + 1)
+                                if self.rhythm.getCombo() > self.rhythm.getMaxCombo():
+                                    self.rhythm.setMaxCombo(self.rhythm.getCombo())
                                 
-                                combo_multiplier = 1 + (self.rhythm.combo // 5) * 0.5
-                                self.rhythm.score += int(points * combo_multiplier)
+                                combo_multiplier = 1 + (self.rhythm.getCombo() // 5) * 0.5
+                                self.rhythm.setScore(self.rhythm.getScore() + int(points * combo_multiplier))
                                 
-                                self.rhythm.feedback_timer = 25
+                                self.rhythm.setFeedbackTimer(25)
                             except Exception as e:
-                                Logger.error("RhythmController.check_hit", e)
+                                Logger.error("RhythmController.checkHit", e)
                             
                             # Stat gains
                             try:
@@ -203,18 +225,18 @@ class RhythmController:
                                 drunk = self.character.getDrunkenness()
                                 self.character.setDrunkenness(min(100, drunk + 1))
                             except Exception as e:
-                                Logger.error("RhythmController.check_hit", e)
+                                Logger.error("RhythmController.checkHit", e)
                             
                             break
                 except Exception as e:
-                    Logger.error("RhythmController.check_hit", e)
+                    Logger.error("RhythmController.checkHit", e)
                     continue
             
             if not hit_found:
-                self.rhythm.feedback = "TOO EARLY!"
-                self.rhythm.feedback_timer = 20
-                self.rhythm.combo = 0
-                self.rhythm.score = max(0, self.rhythm.score - 5)
-                Logger.debug("RhythmController.check_hit", "Hit too early", lane=lane)
+                self.rhythm.setFeedback("TOO EARLY!")
+                self.rhythm.setFeedbackTimer(20)
+                self.rhythm.setCombo(0)
+                self.rhythm.setScore(max(0, self.rhythm.getScore() - 5))
+                Logger.debug("RhythmController.checkHit", "Hit too early", lane=lane)
         except Exception as e:
-            Logger.error("RhythmController.check_hit", e)
+            Logger.error("RhythmController.checkHit", e)

@@ -72,3 +72,91 @@ class MapModel:
         except Exception as e:
             Logger.error("MapModel.__init__", e)
             raise
+    
+    # === GETTERS / SETTERS ===
+    
+    def getTileKinds(self):
+        """
+        Get the list of tile types.
+        
+        Returns:
+            list: List of TileModel instances
+        """
+        try:
+            return self.tile_kinds.copy() if hasattr(self, 'tile_kinds') else []
+        except Exception as e:
+            Logger.error("MapModel.getTileKinds", e)
+            return []
+    
+    def setTileKinds(self, tile_kinds):
+        """
+        Set the list of tile types.
+        
+        Args:
+            tile_kinds: List of TileModel instances
+        """
+        try:
+            if isinstance(tile_kinds, list):
+                self.tile_kinds = tile_kinds.copy()  # Store a copy
+                Logger.debug("MapModel.setTileKinds", "Tile kinds set", count=len(self.tile_kinds))
+            else:
+                Logger.error("MapModel.setTileKinds", ValueError("Tile kinds must be a list"))
+        except Exception as e:
+            Logger.error("MapModel.setTileKinds", e)
+    
+    def getTileSize(self):
+        """
+        Get the tile size in pixels.
+        
+        Returns:
+            int: Tile size in pixels
+        """
+        try:
+            return self.tile_size
+        except Exception as e:
+            Logger.error("MapModel.getTileSize", e)
+            return 32
+    
+    def setTileSize(self, tile_size):
+        """
+        Set the tile size in pixels.
+        
+        Args:
+            tile_size: Tile size in pixels
+        """
+        try:
+            self.tile_size = max(1, int(tile_size))
+            Logger.debug("MapModel.setTileSize", "Tile size set", tile_size=self.tile_size)
+        except Exception as e:
+            Logger.error("MapModel.setTileSize", e)
+    
+    def getTiles(self):
+        """
+        Get the tile map data.
+        
+        Returns:
+            list: 2D list of tile IDs
+        """
+        try:
+            # Return a deep copy to prevent external modification
+            return [row.copy() for row in self.tiles] if hasattr(self, 'tiles') and self.tiles else []
+        except Exception as e:
+            Logger.error("MapModel.getTiles", e)
+            return []
+    
+    def setTiles(self, tiles):
+        """
+        Set the tile map data.
+        
+        Args:
+            tiles: 2D list of tile IDs
+        """
+        try:
+            if isinstance(tiles, list):
+                # Store a deep copy
+                self.tiles = [row.copy() if isinstance(row, list) else row for row in tiles]
+                Logger.debug("MapModel.setTiles", "Tiles set", rows=len(self.tiles))
+            else:
+                Logger.error("MapModel.setTiles", ValueError("Tiles must be a list"))
+        except Exception as e:
+            Logger.error("MapModel.setTiles", e)

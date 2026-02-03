@@ -122,7 +122,7 @@ class RhythmView:
 
     # === PARTICLE SYSTEM ===
     
-    def create_particles(self, x, y, color):
+    def createParticles(self, x, y, color):
         """
         Create explosion particles for hit effects.
         
@@ -144,12 +144,12 @@ class RhythmView:
                         'color': color
                     })
                 except Exception as e:
-                    Logger.error("RhythmView.create_particles", e)
+                    Logger.error("RhythmView.createParticles", e)
                     continue
         except Exception as e:
-            Logger.error("RhythmView.create_particles", e)
+            Logger.error("RhythmView.createParticles", e)
 
-    def update_particles(self):
+    def updateParticles(self):
         """
         Update particle positions and lifetimes.
         Removes particles that have expired.
@@ -165,14 +165,14 @@ class RhythmView:
                     if particle['life'] <= 0:
                         self.particles.remove(particle)
                 except Exception as e:
-                    Logger.error("RhythmView.update_particles", e)
+                    Logger.error("RhythmView.updateParticles", e)
                     # Remove problematic particle
                     try:
                         self.particles.remove(particle)
                     except ValueError:
                         pass
         except Exception as e:
-            Logger.error("RhythmView.update_particles", e)
+            Logger.error("RhythmView.updateParticles", e)
 
     # === UTILITY METHODS ===
     
@@ -196,7 +196,7 @@ class RhythmView:
 
     # === RENDERING METHODS ===
     
-    def draw_health_bar(self, screen, x, y, width, height, current, maximum, label, color_good, color_bad, is_boss=False):
+    def drawHealthBar(self, screen, x, y, width, height, current, maximum, label, color_good, color_bad, is_boss=False):
         """
         Draw a styled health bar with gradient fill.
         
@@ -259,7 +259,7 @@ class RhythmView:
             screen.blit(hp_shadow, (text_x + 1, text_y + 1))
             screen.blit(hp_text, (text_x, text_y))
         except Exception as e:
-            Logger.error("RythmView.draw_health_bar",e)
+            Logger.error("RhythmView.drawHealthBar",e)
 
     def draw(self, screen, rhythm_model, character_model):
         """
@@ -319,22 +319,23 @@ class RhythmView:
                     pygame.draw.line(screen, color, (x, 0), (x, self.screen_height), 2)
                     
                     # Cercle de cible
-                    pygame.draw.circle(screen, (0, 0, 0), (x, rhythm_model.hit_line_y), 32)
-                    pygame.draw.circle(screen, color, (x, rhythm_model.hit_line_y), 28, 3)
-                    pygame.draw.circle(screen, tuple(c // 3 for c in color), (x, rhythm_model.hit_line_y), 20, 2)
+                    hit_line_y = rhythm_model.getHitLineY()
+                    pygame.draw.circle(screen, (0, 0, 0), (x, hit_line_y), 32)
+                    pygame.draw.circle(screen, color, (x, hit_line_y), 28, 3)
+                    pygame.draw.circle(screen, tuple(c // 3 for c in color), (x, hit_line_y), 20, 2)
                 
                 # --- D. LIGNE DE FRAPPE ---
-                hit_line_y = rhythm_model.hit_line_y
+                hit_line_y = rhythm_model.getHitLineY()
                 pygame.draw.line(screen, (255, 255, 255), 
                                 (self.guitar_start - 15, hit_line_y), 
                                 (self.guitar_start + self.guitar_width + 15, hit_line_y), 3)
             
             # --- E. NOTES ---
             try:
-                for note in rhythm_model.notes:
+                for note in rhythm_model.getNotes():
                     if note.get("active", False):
                         try:
-                            lane_index = rhythm_model.lanes.index(note["lane"])
+                            lane_index = rhythm_model.getLanes().index(note["lane"])
                             x_pos = self.lane_x[lane_index]
                             color = self.lane_colors[lane_index]
                             y_pos = int(note["y"])
@@ -382,7 +383,7 @@ class RhythmView:
                             Logger.error("RhythmView.draw", e)
                             continue
                     
-                    self.update_particles()
+                    self.updateParticles()
                 except Exception as e:
                     Logger.error("RhythmView.draw", e)
             
@@ -399,7 +400,7 @@ class RhythmView:
             
             # === LEFT: PLAYER HP ===
             player_hp_width = int(self.screen_width * 0.18)
-            self.draw_health_bar(
+            self.drawHealthBar(
                 screen, 
                 20, 
                 int(hud_height * 0.4),
@@ -414,7 +415,7 @@ class RhythmView:
             )
             
             # === CENTER: SCORE ===
-            score_value = f"{rhythm_model.score:,}"
+            score_value = f"{rhythm_model.getScore():,}"
             score_text = self.score_font.render(score_value, True, (255, 215, 0))
             score_shadow = self.score_font.render(score_value, True, (100, 80, 0))
             
@@ -434,7 +435,7 @@ class RhythmView:
             boss_hp_current = 75  # To be replaced with rhythm_model.boss.getHealth()
             boss_hp_max = 100
             
-            self.draw_health_bar(
+            self.drawHealthBar(
                 screen,
                 boss_hp_x,
                 int(hud_height * 0.4),
@@ -449,8 +450,8 @@ class RhythmView:
             )
             
             # === COMBO (en dessous du score) ===
-            if rhythm_model.combo > 0:
-                combo_value = f"x{rhythm_model.combo} COMBO"
+            if rhythm_model.getCombo() > 0:
+                combo_value = f"x{rhythm_model.getCombo()} COMBO"
                 combo_text = self.combo_font.render(combo_value, True, (255, 100, 255))
                 combo_shadow = self.combo_font.render(combo_value, True, (100, 0, 100))
                 
@@ -459,21 +460,22 @@ class RhythmView:
                 screen.blit(combo_text, combo_rect)
             
             # --- H. FEEDBACK CENTRAL ---
-            if rhythm_model.feedback and rhythm_model.feedback_timer > 0:
-                if "PERFECT" in rhythm_model.feedback:
+            if rhythm_model.getFeedback() and rhythm_model.getFeedbackTimer() > 0:
+                feedback = rhythm_model.getFeedback()
+                if "PERFECT" in feedback:
                     fb_color = (100, 255, 100)
                     extra = " ⭐"
-                elif "EXCELLENT" in rhythm_model.feedback:
+                elif "EXCELLENT" in feedback:
                     fb_color = (255, 255, 100)
                     extra = " ✨"
-                elif "GOOD" in rhythm_model.feedback:
+                elif "GOOD" in feedback:
                     fb_color = (100, 200, 255)
                     extra = " ♪"
                 else:
                     fb_color = (255, 100, 100)
                     extra = ""
                 
-                fb_text = rhythm_model.feedback + extra
+                fb_text = feedback + extra
                 fb_surf = self.big_font.render(fb_text, True, fb_color)
                 fb_shadow = self.big_font.render(fb_text, True, (0, 0, 0))
                 

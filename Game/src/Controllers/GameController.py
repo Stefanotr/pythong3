@@ -95,7 +95,7 @@ class GameController:
                             if result == "ACT2":
                                 # TODO: Implement Act 2
                                 Logger.debug("GameController.run", "Act 1 completed - Moving to Act 2")
-                                self.show_transition("ACTE 2", "WOOD-STOCK-OPTION")
+                                self.showTransition("ACTE 2", "WOOD-STOCK-OPTION")
                                 # For now, return to menu
                                 self.current_state = "MENU"
                             elif result == "GAME_OVER":
@@ -111,7 +111,7 @@ class GameController:
                     # === GAME OVER ===
                     elif self.current_state == "GAME_OVER":
                         try:
-                            game_over_result = self.show_game_over()
+                            game_over_result = self.showGameOver()
                             if game_over_result == "RETRY":
                                 self.current_state = "ACT1"  # Restart the act
                                 Logger.debug("GameController.run", "Retry selected")
@@ -147,7 +147,7 @@ class GameController:
     
     # === TRANSITION SCREENS ===
     
-    def show_transition(self, act_name, location_name):
+    def showTransition(self, act_name, location_name):
         """
         Display a transition screen between acts.
         
@@ -164,7 +164,7 @@ class GameController:
                 font_subtitle = pygame.font.SysFont("Arial", 40)
                 font_small = pygame.font.SysFont("Arial", 25)
             except Exception as e:
-                Logger.error("GameController.show_transition", e)
+                Logger.error("GameController.showTransition", e)
                 font_title = pygame.font.Font(None, 80)
                 font_subtitle = pygame.font.Font(None, 40)
                 font_small = pygame.font.Font(None, 25)
@@ -205,7 +205,7 @@ class GameController:
             clock.tick(60)
             timer -= 1
     
-    def show_game_over(self):
+    def showGameOver(self):
         """
         Display the game over screen with retry/menu/quit options.
         
@@ -220,7 +220,7 @@ class GameController:
                 font_option = pygame.font.SysFont("Arial", 40, bold=True)
                 font_small = pygame.font.SysFont("Arial", 25)
             except Exception as e:
-                Logger.error("GameController.show_game_over", e)
+                Logger.error("GameController.showGameOver", e)
                 font_title = pygame.font.Font(None, 100)
                 font_option = pygame.font.Font(None, 40)
                 font_small = pygame.font.Font(None, 25)
@@ -253,7 +253,7 @@ class GameController:
             screen_width = screen_info.current_w
             screen_height = screen_info.current_h
             
-            # Titre GAME OVER
+            # GAME OVER Title
             title_text = "💀 GAME OVER 💀"
             title_surf = font_title.render(title_text, True, (255, 50, 50))
             title_shadow = font_title.render(title_text, True, (100, 0, 0))
@@ -265,7 +265,7 @@ class GameController:
             self.screen.blit(title_surf, (title_x, title_y))
             
             # Message
-            message = "Tu t'es fait défoncer comme une guitare cheap..."
+            message = "You got wrecked like a cheap guitar..."
             msg_surf = font_small.render(message, True, (200, 200, 200))
             msg_x = screen_width // 2 - msg_surf.get_width() // 2
             self.screen.blit(msg_surf, (msg_x, title_y + 120))
@@ -288,7 +288,7 @@ class GameController:
                     self.screen.blit(arrow_surf, (option_x - 50, option_y + i * 70))
             
             # Instructions
-            inst_text = "↑↓ Naviguer | ENTRÉE Sélectionner"
+            inst_text = "↑↓ Navigate | ENTER Select"
             inst_surf = font_small.render(inst_text, True, (150, 150, 150))
             inst_x = screen_width // 2 - inst_surf.get_width() // 2
             self.screen.blit(inst_surf, (inst_x, screen_height - 80))
@@ -297,7 +297,7 @@ class GameController:
             clock.tick(60)
 
 
-# === POINT D'ENTRÉE ===
+# === ENTRY POINT ===
 if __name__ == "__main__":
     game = GameController()
     game.run()
