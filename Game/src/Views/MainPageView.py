@@ -1,4 +1,5 @@
 import pygame
+
 from Models.CaracterModel import CaracterModel
 from Controllers.PlayerController import PlayerController
 from Views.CaracterView import CaracterView
@@ -13,31 +14,31 @@ from Models.TileModel import TileModel
 
 class MainPageView(PageView):
 
-    def __init__(self,name,width=800, height=800, background_image="Game/Assets/welcomePage.png"):
-        super().__init__(name,width,height,background_image)
-
-        pygame.init()
+    def __init__(self,name,width=800, height=800,RESIZABLE=0, background_image="Game/Assets/welcomePage.png"):
+        super().__init__(name,width,height,RESIZABLE,background_image)
 
 
-        johnny = PlayerModel("Johnny Fuzz",60,60)
-        gros_bill=BossModel("Gros Bill",80,80)
-        beer = BottleModel("Beer", 10, 2, 5)
-        vodka = BottleModel("Vodka", 35, 8, 20)
-        champagne = BottleModel("Champagne", 20, 4, 8)
+        self.johnny = PlayerModel("Johnny Fuzz",60,60)
+        self.gros_bill=BossModel("Gros Bill",80,80)
+        self.beer = BottleModel("Beer", 10, 2, 5)
+        self.vodka = BottleModel("Vodka", 35, 8, 20)
+        self.champagne = BottleModel("Champagne", 20, 4, 8)
         tile_kinds =[
             TileModel("road", "Game/Assets/road3_carre.png", False),
             TileModel("road2", "Game/Assets/road3_carre.png", False)
 
         ]
-        map = MapModel("Game/Assets/maps/map.map", tile_kinds, 106)
+        self.map = MapModel("Game/Assets/maps/map.map", tile_kinds, 106)
 
-        johnny.setSelectedBottle(beer)
+        self.johnny.setSelectedBottle(self.beer)
 
-        controller = PlayerController(self.screen, johnny)
+        self.controller = PlayerController(self.screen, self.johnny)
 
-        player_view = CaracterView("Game/Assets/guitare.png")
-        boss_view=CaracterView("Game/Assets/boss.png")
+        self.player_view = CaracterView("Game/Assets/guitare.png")
+        self.boss_view=CaracterView("Game/Assets/boss.png")
 
+
+    def run(self):
         clock = pygame.time.Clock()
         
         running = True
@@ -46,13 +47,13 @@ class MainPageView(PageView):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                controller.handleInput(event)
+                self.controller.handleInput(event)
             
-            self.screen.blit(self.background,(0, 0))
-            MapView(self.screen,map)
+            self.draw()
+            MapView(self.screen,self.map)
 
-            player_view.drawCaracter(self.screen, johnny)
-            boss_view.drawCaracter(self.screen, gros_bill)
+            self.player_view.drawCaracter(self.screen, self.johnny)
+            self.boss_view.drawCaracter(self.screen, self.gros_bill)
 
 
 

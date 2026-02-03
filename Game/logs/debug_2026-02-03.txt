@@ -204,3 +204,458 @@
 [2026-02-03 15:56:31] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
 [2026-02-03 15:57:11] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
 [2026-02-03 15:57:11] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 17:53:29] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 17:53:29] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 17:54:42] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 17:54:42] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:08:17] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:09:10] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:13:34] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:13:34] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:13:34] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:20:05] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:20:06] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:20:06] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:26:25] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:26:25] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:26:25] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:26:37] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:26:37] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:26:37] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:28:20] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:28:23] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:28:26] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:30:12] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:30:31] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:30:50] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:32:27] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:33:30] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:33:35] WelcomPageView.__init__ | fullscreen=-2147483648
+[2026-02-03 18:36:30] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:36:30] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:38:47] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:38:47] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:38:56] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:38:56] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:39:21] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:39:21] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:39:26] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:39:26] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:40:20] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x0000021598012850>
+[2026-02-03 18:40:20] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 18:40:20] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 10%
+[2026-02-03 18:40:20] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x0000021598012850>
+[2026-02-03 18:40:20] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 18:40:20] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 20%
+[2026-02-03 18:40:20] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x0000021598012850>
+[2026-02-03 18:40:20] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 18:40:20] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 30%
+[2026-02-03 18:40:20] CaracterModel.drink | <Models.BottleModel.BottleModel object at 0x0000021598012850>
+[2026-02-03 18:40:20] CaracterModel.drink | Johnny Fuzz drink Beer
+[2026-02-03 18:40:20] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 40%
+[2026-02-03 18:40:57] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:40:57] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:42:42] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:42:42] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:43:31] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:43:31] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:43:42] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:43:42] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:45:59] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:45:59] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:46:28] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:46:28] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:52:39] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:52:39] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:52:41] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:52:41] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:52:47] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:52:47] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:52:56] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:52:56] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:53:01] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:53:01] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:53:08] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:53:08] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:55:43] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:55:43] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:59:19] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:59:19] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 18:59:51] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 18:59:51] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 19:05:03] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000001AA1726EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:05:03] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x000001AA19791390>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:05:03] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 19:05:03] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 19:09:56] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x0000026B9AE8EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:09:56] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000026B9AE90450>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:11:28] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000002956680EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:11:28] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000029569551610>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:11:28] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 19:11:28] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 19:12:58] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000001ABE394EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:12:59] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x000001ABE67A3F50>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:12:59] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 19:12:59] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 19:13:20] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x0000016360F6EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:13:20] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000016363D8A290>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:13:20] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 19:13:20] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 19:14:05] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000002D3DDEAEED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:14:05] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x000002D3E0BC0850>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:14:05] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 19:14:05] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 19:15:08] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x00000225A9B9EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:15:08] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x00000225AC9CF550>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:15:08] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 19:15:08] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 19:17:33] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000001C75E1CEED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:17:34] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x000001C760F8F550>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:17:34] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 19:17:34] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 19:57:52] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x0000027C9A12EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:59:31] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x0000019F213EEE90>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 19:59:45] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x00000234A43EEED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:03:17] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x00000278149FEED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:03:18] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:03:18] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:03:18] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:03:18] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:03:18] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:03:18] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:03:18] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:03:18] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:03:37] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:03:37] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:03:37] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:03:37] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:12:57] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000002EB79CBEED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:12:59] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:12:59] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:12:59] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:12:59] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:12:59] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:12:59] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:12:59] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:12:59] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:00] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:00] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:00] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:00] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:01] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:01] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:01] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:01] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:01] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:01] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:01] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:01] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:01] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:01] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:01] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:01] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:02] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:02] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:02] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:02] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:02] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:02] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:02] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:02] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:02] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:02] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:02] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:02] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:03] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:03] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:03] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:03] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:03] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:03] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:04] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:04] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:04] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:04] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:04] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:04] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:05] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:05] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:05] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:05] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:13] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:13] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:14] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:14] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:17] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:17] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:18] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:18] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:18] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:18] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:19] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:19] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:20] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:20] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:20] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:20] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:32] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:32] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:32] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:32] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:47] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:47] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:49] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:49] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:49] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:49] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:13:55] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:13:55] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:13:55] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:13:55] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:14:03] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:14:03] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:14:03] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:14:03] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:15:23] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000001E8853EEED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:15:25] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x000001E888112290>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:15:25] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 20:15:25] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 20:15:27] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:15:27] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:15:27] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:15:27] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 20:15:27] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:16:18] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000001072112EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:16:20] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000010723DC1450>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:16:20] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 20:16:20] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 20:16:25] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:16:25] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:16:25] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:16:25] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 20:16:25] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:16:29] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:16:29] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:16:29] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:16:29] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 20:16:29] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:16:30] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:16:30] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:16:30] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:16:30] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 20:16:30] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:17:03] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000001AB6355C650>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:17:06] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:17:06] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:17:06] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:17:06] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:17:20] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:17:20] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:17:20] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:17:20] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:17:20] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:17:20] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:17:20] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:17:20] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:18:23] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:18:23] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:18:23] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:18:23] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:18:24] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:18:24] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:18:24] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:18:24] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:20:32] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x0000025F8A46EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:20:34] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000025F8D0C2150>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:20:34] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 20:20:34] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 20:22:07] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000002185CBBEED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:22:11] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x00000209A158EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:22:13] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x00000209A43C3950>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 20:22:13] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 20:22:13] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 20:22:21] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:22:21] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:22:21] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 20:22:21] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:22:24] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 20:22:24] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 20:22:24] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 20:22:24] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:01:31] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x0000021BE794EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:01:32] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000021BEA5EF0D0>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:01:32] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:01:32] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:05:41] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x0000018E5271EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:06:55] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x0000028A72BDEED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:06:58] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:06:58] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:06:58] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:06:58] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:06:58] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A72BDF110>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:06:58] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:06:58] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:06:58] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:07:03] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:07:03] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:07:03] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:07:03] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:07:03] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A72BDF110>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:07:03] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:07:03] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:07:03] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:07:03] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:07:03] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:07:03] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:07:03] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:07:03] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A72BDF110>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:07:03] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:07:03] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:07:03] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:07:04] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:07:04] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:07:04] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:07:04] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:07:04] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A72BDF110>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:07:04] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:07:04] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:07:04] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:07:04] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:07:04] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:07:04] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:07:04] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:07:04] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A75893D50>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:07:04] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:07:04] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:07:04] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:08:43] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:08:43] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:08:43] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:08:43] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:08:43] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A72BDF110>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:08:43] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:08:43] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:08:43] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:08:43] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:08:43] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:08:43] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:08:43] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:08:43] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A72BDF110>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:08:43] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:08:43] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:08:43] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:08:44] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:08:44] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:08:44] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:08:44] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:08:44] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A72BDF110>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:08:44] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:08:44] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:08:44] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:08:44] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:08:44] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:08:44] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:08:44] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:08:44] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A758B3550>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:08:44] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:08:44] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:08:44] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:08:44] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:08:44] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:08:44] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:08:44] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:08:44] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A758B3550>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:08:44] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:08:44] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:08:44] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:08:45] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:08:45] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:08:45] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:08:45] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:08:45] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A75891910>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:08:45] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:08:45] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:08:45] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:08:45] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:08:45] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:08:45] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:08:45] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:08:45] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000028A75891910>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:08:45] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:08:45] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:08:45] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:09:35] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:09:35] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:09:38] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000001DDEE3EEED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:09:39] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:09:39] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:09:39] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:09:39] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:09:39] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x000001DDEE3EF110>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:09:39] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:09:39] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:09:39] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:09:41] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:09:41] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:09:41] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:09:41] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:09:41] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x000001DDF08B8250>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:09:41] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:09:41] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:09:41] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:09:43] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:09:43] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:09:43] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:09:43] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:09:43] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x000001DDF10B7F50>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:09:43] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:09:43] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:09:43] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:09:47] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000001EAFA09EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:09:54] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:09:54] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:09:54] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:09:54] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:09:54] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x000001EAFCDD06D0>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:09:54] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:09:54] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:09:54] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:10:32] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x0000022750A3EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:12:18] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:12:18] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:12:18] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:12:18] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:12:18] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x00000227537A3B10>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:12:18] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:12:18] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:12:18] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:12:29] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:12:29] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:12:29] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:12:29] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:12:29] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x00000227537561D0>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:12:29] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:12:29] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:12:29] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:17:19] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:17:19] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:17:20] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:17:20] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:17:26] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x0000025E57E6EED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:17:28] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:17:28] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:17:28] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:17:28] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:17:28] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x0000025E5AB4C650>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:17:28] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:17:28] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:17:28] ButtonController.isClicked | Bouton gauche cliqué | clique=False
+[2026-02-03 21:18:22] PageView.__init__ | argument initialisation | self=<Views.WelcomePageView.WelcomPageView object at 0x000001AFB1FCEED0>, name=Menu, width=800, height=800, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:18:23] ButtonController.isClicked | Bouton gauche cliqué | clique=True
+[2026-02-03 21:18:23] ButtonController.handleEvents | entré dans le if self.isClicked(mouse_pos):
+[2026-02-03 21:18:23] ButtonController.handleClick | entré dans la fonction
+[2026-02-03 21:18:23] ButtonController.handleClick | lancement de la page de jeux
+[2026-02-03 21:18:23] PageView.__init__ | argument initialisation | self=<Views.MainPageView.MainPageView object at 0x000001AFB4D11110>, name=Guitaroholic, width=1920, height=1080, RESIZABLE=16, backgroud_image=Game/Assets/welcomePage.png
+[2026-02-03 21:18:23] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 21:18:23] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 21:18:23] ButtonController.isClicked | Bouton gauche cliqué | clique=False
