@@ -38,6 +38,6 @@ class PlayerController:
             # BOIRE 
             if event.key == pygame.K_b:
                 
-                self.player.drink(self.player.getSelectedBottle)
+                self.player.drink(self.player.getSelectedBottle())
                 
                 Logger.debug("PlayerController.handleInput",f"🍺 Glouglou ! Ivre à {self.player.getDrunkenness()}%")

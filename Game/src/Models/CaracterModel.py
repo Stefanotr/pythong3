@@ -109,6 +109,7 @@ class CaracterModel:
         try:
             if not isinstance(selected_bottle, BottleModel):
                 raise TypeError("selected_bottle is not a BottleModel")
+            self._selected_bottle = selected_bottle
         except Exception as e:
             Logger.error("CaracterModel.setSelectedBottle",e)
 
@@ -135,6 +136,8 @@ class CaracterModel:
 
     def drink(self, selected_bottle):
 
+        Logger.debug("CaracterModel.drink",selected_bottle)
+
         try:
             if self.getType() != "PLAYER":
                 raise TypeError("Caracter is not PLAYER")
@@ -153,7 +156,7 @@ class CaracterModel:
         
         self.setDrunkenness(self.getDrunkenness() + selected_bottle.getAlcoholLevel())
 
-        if self.getDrunkenness > 100:
+        if self.getDrunkenness() > 100:
             self.setDrunkenness(100)
 
         
