@@ -1,6 +1,6 @@
 import pygame
 
-class ButtonModel:
+class ButtonView:
     """Classe réutilisable pour créer des boutons cliquables"""
     
     def __init__(self, image_path, position):

@@ -14,18 +14,3 @@ class ShopPageView():
         """Affiche le fond du shop"""
         self.screen.blit(self.background, (0, 0))
     
-    def run(self):
-        """Boucle principale quand on lance WelcomePageView directement"""
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-            self.screen.blit(self.background, (0, 0))
-            pygame.display.flip()
-
-
-if __name__ == "__main__":
-    menu = ShopPageView()
-    menu.run()

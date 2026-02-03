@@ -3,6 +3,7 @@ from Models.CaracterModel import CaracterModel
 from Controllers.PlayerController import PlayerController
 from Views.CaracterView import CaracterView
 from Views.MapView import MapView
+from Views.PageView import PageView
 from Models.BottleModel import BottleModel
 from Models.PlayerModel import PlayerModel
 from Models.BossModel import BossModel
@@ -10,20 +11,13 @@ from Models.MapModel import MapModel
 from Models.TileModel import TileModel
 
 
-class MainPageView():
+class MainPageView(PageView):
 
-    def __init__(self):
+    def __init__(self,name,width=800, height=800, background_image="Game/Assets/welcomePage.png"):
+        super().__init__(name,width,height,background_image)
 
         pygame.init()
 
-        
-
-        screen_width=1920
-        screen_height=1072
-        
-
-        self.screen = pygame.display.set_mode((screen_width,screen_height),pygame.FULLSCREEN)
-        pygame.display.set_caption("Guitaroholic - Integration Test")
 
         johnny = PlayerModel("Johnny Fuzz",60,60)
         gros_bill=BossModel("Gros Bill",80,80)
@@ -54,7 +48,7 @@ class MainPageView():
                     running = False
                 controller.handleInput(event)
             
-            self.screen.fill((30, 30, 30))
+            self.screen.blit(self.background,(0, 0))
             MapView(self.screen,map)
 
             player_view.drawCaracter(self.screen, johnny)
