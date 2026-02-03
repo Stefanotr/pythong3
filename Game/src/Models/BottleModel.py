@@ -1,42 +1,59 @@
-import random
-
+from Utils.Logger import Logger
 
 class BottleModel:
 
-    def __init__(self, nom, drunkenness, bonus_damage=0, accuracy_penalty=0, risque_coma=0):
-        self._nom = nom
-        self._drunkenness = drunkenness
+    def __init__(self, name, alcohol_level=30, bonus_damage=0, accuracy_penalty=0):
+        self._name = name
         self._accuracy_penalty = accuracy_penalty
         self._bonus_damage=bonus_damage
-        self._risque_coma = risque_coma  
+        self._alcohol_level=alcohol_level
 
 
-    def drink(self, player):
+    def getName(self):
+        return self._name
 
+
+    def setName(self, name):
         try:
-            if self.getType() != "PLAYER":
-                raise TypeError
-        except TypeError:
-            print("Error.drink.BottleModel :Caracter is not PLAYER")
-            
+            if not name:
+                raise ValueError("Bottle name can't be NULL")
+            self._name = name
+        except Exception as e:
+            Logger.error("BottleModel.setName",e)
 
-        print(f"{player.nom} boit {self.nom} ")
-
-        
-        player.drunkenness += self.drunkenness
-
-        if player.drunkenness > 100:
-            player.drunkenness= 100
-
-        
-        player.bonus_damage += self.bonus_damage
-        player.accuracy_penalty += self.accuracy_penalty
+  
+    def getAlcoholLevel(self):
+        return self._alcohol_level
 
     
-        tirage = random.randint(1, 100)
+    def setAlcoholLevel(self, alcohol_level):
+        try:
+            if alcohol_level < 0:
+                raise ValueError("alcohol_level can't be negative")
+            self._alcohol_level = alcohol_level
+        except Exception as e:
+            Logger.error("BottleModel.setAlcoholLevel",e)
 
-        if tirage <= self.risque_coma:
-            print("ALCOHOLIC COMA !")
-            player.pv = 0
 
+    def getBonusDamage(self):
+        return self._bonus_damage
+
+
+    def setBonusDamage(self, bonus_damage):
+        self._bonus_damage = bonus_damage
+
+
+    def getAccuracyPenalty(self):
+        return self._accuracy_penalty
+
+    def setAccuracyPenalty(self, accuracy_penalty):
+        self._accuracy_penalty = accuracy_penalty
+
+
+    
+
+        
+
+
+    
         
