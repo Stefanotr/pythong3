@@ -73,7 +73,7 @@ class CombatModel:
             "paralyzed": 0,
             "bleeding": 0,
             "stunned": 0,
-            "disgusted": 0  # Pour l'attaque Dégueulando
+            "disgusted": 0  # For Dégueulando attack
         }
         
         Logger.debug("CombatModel.__init__", 

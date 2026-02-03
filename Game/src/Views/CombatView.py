@@ -401,57 +401,115 @@ class CombatView:
         screen.blit(indicator_surf, (indicator_x, indicator_y))
     
     def draw_combat_end(self, screen, combat_model):
-        """Dessiner l'écran de fin de combat"""
-        # Overlay semi-transparent
-        overlay = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 180))
-        screen.blit(overlay, (0, 0))
+        """
+        Draw the combat end screen.
+        Displays victory or defeat message based on combat result.
         
-        # Message de victoire/défaite
-        if combat_model.getWinner() == "PLAYER":
-            message = "🏆 VICTOIRE ! 🏆"
-            color = self.player_color
-            sub_message = f"Tu as vaincu {combat_model.getEnemy().getName()} !"
-        else:
-            message = "💀 DÉFAITE 💀"
-            color = self.enemy_color
-            sub_message = f"{combat_model.getEnemy().getName()} t'a mis K.O. !"
-        
-        # Message principal
-        msg_surf = self.title_font.render(message, True, color)
-        msg_shadow = self.title_font.render(message, True, (0, 0, 0))
-        
-        msg_x = self.screen_width // 2 - msg_surf.get_width() // 2
-        msg_y = self.screen_height // 2 - 100
-        
-        screen.blit(msg_shadow, (msg_x + 4, msg_y + 4))
-        screen.blit(msg_surf, (msg_x, msg_y))
-        
-        # Sous-message
-        sub_surf = self.font.render(sub_message, True, (255, 255, 255))
-        sub_x = self.screen_width // 2 - sub_surf.get_width() // 2
-        screen.blit(sub_surf, (sub_x, msg_y + 80))
-        
-        # Instructions
-        instruction = "Appuie sur ESPACE pour continuer"
-        inst_surf = self.small_font.render(instruction, True, (200, 200, 200))
-        inst_x = self.screen_width // 2 - inst_surf.get_width() // 2
-        screen.blit(inst_surf, (inst_x, msg_y + 150))
+        Args:
+            screen: Pygame surface to draw on
+            combat_model: CombatModel instance containing combat state
+        """
+        try:
+            # Semi-transparent overlay
+            try:
+                overlay = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
+                overlay.fill((0, 0, 0, 180))
+                screen.blit(overlay, (0, 0))
+            except Exception as e:
+                Logger.error("CombatView.draw_combat_end", e)
+            
+            # Victory/defeat message
+            try:
+                if combat_model.getWinner() == "PLAYER":
+                    message = "🏆 VICTOIRE ! 🏆"
+                    color = self.player_color
+                    sub_message = f"You defeated {combat_model.getEnemy().getName()}!"
+                else:
+                    message = "💀 DÉFAITE 💀"
+                    color = self.enemy_color
+                    sub_message = f"{combat_model.getEnemy().getName()} knocked you out!"
+            except Exception as e:
+                Logger.error("CombatView.draw_combat_end", e)
+                message = "COMBAT ENDED"
+                color = (255, 255, 255)
+                sub_message = ""
+            
+            # Main message
+            try:
+                msg_surf = self.title_font.render(message, True, color)
+                msg_shadow = self.title_font.render(message, True, (0, 0, 0))
+                
+                msg_x = self.screen_width // 2 - msg_surf.get_width() // 2
+                msg_y = self.screen_height // 2 - 100
+                
+                screen.blit(msg_shadow, (msg_x + 4, msg_y + 4))
+                screen.blit(msg_surf, (msg_x, msg_y))
+            except Exception as e:
+                Logger.error("CombatView.draw_combat_end", e)
+            
+            # Sub-message
+            try:
+                if sub_message:
+                    sub_surf = self.font.render(sub_message, True, (255, 255, 255))
+                    sub_x = self.screen_width // 2 - sub_surf.get_width() // 2
+                    screen.blit(sub_surf, (sub_x, msg_y + 80))
+            except Exception as e:
+                Logger.error("CombatView.draw_combat_end", e)
+            
+            # Instructions
+            try:
+                instruction = "Press SPACE to continue"
+                inst_surf = self.small_font.render(instruction, True, (200, 200, 200))
+                inst_x = self.screen_width // 2 - inst_surf.get_width() // 2
+                screen.blit(inst_surf, (inst_x, msg_y + 150))
+            except Exception as e:
+                Logger.error("CombatView.draw_combat_end", e)
+                
+        except Exception as e:
+            Logger.error("CombatView.draw_combat_end", e)
     
     def draw_panel(self, screen, x, y, width, height, accent_color):
-        """Dessiner un panel avec bordure"""
-        # Fond
-        pygame.draw.rect(screen, self.panel_color, (x, y, width, height), border_radius=12)
+        """
+        Draw a panel with border.
         
-        # Bordure
-        pygame.draw.rect(screen, accent_color, (x, y, width, height), 3, border_radius=12)
+        Args:
+            screen: Pygame surface to draw on
+            x: X position of panel
+            y: Y position of panel
+            width: Panel width
+            height: Panel height
+            accent_color: Border accent color
+        """
+        try:
+            # Background
+            pygame.draw.rect(screen, self.panel_color, (x, y, width, height), border_radius=12)
+            
+            # Border
+            pygame.draw.rect(screen, accent_color, (x, y, width, height), 3, border_radius=12)
+        except Exception as e:
+            Logger.error("CombatView.draw_panel", e)
     
     def draw_flash(self, screen):
-        """Dessiner un flash blanc pour les effets"""
-        flash_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
-        flash_surf.fill((255, 255, 255, self.flash_alpha))
-        screen.blit(flash_surf, (0, 0))
+        """
+        Draw a white flash effect.
+        
+        Args:
+            screen: Pygame surface to draw on
+        """
+        try:
+            flash_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
+            flash_surf.fill((255, 255, 255, self.flash_alpha))
+            screen.blit(flash_surf, (0, 0))
+        except Exception as e:
+            Logger.error("CombatView.draw_flash", e)
     
     def trigger_flash(self):
-        """Déclencher un flash"""
-        self.flash_alpha = 100
+        """
+        Trigger a flash effect.
+        Sets flash alpha to maximum value.
+        """
+        try:
+            self.flash_alpha = 100
+            Logger.debug("CombatView.trigger_flash", "Flash effect triggered")
+        except Exception as e:
+            Logger.error("CombatView.trigger_flash", e)

@@ -220,7 +220,7 @@ class RhythmView:
             pygame.draw.rect(screen, (20, 20, 20), (x - 2, y - 2, width + 4, height + 4), border_radius=8)
             pygame.draw.rect(screen, (40, 40, 40), (x, y, width, height), border_radius=6)
             
-            # Remplissage avec dégradé
+            # Fill with gradient
             filled_width = int(width * ratio)
             
             if ratio > 0.5:
@@ -243,15 +243,15 @@ class RhythmView:
             label_shadow = self.font.render(label, True, (0, 0, 0))
             
             if is_boss:
-                # Label à gauche pour le boss
+                # Label on the left for boss
                 screen.blit(label_shadow, (x - label_surf.get_width() - 12, y + height // 2 - label_surf.get_height() // 2 + 2))
                 screen.blit(label_surf, (x - label_surf.get_width() - 10, y + height // 2 - label_surf.get_height() // 2))
             else:
-                # Label en haut pour le joueur
+                # Label on top for player
                 screen.blit(label_shadow, (x + 2, y - 22))
                 screen.blit(label_surf, (x, y - 20))
             
-            # Texte HP
+            # HP text
             hp_text = self.font.render(f"{current}/{maximum}", True, (255, 255, 255))
             hp_shadow = self.font.render(f"{current}/{maximum}", True, (0, 0, 0))
             text_x = x + width // 2 - hp_text.get_width() // 2
@@ -279,55 +279,55 @@ class RhythmView:
                 screen.blit(self.background_image, (0, 0))
                 screen.blit(self.overlay, (0, 0))
             else:
-                # Dégradé simple sans animation
+                # Simple gradient without animation
                 for y in range(self.screen_height):
-                    shade = int(20 + y * 0.02)
-                    pygame.draw.line(screen, (shade, shade // 2, shade // 3), (0, y), (self.screen_width, y))
-            
-            # --- B. MANCHE DE GUITARE (semi-transparent) ---
-            guitar_rect = pygame.Rect(self.guitar_start - 15, 0, self.guitar_width + 30, self.screen_height)
-            
-            # Surface semi-transparente pour le manche
-            guitar_surf = pygame.Surface((guitar_rect.width, guitar_rect.height), pygame.SRCALPHA)
-            
-            # Dégradé sur le manche
-            for i in range(guitar_rect.width):
-                ratio = i / guitar_rect.width
-                alpha = int(120 + ratio * 40)
-                color_val = int(15 + ratio * 10)
-                pygame.draw.line(guitar_surf, (color_val, color_val, color_val + 5, alpha), 
-                            (i, 0), (i, guitar_rect.height))
-            
-            screen.blit(guitar_surf, guitar_rect)
-            
-            # Bordure subtile
-            pygame.draw.rect(screen, (80, 120, 180, 200), guitar_rect, 2, border_radius=10)
-            
-            # --- C. CORDES ---
-            for i, x in enumerate(self.lane_x):
-                color = self.lane_colors[i]
+                        shade = int(20 + y * 0.02)
+                        pygame.draw.line(screen, (shade, shade // 2, shade // 3), (0, y), (self.screen_width, y))
                 
-                # Lueur simple
-                glow_surf = pygame.Surface((10, self.screen_height), pygame.SRCALPHA)
-                for t in range(5, 0, -1):
-                    alpha = int(40 * (t / 5))
-                    glow_color = (*color, alpha)
-                    pygame.draw.line(glow_surf, glow_color, (5, 0), (5, self.screen_height), t)
-                screen.blit(glow_surf, (x - 5, 0))
+                # --- B. MANCHE DE GUITARE (semi-transparent) ---
+                guitar_rect = pygame.Rect(self.guitar_start - 15, 0, self.guitar_width + 30, self.screen_height)
                 
-                # Corde principale
-                pygame.draw.line(screen, color, (x, 0), (x, self.screen_height), 2)
+                # Surface semi-transparente pour le manche
+                guitar_surf = pygame.Surface((guitar_rect.width, guitar_rect.height), pygame.SRCALPHA)
                 
-                # Cercle de cible
-                pygame.draw.circle(screen, (0, 0, 0), (x, rhythm_model.hit_line_y), 32)
-                pygame.draw.circle(screen, color, (x, rhythm_model.hit_line_y), 28, 3)
-                pygame.draw.circle(screen, tuple(c // 3 for c in color), (x, rhythm_model.hit_line_y), 20, 2)
-            
-            # --- D. LIGNE DE FRAPPE ---
-            hit_line_y = rhythm_model.hit_line_y
-            pygame.draw.line(screen, (255, 255, 255), 
-                            (self.guitar_start - 15, hit_line_y), 
-                            (self.guitar_start + self.guitar_width + 15, hit_line_y), 3)
+                # Gradient on the neck
+                for i in range(guitar_rect.width):
+                    ratio = i / guitar_rect.width
+                    alpha = int(120 + ratio * 40)
+                    color_val = int(15 + ratio * 10)
+                    pygame.draw.line(guitar_surf, (color_val, color_val, color_val + 5, alpha), 
+                                (i, 0), (i, guitar_rect.height))
+                
+                screen.blit(guitar_surf, guitar_rect)
+                
+                # Bordure subtile
+                pygame.draw.rect(screen, (80, 120, 180, 200), guitar_rect, 2, border_radius=10)
+                
+                # --- C. CORDES ---
+                for i, x in enumerate(self.lane_x):
+                    color = self.lane_colors[i]
+                    
+                    # Lueur simple
+                    glow_surf = pygame.Surface((10, self.screen_height), pygame.SRCALPHA)
+                    for t in range(5, 0, -1):
+                        alpha = int(40 * (t / 5))
+                        glow_color = (*color, alpha)
+                        pygame.draw.line(glow_surf, glow_color, (5, 0), (5, self.screen_height), t)
+                    screen.blit(glow_surf, (x - 5, 0))
+                    
+                    # Corde principale
+                    pygame.draw.line(screen, color, (x, 0), (x, self.screen_height), 2)
+                    
+                    # Cercle de cible
+                    pygame.draw.circle(screen, (0, 0, 0), (x, rhythm_model.hit_line_y), 32)
+                    pygame.draw.circle(screen, color, (x, rhythm_model.hit_line_y), 28, 3)
+                    pygame.draw.circle(screen, tuple(c // 3 for c in color), (x, rhythm_model.hit_line_y), 20, 2)
+                
+                # --- D. LIGNE DE FRAPPE ---
+                hit_line_y = rhythm_model.hit_line_y
+                pygame.draw.line(screen, (255, 255, 255), 
+                                (self.guitar_start - 15, hit_line_y), 
+                                (self.guitar_start + self.guitar_width + 15, hit_line_y), 3)
             
             # --- E. NOTES ---
             try:
@@ -386,18 +386,18 @@ class RhythmView:
                 except Exception as e:
                     Logger.error("RhythmView.draw", e)
             
-            # --- G. HUD SIMPLIFIÉ ---
+            # --- G. SIMPLIFIED HUD ---
             hud_height = int(self.screen_height * 0.12)
             
-            # Panel semi-transparent
+            # Semi-transparent panel
             hud_surf = pygame.Surface((self.screen_width, hud_height), pygame.SRCALPHA)
             pygame.draw.rect(hud_surf, (10, 10, 20, 180), (0, 0, self.screen_width, hud_height))
             screen.blit(hud_surf, (0, 0))
             
-            # Bordure
+            # Border
             pygame.draw.line(screen, (80, 120, 180), (0, hud_height), (self.screen_width, hud_height), 2)
             
-            # === GAUCHE : HP JOUEUR ===
+            # === LEFT: PLAYER HP ===
             player_hp_width = int(self.screen_width * 0.18)
             self.draw_health_bar(
                 screen, 
@@ -413,7 +413,7 @@ class RhythmView:
                 is_boss=False
             )
             
-            # === MILIEU : SCORE ===
+            # === CENTER: SCORE ===
             score_value = f"{rhythm_model.score:,}"
             score_text = self.score_font.render(score_value, True, (255, 215, 0))
             score_shadow = self.score_font.render(score_value, True, (100, 80, 0))
@@ -426,12 +426,12 @@ class RhythmView:
             score_label = self.font.render("SCORE", True, (200, 200, 200))
             screen.blit(score_label, (score_rect.centerx - score_label.get_width() // 2, 8))
             
-            # === DROITE : HP BOSS ===
+            # === RIGHT: BOSS HP ===
             boss_hp_width = int(self.screen_width * 0.18)
             boss_hp_x = self.screen_width - boss_hp_width - 20
             
-            # Simuler un boss (tu peux remplacer par le vrai modèle du boss)
-            boss_hp_current = 75  # À remplacer par rhythm_model.boss.getHealth()
+            # Simulate a boss (you can replace with the actual boss model)
+            boss_hp_current = 75  # To be replaced with rhythm_model.boss.getHealth()
             boss_hp_max = 100
             
             self.draw_health_bar(

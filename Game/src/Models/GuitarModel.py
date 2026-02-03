@@ -42,7 +42,7 @@ class GuitarModel:
         self._name = name
         self._base_damage = base_damage
         self._special_effect = special_effect  # "paralyze", "bleed", "stun"
-        self._effect_chance = effect_chance  # Probabilité de l'effet (0-100)
+        self._effect_chance = effect_chance  # Effect probability (0-100)
         
     def getName(self):
         return self._name

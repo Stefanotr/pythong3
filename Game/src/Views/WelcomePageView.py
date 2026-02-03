@@ -10,7 +10,7 @@ from Utils.Logger import Logger
 from Controllers.ButtonController import ButtonController
 from Views.PageView import PageView
 from Views.ButtonView import ButtonView
-from Views.MainPageView import MainPageView
+from Views.Act1View import Act1View
 
 
 # === WELCOME PAGE VIEW CLASS ===
@@ -111,10 +111,10 @@ class WelcomPageView(PageView):
                             for button_controller in self.buttons_controllers:
                                 action = button_controller.handleEvents(event)
                                 if action == "start_game":
-                                    # Exit welcome page loop and start main game
+                                    # Exit welcome page loop and start Act 1
                                     running = False
-                                    Logger.debug("WelcomPageView.run", "Start game action received, transitioning to MainPageView")
-                                    self._startMainGame()
+                                    Logger.debug("WelcomPageView.run", "Start game action received, transitioning to Act1View")
+                                    self._startAct1()
                                     return
                                 elif action == "quit_game":
                                     # Quit game (handled in ButtonController)
@@ -144,25 +144,65 @@ class WelcomPageView(PageView):
     
     # === GAME TRANSITION ===
     
-    def _startMainGame(self):
+    def _startAct1(self):
         """
-        Transition to the main game view.
-        Creates and runs the MainPageView.
+        Transition to Act 1 view.
+        Creates and runs the Act1View with proper screen initialization.
         """
         try:
-            Logger.debug("WelcomPageView._startMainGame", "Starting main game")
+            Logger.debug("WelcomPageView._startAct1", "Starting Act 1")
             
             # Close current window
-            pygame.quit()
+            try:
+                pygame.quit()
+                Logger.debug("WelcomPageView._startAct1", "Previous window closed")
+            except Exception as e:
+                Logger.error("WelcomPageView._startAct1", e)
             
-            # Initialize pygame for main game
-            pygame.init()
+            # Initialize pygame for Act 1
+            try:
+                pygame.init()
+                Logger.debug("WelcomPageView._startAct1", "Pygame reinitialized")
+            except Exception as e:
+                Logger.error("WelcomPageView._startAct1", e)
+                raise
             
-            # Create and run main game view
-            game_page = MainPageView("Guitaroholic", 1920, 1080, pygame.RESIZABLE)
-            game_page.run()
+            # Get screen info and create resizable window
+            try:
+                screen_info = pygame.display.Info()
+                screen = pygame.display.set_mode(
+                    (screen_info.current_w, screen_info.current_h), 
+                    pygame.RESIZABLE
+                )
+                pygame.display.set_caption("Guitaroholic - Act 1")
+                Logger.debug("WelcomPageView._startAct1", "Screen created for Act 1", 
+                           width=screen_info.current_w, height=screen_info.current_h)
+            except Exception as e:
+                Logger.error("WelcomPageView._startAct1", e)
+                raise
+            
+            # Create and run Act 1 view
+            try:
+                act1_view = Act1View(screen)
+                result = act1_view.run()
+                Logger.debug("WelcomPageView._startAct1", "Act 1 completed", result=result)
+                
+                # Handle Act 1 result (for future expansion)
+                if result == "ACT2":
+                    Logger.debug("WelcomPageView._startAct1", "Act 2 should start (not yet implemented)")
+                elif result == "GAME_OVER":
+                    Logger.debug("WelcomPageView._startAct1", "Game over")
+                elif result == "QUIT":
+                    Logger.debug("WelcomPageView._startAct1", "Quit requested")
+                    
+            except Exception as e:
+                Logger.error("WelcomPageView._startAct1", e)
+                raise
             
         except Exception as e:
-            Logger.error("WelcomPageView._startMainGame", e)
-            pygame.quit()
+            Logger.error("WelcomPageView._startAct1", e)
+            try:
+                pygame.quit()
+            except Exception:
+                pass
             raise
