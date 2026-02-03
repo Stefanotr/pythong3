@@ -1,0 +1,231 @@
+
+============================================================
+Date        : 2026-02-03 02:01:50
+Fonction    : CaracterModel.drink
+Erreur      : TypeError
+Message     : selected_bottle is not a BottleModel
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 143, in drink
+    raise TypeError("selected_bottle is not a BottleModel")
+TypeError: selected_bottle is not a BottleModel
+
+============================================================
+Date        : 2026-02-03 02:03:31
+Fonction    : CaracterModel.drink
+Erreur      : TypeError
+Message     : selected_bottle is not a BottleModel
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 143, in drink
+    raise TypeError("selected_bottle is not a BottleModel")
+TypeError: selected_bottle is not a BottleModel
+
+============================================================
+Date        : 2026-02-03 02:05:53
+Fonction    : CaracterModel.drink
+Erreur      : TypeError
+Message     : selected_bottle is not a BottleModel
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 143, in drink
+    raise TypeError("selected_bottle is not a BottleModel")
+TypeError: selected_bottle is not a BottleModel
+
+============================================================
+Date        : 2026-02-03 02:08:39
+Fonction    : CaracterModel.drink
+Erreur      : TypeError
+Message     : selected_bottle is not a BottleModel
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 145, in drink
+    raise TypeError("selected_bottle is not a BottleModel")
+TypeError: selected_bottle is not a BottleModel
+
+============================================================
+Date        : 2026-02-03 02:09:41
+Fonction    : CaracterModel.drink
+Erreur      : TypeError
+Message     : selected_bottle is not a BottleModel
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 145, in drink
+    raise TypeError("selected_bottle is not a BottleModel")
+TypeError: selected_bottle is not a BottleModel
+
+============================================================
+Date        : 2026-02-03 02:12:43
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:43
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:43
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:44
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:44
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:44
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:44
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:44
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:44
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:45
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:45
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:45
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:45
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:45
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:46
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
+
+============================================================
+Date        : 2026-02-03 02:12:46
+Fonction    : CaracterModel.setAccuracy
+Erreur      : ValueError
+Message     : Accuracy can't be negative
+Traceback   :
+Traceback (most recent call last):
+  File "c:\Users\loulo\Documents\GitHub\pythong3\Game\src\Models\CaracterModel.py", line 70, in setAccuracy
+    raise ValueError("Accuracy can't be negative")
+ValueError: Accuracy can't be negative
