@@ -1,108 +1,131 @@
+"""
+ButtonController Module
+
+Handles button click events and actions for UI buttons.
+Manages transitions between game states and user interactions.
+"""
+
 import pygame
 import sys
-import os
-
-# Ajouter le chemin racine au PYTHONPATH pour les imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-root_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
-sys.path.insert(0, root_dir)
-
-from Game.src.Views.WelcomePageView import WelcomPageView
+from Utils.Logger import Logger
 
 
-class Button:
-    """Classe réutilisable pour créer des boutons cliquables"""
+# === BUTTON CONTROLLER CLASS ===
+
+class ButtonController:
+    """
+    Reusable controller class for creating clickable buttons.
+    Handles button click detection and executes associated actions.
+    """
     
-    def __init__(self, image_path, position, action=None):
+    def __init__(self, button, action=None):
         """
+        Initialize the button controller.
+        
         Args:
-            image_path: Chemin vers l'image du bouton
-            position: Tuple (x, y) pour la position du bouton
-            action: Fonction à exécuter quand le bouton est cliqué
+            button: ButtonView instance to control
+            action: String identifier for the action (e.g., "start_game", "quit_game")
         """
-        self.image = pygame.image.load(image_path)
-        self.image = pygame.transform.scale(self.image, (200, 80))
-        self.rect = self.image.get_rect(center=position)
-        self.action = action
+        try:
+            self.action = action
+            self.button = button
+            Logger.debug("ButtonController.__init__", "Button controller initialized", action=action)
+        except Exception as e:
+            Logger.error("ButtonController.__init__", e)
+            raise
     
-    def draw(self, screen):
-        """Affiche le bouton à l'écran"""
-        screen.blit(self.image, self.rect)
+    # === CLICK DETECTION ===
     
-    def is_clicked(self, mouse_pos):
-        """Vérifie si le bouton est cliqué"""
-        return self.rect.collidepoint(mouse_pos)
-    
-    def handle_click(self):
-        """Exécute l'action associée au bouton"""
-        if self.action:
-            self.action()
-
-
-class MenuController:
-    def __init__(self):
-        self.view = WelcomPageView()
-        self.running = True
+    def isClicked(self, mouse_pos):
+        """
+        Check if the button is clicked at the given mouse position.
         
-        # Créer les boutons avec leurs actions
-        self.buttons = []
-        
-        # Bouton Jouer (au centre-haut)
-        self.play_button = Button(
-            image_path='Game/Assets/buttonPlay.png',  
-            position=(400, 500),
-            action=self.start_game
-        )
-        self.buttons.append(self.play_button)
-        
-        # Bouton Quitter (en bas)
-        self.quit_button = Button(
-            image_path='Game/Assets/buttonQuit.png',
-            position=(400, 700),
-            action=self.quit_game
-        )
-        self.buttons.append(self.quit_button)
+        Args:
+            mouse_pos: Tuple (x, y) representing mouse position
+            
+        Returns:
+            bool: True if button is clicked, False otherwise
+        """
+        try:
+            is_clicked = self.button.rect.collidepoint(mouse_pos)
+            Logger.debug("ButtonController.isClicked", "Button click checked", clicked=is_clicked)
+            return is_clicked
+        except Exception as e:
+            Logger.error("ButtonController.isClicked", e)
+            return False
     
-    def handle_events(self):
-        """Gère tous les événements du menu"""
-        for event in pygame.event.get():
+    # === ACTION HANDLING ===
+    
+    def handleClick(self):
+        """
+        Execute the action associated with the button.
+        
+        Returns:
+            str: Action identifier ("start_game", "quit_game", or None)
+        """
+        try:
+            Logger.debug("ButtonController.handleClick", "Button click handled", action=self.action)
+            
+            if self.action == "start_game":
+                Logger.debug("ButtonController.handleClick", "Start game action triggered")
+                return "start_game"
+            elif self.action == "quit_game":
+                Logger.debug("ButtonController.handleClick", "Quit game action triggered")
+                self.quitGame()
+                return "quit_game"
+            
+            return None
+        except Exception as e:
+            Logger.error("ButtonController.handleClick", e)
+            return None
+    
+    # === EVENT HANDLING ===
+    
+    def handleEvents(self, event):
+        """
+        Handle all menu events, including button clicks.
+        
+        Args:
+            event: Pygame event object
+            
+        Returns:
+            str: Action identifier if button was clicked, None otherwise
+        """
+        try:
             if event.type == pygame.QUIT:
-                self.quit_game()
+                self.quitGame()
+                return "quit_game"
             
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Clic gauche
+                if event.button == 1:  # Left click
                     mouse_pos = pygame.mouse.get_pos()
                     
-                    # Vérifier chaque bouton
-                    for button in self.buttons:
-                        if button.is_clicked(mouse_pos):
-                            button.handle_click()
-    
-    def quit_game(self):
-        """Quitte le jeu proprement"""
-        pygame.quit()
-        sys.exit()
-    
-    def start_game(self):
-        """Démarre le jeu (fonction exemple)"""
-        print("Lancement du jeu...")
-        # Ici tu pourras changer d'état de jeu
-    
-    def run(self):
-        """Boucle principale du menu"""
-        while self.running:
-            self.handle_events()
+                    if self.isClicked(mouse_pos):
+                        Logger.debug("ButtonController.handleEvents", "Button clicked, handling action")
+                        return self.handleClick()
             
-            # Afficher le fond
-            self.view.draw()
-            
-            # Afficher tous les boutons
-            for button in self.buttons:
-                button.draw(self.view.screen)
-            
-            pygame.display.flip()
+            return None
+        except Exception as e:
+            Logger.error("ButtonController.handleEvents", e)
+            return None
+
+    # === GAME STATE ACTIONS ===
+    
+    def quitGame(self):
+        """
+        Quit the game properly.
+        Closes pygame and exits the application.
+        """
+        try:
+            Logger.debug("ButtonController.quitGame", "Quitting game")
+            pygame.quit()
+            sys.exit()
+        except Exception as e:
+            Logger.error("ButtonController.quitGame", e)
+            sys.exit(1)
+    
 
 
-if __name__ == "__main__":
-    menu = MenuController()
-    menu.run()
+
+
+    

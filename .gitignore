@@ -1,2 +1,5 @@
+# Ignore all files inside logs directory (but keep the directory itself)
+Game/logs/*.txt
+Game/logs/*.log
 Game/logs/*
-!.gitkeep
+!Game/logs/.gitkeep

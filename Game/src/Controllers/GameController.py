@@ -1,84 +1,173 @@
+"""
+GameController Module
+
+Main game controller managing the overall game flow.
+Handles state transitions between menu, acts, game over, and quit states.
+"""
+
 import pygame
 from MainMenuView import MainMenuView
 from Act1View import Act1View
 from Utils.Logger import Logger
 
+
+# === GAME CONTROLLER CLASS ===
+
 class GameController:
     """
-    Contrôleur principal qui gère le flux du jeu
-    (Menu → Acte 1 → Acte 2 → Acte 3)
+    Main game controller managing the overall game flow.
+    Handles state transitions: Menu → Act 1 → Act 2 → Act 3 → Game Over.
     """
+    
+    # === INITIALIZATION ===
+    
     def __init__(self):
-        pygame.init()
-        
-        # Configuration de l'écran
-        screen_info = pygame.display.Info()
-        self.screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h))
-        pygame.display.set_caption("Six-String Hangover")
-        
-        # État du jeu
-        self.current_state = "MENU"  # MENU, ACT1, ACT2, ACT3, GAME_OVER, QUIT
-        
-        Logger.debug("GameController.__init__", "Game initialized")
+        """
+        Initialize the game controller.
+        Sets up pygame, display, and initial game state.
+        """
+        try:
+            # Initialize pygame
+            try:
+                pygame.init()
+                Logger.debug("GameController.__init__", "Pygame initialized")
+            except Exception as e:
+                Logger.error("GameController.__init__", e)
+                raise
+            
+            # Screen configuration
+            try:
+                screen_info = pygame.display.Info()
+                self.screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h))
+                pygame.display.set_caption("Six-String Hangover")
+                Logger.debug("GameController.__init__", "Display initialized", 
+                           width=screen_info.current_w, height=screen_info.current_h)
+            except Exception as e:
+                Logger.error("GameController.__init__", e)
+                raise
+            
+            # Game state
+            self.current_state = "MENU"  # MENU, ACT1, ACT2, ACT3, GAME_OVER, QUIT
+            
+            Logger.debug("GameController.__init__", "Game controller initialized")
+            
+        except Exception as e:
+            Logger.error("GameController.__init__", e)
+            raise
+    
+    # === MAIN GAME LOOP ===
     
     def run(self):
-        """Boucle principale du jeu"""
-        running = True
-        
-        while running:
-            Logger.debug("GameController.run", f"Current state: {self.current_state}")
+        """
+        Main game loop managing state transitions.
+        Handles menu, acts, game over, and quit states.
+        """
+        try:
+            running = True
+            Logger.debug("GameController.run", "Game loop started")
             
-            # === MENU PRINCIPAL ===
-            if self.current_state == "MENU":
-                menu = MainMenuView(self.screen)
-                result = menu.run()
-                
-                if result == "START_GAME":
-                    self.current_state = "ACT1"
-                elif result == "QUIT":
-                    running = False
+            while running:
+                try:
+                    Logger.debug("GameController.run", f"Current state: {self.current_state}")
+                    
+                    # === MAIN MENU ===
+                    if self.current_state == "MENU":
+                        try:
+                            menu = MainMenuView(self.screen)
+                            result = menu.run()
+                            
+                            if result == "START_GAME":
+                                self.current_state = "ACT1"
+                                Logger.debug("GameController.run", "Transitioning to Act 1")
+                            elif result == "QUIT":
+                                running = False
+                                Logger.debug("GameController.run", "Quit requested from menu")
+                        except Exception as e:
+                            Logger.error("GameController.run", e)
+                            running = False
+                    
+                    # === ACT 1: LE GOSIER SEC ===
+                    elif self.current_state == "ACT1":
+                        try:
+                            act1 = Act1View(self.screen)
+                            result = act1.run()
+                            
+                            if result == "ACT2":
+                                # TODO: Implement Act 2
+                                Logger.debug("GameController.run", "Act 1 completed - Moving to Act 2")
+                                self.showTransition("ACTE 2", "WOOD-STOCK-OPTION")
+                                # For now, return to menu
+                                self.current_state = "MENU"
+                            elif result == "GAME_OVER":
+                                self.current_state = "GAME_OVER"
+                                Logger.debug("GameController.run", "Game over state")
+                            elif result == "QUIT":
+                                running = False
+                                Logger.debug("GameController.run", "Quit requested from Act 1")
+                        except Exception as e:
+                            Logger.error("GameController.run", e)
+                            self.current_state = "GAME_OVER"
+                    
+                    # === GAME OVER ===
+                    elif self.current_state == "GAME_OVER":
+                        try:
+                            game_over_result = self.showGameOver()
+                            if game_over_result == "RETRY":
+                                self.current_state = "ACT1"  # Restart the act
+                                Logger.debug("GameController.run", "Retry selected")
+                            elif game_over_result == "MENU":
+                                self.current_state = "MENU"
+                                Logger.debug("GameController.run", "Return to menu selected")
+                            else:
+                                running = False
+                                Logger.debug("GameController.run", "Quit from game over")
+                        except Exception as e:
+                            Logger.error("GameController.run", e)
+                            running = False
+                    
+                    # === QUIT ===
+                    elif self.current_state == "QUIT":
+                        running = False
+                        Logger.debug("GameController.run", "Quit state")
+                    
+                except Exception as e:
+                    Logger.error("GameController.run", e)
+                    # Continue running even if one iteration fails
+                    continue
             
-            # === ACTE 1 : LE GOSIER SEC ===
-            elif self.current_state == "ACT1":
-                act1 = Act1View(self.screen)
-                result = act1.run()
-                
-                if result == "ACT2":
-                    # TODO : Implémenter l'Acte 2
-                    Logger.debug("GameController.run", "Act 1 completed - Moving to Act 2")
-                    self.show_transition("ACTE 2", "WOOD-STOCK-OPTION")
-                    # Pour l'instant, retourner au menu
-                    self.current_state = "MENU"
-                elif result == "GAME_OVER":
-                    self.current_state = "GAME_OVER"
-                elif result == "QUIT":
-                    running = False
+            Logger.debug("GameController.run", "Game loop ended")
             
-            # === GAME OVER ===
-            elif self.current_state == "GAME_OVER":
-                game_over_result = self.show_game_over()
-                if game_over_result == "RETRY":
-                    self.current_state = "ACT1"  # Recommencer l'acte
-                elif game_over_result == "MENU":
-                    self.current_state = "MENU"
-                else:
-                    running = False
-            
-            # === QUITTER ===
-            elif self.current_state == "QUIT":
-                running = False
-        
-        Logger.debug("GameController.run", "Game ended")
-        pygame.quit()
+        except Exception as e:
+            Logger.error("GameController.run", e)
+        finally:
+            try:
+                pygame.quit()
+            except Exception:
+                pass
     
-    def show_transition(self, act_name, location_name):
-        """Afficher un écran de transition entre les actes"""
-        clock = pygame.time.Clock()
-        timer = 180  # 3 secondes
+    # === TRANSITION SCREENS ===
+    
+    def showTransition(self, act_name, location_name):
+        """
+        Display a transition screen between acts.
         
-        font_title = pygame.font.SysFont("Arial", 80, bold=True)
-        font_subtitle = pygame.font.SysFont("Arial", 40)
-        font_small = pygame.font.SysFont("Arial", 25)
+        Args:
+            act_name: Name of the act (e.g., "ACTE 2")
+            location_name: Name of the location (e.g., "WOOD-STOCK-OPTION")
+        """
+        try:
+            clock = pygame.time.Clock()
+            timer = 180  # 3 seconds at 60fps
+            
+            try:
+                font_title = pygame.font.SysFont("Arial", 80, bold=True)
+                font_subtitle = pygame.font.SysFont("Arial", 40)
+                font_small = pygame.font.SysFont("Arial", 25)
+            except Exception as e:
+                Logger.error("GameController.showTransition", e)
+                font_title = pygame.font.Font(None, 80)
+                font_subtitle = pygame.font.Font(None, 40)
+                font_small = pygame.font.Font(None, 25)
         
         while timer > 0:
             for event in pygame.event.get():
@@ -116,13 +205,25 @@ class GameController:
             clock.tick(60)
             timer -= 1
     
-    def show_game_over(self):
-        """Afficher l'écran de game over"""
-        clock = pygame.time.Clock()
+    def showGameOver(self):
+        """
+        Display the game over screen with retry/menu/quit options.
         
-        font_title = pygame.font.SysFont("Arial", 100, bold=True)
-        font_option = pygame.font.SysFont("Arial", 40, bold=True)
-        font_small = pygame.font.SysFont("Arial", 25)
+        Returns:
+            str: User selection ("RETRY", "MENU", or "QUIT")
+        """
+        try:
+            clock = pygame.time.Clock()
+            
+            try:
+                font_title = pygame.font.SysFont("Arial", 100, bold=True)
+                font_option = pygame.font.SysFont("Arial", 40, bold=True)
+                font_small = pygame.font.SysFont("Arial", 25)
+            except Exception as e:
+                Logger.error("GameController.showGameOver", e)
+                font_title = pygame.font.Font(None, 100)
+                font_option = pygame.font.Font(None, 40)
+                font_small = pygame.font.Font(None, 25)
         
         options = ["RÉESSAYER", "MENU PRINCIPAL", "QUITTER"]
         selected = 0
@@ -152,7 +253,7 @@ class GameController:
             screen_width = screen_info.current_w
             screen_height = screen_info.current_h
             
-            # Titre GAME OVER
+            # GAME OVER Title
             title_text = "💀 GAME OVER 💀"
             title_surf = font_title.render(title_text, True, (255, 50, 50))
             title_shadow = font_title.render(title_text, True, (100, 0, 0))
@@ -164,7 +265,7 @@ class GameController:
             self.screen.blit(title_surf, (title_x, title_y))
             
             # Message
-            message = "Tu t'es fait défoncer comme une guitare cheap..."
+            message = "You got wrecked like a cheap guitar..."
             msg_surf = font_small.render(message, True, (200, 200, 200))
             msg_x = screen_width // 2 - msg_surf.get_width() // 2
             self.screen.blit(msg_surf, (msg_x, title_y + 120))
@@ -187,7 +288,7 @@ class GameController:
                     self.screen.blit(arrow_surf, (option_x - 50, option_y + i * 70))
             
             # Instructions
-            inst_text = "↑↓ Naviguer | ENTRÉE Sélectionner"
+            inst_text = "↑↓ Navigate | ENTER Select"
             inst_surf = font_small.render(inst_text, True, (150, 150, 150))
             inst_x = screen_width // 2 - inst_surf.get_width() // 2
             self.screen.blit(inst_surf, (inst_x, screen_height - 80))
@@ -196,7 +297,7 @@ class GameController:
             clock.tick(60)
 
 
-# === POINT D'ENTRÉE ===
+# === ENTRY POINT ===
 if __name__ == "__main__":
     game = GameController()
     game.run()
