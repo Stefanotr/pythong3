@@ -1,10 +1,10 @@
 import pygame
 from Models.CaracterModel import CaracterModel
 from Models.BottleModel import BottleModel
-from GuitarModel import GuitarFactory
-from Controllers.CombatModel import CombatModel
-from CombatController import CombatController
-from CombatView import CombatView
+from Models.GuitarModel import GuitarFactory
+from Models.CombatModel import CombatModel
+from Controllers.CombatController import CombatController
+from Views.CombatView import CombatView
 from Utils.Logger import Logger
 
 class Act1View:

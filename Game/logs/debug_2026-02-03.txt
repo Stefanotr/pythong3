@@ -186,3 +186,40 @@
 [2026-02-03 13:06:35] PlayerController.handleInput | 🍺 Glouglou ! Ivre à 70%
 [2026-02-03 13:16:07] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
 [2026-02-03 13:16:07] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 14:39:48] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/guitare.png
+[2026-02-03 14:39:48] CaracterView.__init__ | ✅ Image loaded  | image_path=Game/Assets/boss.png
+[2026-02-03 14:54:29] GameController.__init__ | Game initialized
+[2026-02-03 14:54:29] GameController.run | Current state: MENU
+[2026-02-03 14:54:30] GameController.run | Current state: ACT1
+[2026-02-03 14:54:30] Act1View.__init__ | Starting Act 1: Le Gosier Sec
+[2026-02-03 14:58:11] GameController.__init__ | Game initialized
+[2026-02-03 14:58:11] GameController.run | Current state: MENU
+[2026-02-03 14:58:13] GameController.run | Current state: ACT1
+[2026-02-03 14:58:13] Act1View.__init__ | Starting Act 1: Le Gosier Sec
+[2026-02-03 15:01:19] GameController.__init__ | Game initialized
+[2026-02-03 15:01:19] GameController.run | Current state: MENU
+[2026-02-03 15:01:20] GameController.run | Current state: ACT1
+[2026-02-03 15:01:20] Act1View.__init__ | Starting Act 1: Le Gosier Sec
+[2026-02-03 15:01:20] Act1View.__init__ | Johnny equipped with La Pelle
+[2026-02-03 15:01:20] Act1View.__init__ | Boss created: Gros Bill | boss_hp=80, boss_damage=8
+[2026-02-03 15:01:20] CombatModel.__init__ | Combat started: Johnny Fuzz vs Gros Bill | player_hp=100, enemy_hp=80
+[2026-02-03 15:01:20] Act1View.__init__ | Act 1 initialized successfully
+[2026-02-03 15:01:27] CombatModel.addToCombatLog | 🎸 Johnny Fuzz frappe avec sa guitare ! (10 dégâts)
+[2026-02-03 15:01:27] CombatModel.switchTurn | Turn 1 - Enemy turn
+[2026-02-03 15:01:28] CombatModel.addToCombatLog | 💨 Gros Bill rate son attaque !
+[2026-02-03 15:01:28] CombatModel.switchTurn | Turn 2 - Player turn
+[2026-02-03 15:01:30] CombatModel.addToCombatLog | ⚡🎸 POWER CHORD ! 25 dégâts !
+[2026-02-03 15:01:30] CombatModel.switchTurn | Turn 2 - Enemy turn
+[2026-02-03 15:01:31] CombatModel.addToCombatLog | 💥 Gros Bill frappe violemment ! (14 dégâts)
+[2026-02-03 15:01:31] CombatModel.switchTurn | Turn 3 - Player turn
+[2026-02-03 15:01:53] GameController.__init__ | Game initialized
+[2026-02-03 15:01:53] GameController.run | Current state: MENU
+[2026-02-03 15:02:02] GameController.run | Game ended
+[2026-02-03 15:02:06] GameController.__init__ | Game initialized
+[2026-02-03 15:02:06] GameController.run | Current state: MENU
+[2026-02-03 15:02:07] GameController.run | Current state: ACT1
+[2026-02-03 15:02:07] Act1View.__init__ | Starting Act 1: Le Gosier Sec
+[2026-02-03 15:02:07] Act1View.__init__ | Johnny equipped with La Pelle
+[2026-02-03 15:02:07] Act1View.__init__ | Boss created: Gros Bill | boss_hp=80, boss_damage=8
+[2026-02-03 15:02:07] CombatModel.__init__ | Combat started: Johnny Fuzz vs Gros Bill | player_hp=100, enemy_hp=80
+[2026-02-03 15:02:07] Act1View.__init__ | Act 1 initialized successfully

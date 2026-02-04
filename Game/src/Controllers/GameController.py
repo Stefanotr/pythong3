@@ -1,6 +1,6 @@
 import pygame
-from MainMenuView import MainMenuView
-from Act1View import Act1View
+from Views.MainMenuView import MainMenuView
+from Views.Act1View import Act1View
 from Utils.Logger import Logger
 
 class GameController:
