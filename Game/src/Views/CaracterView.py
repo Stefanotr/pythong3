@@ -58,13 +58,14 @@ class CaracterView:
 
     # === RENDERING ===
     
-    def drawCaracter(self, screen, caracter):
+    def drawCaracter(self, screen, caracter, offset=(0, 0)):
         """
         Draw the character sprite and status information to the screen.
-        
+
         Args:
             screen: Pygame surface to draw on
             caracter: Character model instance (PlayerModel, BossModel, etc.)
+            offset: Tuple (offset_x, offset_y) applied to world coordinates for screen rendering
         """
         try:
             # Get character position
@@ -74,13 +75,18 @@ class CaracterView:
             except Exception as e:
                 Logger.error("CaracterView.drawCaracter", e)
                 return
-            
-            # Draw character sprite
+
+            offset_x, offset_y = offset
+            sprite_w, sprite_h = self.sprite.get_size()
+            draw_x = int(x + offset_x - sprite_w // 2)
+            draw_y = int(y + offset_y - sprite_h // 2)
+
+            # Draw character sprite (centered on character coordinates)
             try:
-                screen.blit(self.sprite, (x, y))
+                screen.blit(self.sprite, (draw_x, draw_y))
             except Exception as e:
                 Logger.error("CaracterView.drawCaracter", e)
-            
+
             # Draw player-specific information (alcohol level)
             if isinstance(caracter, PlayerModel):
                 try:
@@ -91,6 +97,6 @@ class CaracterView:
                     Logger.debug("CaracterView.drawCaracter", "Player alcohol level displayed", alcohol=alcohol)
                 except Exception as e:
                     Logger.error("CaracterView.drawCaracter", e)
-                    
+
         except Exception as e:
             Logger.error("CaracterView.drawCaracter", e)

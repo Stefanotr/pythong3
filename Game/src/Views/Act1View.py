@@ -6,6 +6,7 @@ Manages the combat sequence against Gros Bill, including intro screen and combat
 """
 
 import pygame
+import os
 from Models.CaracterModel import CaracterModel
 from Models.PlayerModel import PlayerModel
 from Models.BottleModel import BottleModel
@@ -201,6 +202,10 @@ class Act1View:
                                 
                                 # Update screen if it's a resizable window
                                 try:
+                                    try:
+                                        os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
+                                    except Exception as e:
+                                        Logger.error("Act1View.run", e)
                                     self.screen = pygame.display.set_mode((new_width, new_height), pygame.RESIZABLE)
                                 except Exception:
                                     # Screen might not be resizable, just update dimensions
@@ -399,6 +404,10 @@ if __name__ == "__main__":
         
         try:
             screen_info = pygame.display.Info()
+            try:
+                os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
+            except Exception as e:
+                Logger.error("Act1View.__main__", e)
             screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h), pygame.RESIZABLE)
             pygame.display.set_caption("Act 1 - The Dry Throat")
             Logger.debug("Act1View.__main__", "Display created", 

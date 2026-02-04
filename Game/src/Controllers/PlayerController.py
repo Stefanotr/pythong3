@@ -20,24 +20,28 @@ class PlayerController(BaseController):
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen, player):
+    def __init__(self, screen, player, collision_rects=None):
         """
         Initialize the player controller.
         
         Args:
             screen: Pygame surface for rendering
             player: PlayerModel instance to control
+            collision_rects: optional list of pygame.Rect in world coordinates to collide against
         """
         try:
             self.player = player
+            # Collision rectangles in world coordinates
+            self.collision_rects = collision_rects if collision_rects is not None else []
+
             # Get screen dimensions for boundary checking
             screen_width, screen_height = screen.get_size()
             self.SCREEN_SIZE = max(screen_width, screen_height)  # Use larger dimension
             self.PLAYER_SIZE = 50
-            self.SPEED = 10
+            self.SPEED = 6  # reduced speed for better control
             self.screen_width = screen_width
             self.screen_height = screen_height
-            Logger.debug("PlayerController.__init__", "Player controller initialized", player_name=player.getName())
+            Logger.debug("PlayerController.__init__", "Player controller initialized", player_name=player.getName(), collisions=len(self.collision_rects))
         except Exception as e:
             Logger.error("PlayerController.__init__", e)
             raise
@@ -123,9 +127,38 @@ class PlayerController(BaseController):
             if new_y < 0:
                 new_y = 0
 
+            # Prepare player rectangle for collision checks (player coords are center)
+            half = self.PLAYER_SIZE // 2
+
+            # Axis-separated collision handling to allow sliding along obstacles
+            resolved_x = current_x
+            resolved_y = current_y
+
+            # Test X movement first
             try:
-                self.player.setX(new_x)
-                self.player.setY(new_y)
+                rect_x = pygame.Rect(new_x - half, current_y - half, self.PLAYER_SIZE, self.PLAYER_SIZE)
+                collided_x = any(rect_x.colliderect(r) for r in self.collision_rects)
+                if not collided_x:
+                    resolved_x = new_x
+                else:
+                    Logger.debug("PlayerController.handle_events", "Collision on X axis prevented movement")
+            except Exception as e:
+                Logger.error("PlayerController.collision_x", e)
+
+            # Test Y movement with the (possibly) resolved x
+            try:
+                rect_y = pygame.Rect(resolved_x - half, new_y - half, self.PLAYER_SIZE, self.PLAYER_SIZE)
+                collided_y = any(rect_y.colliderect(r) for r in self.collision_rects)
+                if not collided_y:
+                    resolved_y = new_y
+                else:
+                    Logger.debug("PlayerController.handle_events", "Collision on Y axis prevented movement")
+            except Exception as e:
+                Logger.error("PlayerController.collision_y", e)
+
+            try:
+                self.player.setX(resolved_x)
+                self.player.setY(resolved_y)
                 Logger.debug(
                     "PlayerController.handle_events",
                     "Player moved",

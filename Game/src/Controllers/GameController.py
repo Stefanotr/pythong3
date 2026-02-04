@@ -44,6 +44,11 @@ class GameController:
                 screen_surface = pygame.display.get_surface()
                 if screen_surface is None:
                     screen_info = pygame.display.Info()
+                    try:
+                        import os
+                        os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
+                    except Exception:
+                        pass
                     self.screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h))
                     Logger.debug("GameController.__init__", "Display created", width=screen_info.current_w, height=screen_info.current_h)
                 else:
