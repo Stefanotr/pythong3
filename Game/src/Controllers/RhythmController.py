@@ -1,7 +1,7 @@
 import pygame
 import random
 import math
-from Assets.Songs.SevenNationArmy import load_seven_nation_army
+from Songs.SevenNationArmy import load_seven_nation_army
 
 class RhythmController:
     """
