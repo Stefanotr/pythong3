@@ -16,6 +16,7 @@ from Views.CombatView import CombatView
 from Views.PauseMenuView import PauseMenuView
 from Views.CaracterView import CaracterView
 from Utils.Logger import Logger
+from Controllers.GameState import GameState
 
 
 # === ACT 1 VIEW CLASS ===
@@ -156,7 +157,7 @@ class Act1View:
         Handles events, updates game state, and renders intro/combat screens.
         
         Returns:
-            str: Result of the act ("ACT2", "GAME_OVER", or "QUIT")
+            str: Result of the act (GameState values: "ACT2", "GAME_OVER", or "QUIT")
         """
         try:
             clock = pygame.time.Clock()
@@ -170,21 +171,22 @@ class Act1View:
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:
                             Logger.debug("Act1View.run", "QUIT event received")
-                            return "QUIT"
+                            return GameState.QUIT.value
                         
                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                            # Open pause menu
+                            # Open pause menu (delegates its own event loop to PauseMenuView.run)
                             try:
                                 pause_menu = PauseMenuView(self.screen)
                                 pause_result = pause_menu.run()
-                                
-                                if pause_result == "quit":
+
+                                if pause_result == GameState.QUIT.value:
                                     Logger.debug("Act1View.run", "Quit requested from pause menu")
-                                    return "QUIT"
-                                elif pause_result == "main_menu":
+                                    return GameState.QUIT.value
+                                elif pause_result == GameState.MAIN_MENU.value:
                                     Logger.debug("Act1View.run", "Main menu requested from pause menu")
-                                    return "MAIN_MENU"
-                                # If "continue", just resume the game loop
+                                    return GameState.MAIN_MENU.value
+
+                                # If "continue" or anything else, just resume the game loop
                                 Logger.debug("Act1View.run", "Resuming from pause menu")
                             except Exception as e:
                                 Logger.error("Act1View.run", e)
@@ -247,21 +249,21 @@ class Act1View:
                         except Exception as e:
                             Logger.error("Act1View.run", e)
                     
-                            # === RENDERING ===
-                            
+                    # === RENDERING ===
+                    
+                    try:
+                        if self.show_intro:
+                            self.drawIntro()
+                        else:
+                            self.combat_view.draw(self.screen, self.combat_model)
+                            # Draw static character sprites
                             try:
-                                if self.show_intro:
-                                    self.drawIntro()
-                                else:
-                                    self.combat_view.draw(self.screen, self.combat_model)
-                                    # Draw static character sprites
-                                    try:
-                                        self.player_view.drawCaracter(self.screen, self.johnny)
-                                        self.boss_view.drawCaracter(self.screen, self.gros_bill)
-                                    except Exception as e:
-                                        Logger.error("Act1View.run", e)
+                                self.player_view.drawCaracter(self.screen, self.johnny)
+                                self.boss_view.drawCaracter(self.screen, self.gros_bill)
                             except Exception as e:
                                 Logger.error("Act1View.run", e)
+                    except Exception as e:
+                        Logger.error("Act1View.run", e)
                     
                     pygame.display.flip()
                     clock.tick(60)
@@ -276,17 +278,17 @@ class Act1View:
             try:
                 if self.combat_model.getWinner() == "PLAYER":
                     Logger.debug("Act1View.run", "Act 1 completed - VICTORY")
-                    return "MAP"  # Return to map
+                    return GameState.MAP.value  # Return to map
                 else:
                     Logger.debug("Act1View.run", "Act 1 completed - DEFEAT")
-                    return "GAME_OVER"
+                    return GameState.MAIN_MENU.value
             except Exception as e:
                 Logger.error("Act1View.run", e)
-                return "GAME_OVER"
+                return GameState.GAME_OVER.value
                 
         except Exception as e:
             Logger.error("Act1View.run", e)
-            return "QUIT"
+            return GameState.QUIT.value
     
     # === RENDERING ===
     

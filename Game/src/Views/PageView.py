@@ -40,26 +40,42 @@ class PageView:
             except Exception as e:
                 Logger.error("PageView.__init__", e)
             
-            # Initialize pygame
-            try:
-                pygame.init()
-                Logger.debug("PageView.__init__", "Pygame initialized")
-            except Exception as e:
-                Logger.error("PageView.__init__", e)
-                raise
+            # Pygame initialization is expected to be done by the caller (e.g., WelcomePageView)
+            if not pygame.get_init():
+                Logger.error("PageView.__init__", "Pygame not initialized. PageView requires pygame to be initialized before instantiation.")
+                raise RuntimeError("Pygame must be initialized before creating PageView")
             
             # Store properties
             self.name = name
             self.width = width
             self.height = height
-            self.resizable = RESIZABLE
+            # If caller explicitely provided a RESIZABLE flag, use it; otherwise default to pygame.RESIZABLE
+            self.resizable = RESIZABLE if RESIZABLE else pygame.RESIZABLE
             self.backgroud_image = backgroud_image
 
-            # Create display surface
+            # Create or reuse display surface
             try:
-                self.screen = pygame.display.set_mode((self.width, self.height), self.resizable)
-                pygame.display.set_caption(self.name)
-                Logger.debug("PageView.__init__", "Display surface created", size=(width, height))
+                existing = pygame.display.get_surface()
+                if existing is not None:
+                    # Reuse existing display surface and adopt its current size
+                    self.screen = existing
+                    self.width, self.height = self.screen.get_size()
+                    # Make sure window is resizable by setting mode if caller didn't force non-resizable
+                    if not RESIZABLE:
+                        try:
+                            # Recreate window with RESIZABLE flag while preserving size
+                            self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+                            self.resizable = pygame.RESIZABLE
+                        except Exception:
+                            # If recreate fails (platform restrictions), keep existing surface
+                            pass
+                    pygame.display.set_caption(self.name)
+                    Logger.debug("PageView.__init__", "Reusing existing display surface", size=(self.width, self.height), resizable=self.resizable)
+                else:
+                    # No existing surface -> create one
+                    self.screen = pygame.display.set_mode((self.width, self.height), self.resizable)
+                    pygame.display.set_caption(self.name)
+                    Logger.debug("PageView.__init__", "Display surface created", size=(self.width, self.height), resizable=self.resizable)
             except Exception as e:
                 Logger.error("PageView.__init__", e)
                 raise
@@ -122,6 +138,10 @@ class PageView:
         Should be called at the start of each frame's rendering.
         """
         try:
+            # If pygame display is not initialized or surface is gone, skip drawing
+            if not pygame.get_init() or pygame.display.get_surface() is None:
+                return
+
             # Get current screen size to ensure background matches
             current_width, current_height = self.screen.get_size()
             
@@ -139,3 +159,74 @@ class PageView:
                 self.screen.blit(self.background, (0, 0))
         except Exception as e:
             Logger.error("PageView.draw", e)
+
+    # === GENERIC GAME LOOP HOOKS ===
+
+    def handle_events(self, events):
+        """
+        Handle a batch of events for this page.
+
+        Subclasses can override this to implement their own logic.
+
+        Args:
+            events: iterable of pygame events
+
+        Returns:
+            bool: True to keep running, False to exit the loop.
+        """
+        # Default: keep running and ignore events
+        return True
+
+    def update(self):
+        """
+        Update page state.
+
+        Called once per frame after event handling.
+        """
+        # Default: no-op
+        return None
+
+    def render(self):
+        """
+        Render the page content.
+
+        Called once per frame after update.
+        """
+        # Default: just draw the background
+        self.draw()
+
+    def run(self):
+        """
+        Generic main loop for simple pages.
+
+        Subclasses can either:
+          - use this implementation by overriding handle_events/update/render
+          - or override run() completely for more complex flows (with return codes).
+        """
+        try:
+            clock = pygame.time.Clock()
+            running = True
+            Logger.debug("PageView.run", "Generic page loop started", name=self.name)
+
+            while running:
+                try:
+                    events = pygame.event.get()
+                    running = self.handle_events(events)
+
+                    if not running:
+                        break
+
+                    self.update()
+                    self.render()
+
+                    pygame.display.flip()
+                    clock.tick(60)
+                except Exception as e:
+                    Logger.error("PageView.run", e)
+                    # Continue running even if one frame fails
+                    continue
+
+            Logger.debug("PageView.run", "Generic page loop ended", name=self.name)
+        except Exception as e:
+            Logger.error("PageView.run", e)
+            raise

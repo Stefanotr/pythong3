@@ -8,7 +8,7 @@ Par : [Ton Nom]
 Lancer ce fichier pour jouer !
 """
 
-from GameController import GameController
+from Controllers.GameController import GameController
 
 def main():
     """Point d'entrée principal du jeu"""

@@ -19,6 +19,7 @@ from Models.MapModel import MapModel
 from Models.TileModel import TileModel
 from Models.BottleModel import BottleModel
 from Utils.Logger import Logger
+from Controllers.GameState import GameState
 
 
 # === MAP PAGE VIEW CLASS ===
@@ -154,7 +155,7 @@ class MapPageView(PageView):
         """
         Main game loop for the map page view.
         Handles events, updates game state, and renders the map.
-        Returns a string indicating the next view: "ACT1", "ACT2", "RHYTHM", or "QUIT".
+        Returns a string indicating the next view (GameState values): "ACT1", "ACT2", "RHYTHM", or "QUIT".
         """
         try:
             clock = pygame.time.Clock()
@@ -165,11 +166,12 @@ class MapPageView(PageView):
             while running:
                 try:
                     # === EVENT HANDLING ===
-                    
-                    for event in pygame.event.get():
+                    events = pygame.event.get()
+
+                    for event in events:
                         if event.type == pygame.QUIT:
                             Logger.debug("MapPageView.run", "QUIT event received")
-                            return "QUIT"
+                            return GameState.QUIT.value
                         
                         elif event.type == pygame.VIDEORESIZE:
                             # Handle window resize
@@ -191,14 +193,14 @@ class MapPageView(PageView):
                                     pause_menu = PauseMenuView(self.screen)
                                     pause_result = pause_menu.run()
                                     
-                                    if pause_result == "quit":
+                                    if pause_result == GameState.QUIT.value:
                                         Logger.debug("MapPageView.run", "Quit requested from pause menu")
-                                        return "QUIT"
-                                    elif pause_result == "main_menu":
+                                        return GameState.QUIT.value
+                                    elif pause_result == GameState.MAIN_MENU.value:
                                         Logger.debug("MapPageView.run", "Main menu requested from pause menu")
-                                        return "MAIN_MENU"
-                                    elif pause_result == "continue":
-                                        # If "continue", just resume the game loop
+                                        return GameState.MAIN_MENU.value
+                                    elif pause_result == GameState.CONTINUE.value:
+                                        # If CONTINUE, just resume the game loop
                                         Logger.debug("MapPageView.run", "Resuming from pause menu")
                                         # Continue the loop normally
                                     else:
@@ -223,7 +225,7 @@ class MapPageView(PageView):
                                         for shop_event in pygame.event.get():
                                             if shop_event.type == pygame.QUIT:
                                                 shop_running = False
-                                                return "QUIT"
+                                                return GameState.QUIT.value
                                             
                                             result = shop_controller.handleInput(shop_event)
                                             if result == "exit":
@@ -245,26 +247,7 @@ class MapPageView(PageView):
                                 transition_triggered = True
                                 running = False
                                 break
-                            
-                            # Handle player movement (arrow keys and WASD) - only if not SPACE
-                            if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN,
-                                           pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]:
-                                try:
-                                    # Create a copy of the event for movement
-                                    movement_event = pygame.event.Event(pygame.KEYDOWN, key=event.key)
-                                    # Convert WASD to arrow keys for controller
-                                    if event.key == pygame.K_a:
-                                        movement_event.key = pygame.K_LEFT
-                                    elif event.key == pygame.K_d:
-                                        movement_event.key = pygame.K_RIGHT
-                                    elif event.key == pygame.K_w:
-                                        movement_event.key = pygame.K_UP
-                                    elif event.key == pygame.K_s:
-                                        movement_event.key = pygame.K_DOWN
-                                    self.controller.handleInput(movement_event)
-                                except Exception as e:
-                                    Logger.error("MapPageView.run", e)
-                        
+
                         # Handle mouse click on transition prompt or shop
                         elif event.type == pygame.MOUSEBUTTONDOWN:
                             if event.button == 1:  # Left click
@@ -289,7 +272,7 @@ class MapPageView(PageView):
                                 shop_right = (self.shop_tile_x + self.shop_tile_width) * self.map.tile_size
                                 shop_top = self.shop_tile_y * self.map.tile_size
                                 shop_bottom = (self.shop_tile_y + self.shop_tile_height) * self.map.tile_size
-                                
+
                                 if (shop_left <= mouse_x <= shop_right and
                                     shop_top <= mouse_y <= shop_bottom):
                                     # Open shop on click
@@ -306,7 +289,7 @@ class MapPageView(PageView):
                                             for shop_event in pygame.event.get():
                                                 if shop_event.type == pygame.QUIT:
                                                     shop_running = False
-                                                    return "QUIT"
+                                                    return GameState.QUIT.value
                                                 
                                                 result = shop_controller.handleInput(shop_event)
                                                 if result == "exit":
@@ -321,7 +304,13 @@ class MapPageView(PageView):
                                         Logger.debug("MapPageView.run", "Returned from shop")
                                     except Exception as e:
                                         Logger.error("MapPageView.run", e)
-                    
+
+                    # === PLAYER CONTROLLER UPDATE (continuous movement) ===
+                    try:
+                        self.controller.handle_events(events)
+                    except Exception as e:
+                        Logger.error("MapPageView.run", e)
+
                     # === UPDATE ===
                     
                     # Check if player is near shop (within 2 tiles distance)
@@ -381,38 +370,33 @@ class MapPageView(PageView):
                 
                 except Exception as e:
                     Logger.error("MapPageView.run", e)
-                    return "QUIT"
-            
-            # After loop exits, check if transition was triggered
+                    return GameState.QUIT.value
             if transition_triggered:
                 # === DETERMINE NEXT VIEW ===
                 try:
                     if self.current_act == 1:
                         Logger.debug("MapPageView.run", "Transitioning to Act 1")
-                        return "ACT1"
+                        return GameState.ACT1.value
                     elif self.current_act == 2:
                         Logger.debug("MapPageView.run", "Transitioning to Act 2")
-                        return "ACT2"
+                        return GameState.ACT2.value
                     elif self.current_act == 3:
                         Logger.debug("MapPageView.run", "Transitioning to Rhythm")
-                        return "RHYTHM"
+                        return GameState.RHYTHM.value
                     else:
                         Logger.debug("MapPageView.run", "No more acts, returning to menu")
-                        return "QUIT"
+                        return GameState.QUIT.value
                 except Exception as e:
                     Logger.error("MapPageView.run", e)
-                    return "QUIT"
+                    return GameState.QUIT.value
             else:
                 # Loop exited without transition (shouldn't happen normally)
                 Logger.debug("MapPageView.run", "Loop exited without transition")
-                return "QUIT"
-                        
+                return GameState.QUIT.value
         except Exception as e:
             Logger.error("MapPageView.run", e)
-            return "QUIT"
-    
-    # === RENDERING HELPERS ===
-    
+            return GameState.QUIT.value
+
     def drawTransitionPrompt(self):
         """
         Draws the transition prompt on screen.

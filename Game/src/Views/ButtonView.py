@@ -65,6 +65,10 @@ class ButtonView:
             screen: Pygame surface to draw on
         """
         try:
+            # Avoid errors when display has been closed
+            if not pygame.get_init() or pygame.display.get_surface() is None:
+                return
+
             screen.blit(self.image, self.rect)
         except Exception as e:
             Logger.error("ButtonView.draw", e)

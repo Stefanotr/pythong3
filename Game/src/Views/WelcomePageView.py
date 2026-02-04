@@ -8,6 +8,7 @@ Handles the transition to the main game view when play button is clicked.
 import pygame
 from Utils.Logger import Logger
 from Controllers.ButtonController import ButtonController
+from Controllers.GameState import GameState
 from Views.PageView import PageView
 from Views.ButtonView import ButtonView
 from Views.MapPageView import MapPageView
@@ -36,6 +37,15 @@ class WelcomPageView(PageView):
             background_image: Path to background image file
         """
         try:
+            # Ensure pygame is initialized once (WelcomePageView is responsible)
+            try:
+                if not pygame.get_init():
+                    pygame.init()
+                    Logger.debug("WelcomPageView.__init__", "Pygame initialized by WelcomePageView")
+            except Exception as e:
+                Logger.error("WelcomPageView.__init__", e)
+                raise
+
             super().__init__(name, width, height, RESIZABLE, background_image)
             Logger.debug("WelcomPageView.__init__", "Welcome page initialized", name=name, width=width, height=height)
             
@@ -77,79 +87,88 @@ class WelcomPageView(PageView):
         except Exception as e:
             Logger.error("WelcomPageView.__init__", e)
             raise
+    # === GENERIC LOOP HOOKS (PageView) ===
 
-    # === MAIN LOOP ===
-    
-    def run(self):
+    def handle_events(self, events):
         """
-        Main game loop for the welcome page.
-        Handles events, draws the page, and manages transition to main game.
+        Handle events for the welcome page.
+
+        Returns:
+            bool: True to keep running, False to exit the menu.
         """
         try:
-            clock = pygame.time.Clock()
-            running = True
-            Logger.debug("WelcomPageView.run", "Welcome page loop started")
+            for event in events:
+                if event.type == pygame.QUIT:
+                    Logger.debug("WelcomPageView.handle_events", "QUIT event received")
+                    return False
 
-            while running:
-                try:
-                    # === EVENT HANDLING ===
-                    
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            running = False
-                            Logger.debug("WelcomPageView.run", "QUIT event received")
-                        elif event.type == pygame.VIDEORESIZE:
-                            # Handle window resize
-                            try:
-                                new_width = event.w
-                                new_height = event.h
-                                self.screen = pygame.display.set_mode((new_width, new_height), self.resizable)
-                                self.rescaleBackground(new_width, new_height)
-                                Logger.debug("WelcomPageView.run", "Window resized", 
-                                          width=new_width, height=new_height)
-                            except Exception as e:
-                                Logger.error("WelcomPageView.run", e)
-                        else:
-                            # Check button clicks
-                            for button_controller in self.buttons_controllers:
-                                action = button_controller.handleEvents(event)
-                                if action == "start_game":
-                                    # Start game flow - if it returns, we continue the welcome page loop
-                                    Logger.debug("WelcomPageView.run", "Start game action received, transitioning to MapPageView")
-                                    try:
-                                        self._startGameFlow()
-                                        # After game flow ends, continue welcome page loop (don't quit)
-                                        Logger.debug("WelcomPageView.run", "Returned from game flow, showing menu again")
-                                    except Exception as e:
-                                        Logger.error("WelcomPageView.run", e)
-                                    # Continue the loop to show menu again (don't set running = False)
-                                elif action == "quit_game":
-                                    # Quit game
-                                    running = False
-                                    Logger.debug("WelcomPageView.run", "Quit game action received")
-                                    break
-
-                    # === RENDERING ===
-                    
-                    self.draw()
-                    for button in self.buttons:
-                        button.draw(self.screen)
-
-                    pygame.display.flip()
-                    clock.tick(60)
-                    
-                except Exception as e:
-                    Logger.error("WelcomPageView.run", e)
-                    # Continue running even if one frame fails
+                if event.type == pygame.VIDEORESIZE:
+                    # Handle window resize
+                    try:
+                        new_width = event.w
+                        new_height = event.h
+                        self.screen = pygame.display.set_mode((new_width, new_height), self.resizable)
+                        self.rescaleBackground(new_width, new_height)
+                        Logger.debug(
+                            "WelcomPageView.handle_events",
+                            "Window resized",
+                            width=new_width,
+                            height=new_height,
+                        )
+                    except Exception as e:
+                        Logger.error("WelcomPageView.handle_events", e)
+                    # Continue running after resize
                     continue
 
-            Logger.debug("WelcomPageView.run", "Welcome page loop ended")
-            # Don't quit here - let the caller handle it
-            
+                # Delegate clicks/inputs to button controllers
+                for button_controller in self.buttons_controllers:
+                    action = button_controller.handleEvents(event)
+                    if action == GameState.START_GAME.value:
+                        Logger.debug(
+                            "WelcomPageView.handle_events",
+                            "Start game action received, starting game flow",
+                        )
+                        try:
+                            result = self._startGameFlow()
+                            Logger.debug(
+                                "WelcomPageView.handle_events",
+                                "Returned from game flow, showing menu again",
+                                result=result,
+                            )
+                            if result == GameState.QUIT.value:
+                                Logger.debug("WelcomPageView.handle_events", "Quit requested during game flow, exiting menu")
+                                return False
+                        except Exception as e:
+                            Logger.error("WelcomPageView.handle_events", e)
+                    elif action == GameState.QUIT.value:
+                        Logger.debug(
+                            "WelcomPageView.handle_events",
+                            "Quit game action received",
+                        )
+                        return False
+
+            return True
         except Exception as e:
-            Logger.error("WelcomPageView.run", e)
-            pygame.quit()
-            raise
+            Logger.error("WelcomPageView.handle_events", e)
+            return False
+
+    def update(self):
+        """
+        Update welcome page state.
+        Currently no per-frame state to update.
+        """
+        return None
+
+    def render(self):
+        """
+        Render welcome page content.
+        """
+        try:
+            self.draw()
+            for button in self.buttons:
+                button.draw(self.screen)
+        except Exception as e:
+            Logger.error("WelcomPageView.render", e)
     
     # === GAME TRANSITION ===
     
@@ -161,31 +180,12 @@ class WelcomPageView(PageView):
         try:
             Logger.debug("WelcomPageView._startGameFlow", "Starting game flow")
             
-            # Close current window
+            # Reuse existing window from the welcome menu (do NOT quit/re-init pygame)
             try:
-                pygame.quit()
-                Logger.debug("WelcomPageView._startGameFlow", "Previous window closed")
-            except Exception as e:
-                Logger.error("WelcomPageView._startGameFlow", e)
-            
-            # Initialize pygame for game
-            try:
-                pygame.init()
-                Logger.debug("WelcomPageView._startGameFlow", "Pygame reinitialized")
-            except Exception as e:
-                Logger.error("WelcomPageView._startGameFlow", e)
-                raise
-            
-            # Get screen info and create resizable window
-            try:
-                screen_info = pygame.display.Info()
-                screen = pygame.display.set_mode(
-                    (screen_info.current_w, screen_info.current_h), 
-                    pygame.RESIZABLE
-                )
+                screen = self.screen
                 pygame.display.set_caption("Six-String Hangover")
-                Logger.debug("WelcomPageView._startGameFlow", "Screen created", 
-                           width=screen_info.current_w, height=screen_info.current_h)
+                Logger.debug("WelcomPageView._startGameFlow", "Reusing existing screen", 
+                           width=screen.get_width(), height=screen.get_height())
             except Exception as e:
                 Logger.error("WelcomPageView._startGameFlow", e)
                 raise
@@ -226,10 +226,10 @@ class WelcomPageView(PageView):
                         result = map_view.run()
                         Logger.debug("WelcomPageView._startGameFlow", "Map completed", result=result, current_act=current_act)
                         
-                        if result == "QUIT":
+                        if result == GameState.QUIT.value:
                             Logger.debug("WelcomPageView._startGameFlow", "Quit requested from map")
-                            break
-                        elif result == "MAIN_MENU":
+                            return GameState.QUIT.value
+                        elif result == GameState.MAIN_MENU.value:
                             Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from map")
                             # Return to main menu (exit game flow)
                             return
@@ -238,19 +238,23 @@ class WelcomPageView(PageView):
                         break
                     
                     # === ACT 1 ===
-                    if result == "ACT1":
+                    if result == GameState.ACT1.value:
                         try:
                             act1_view = Act1View(screen, player)
                             act1_result = act1_view.run()
                             Logger.debug("WelcomPageView._startGameFlow", "Act 1 completed", result=act1_result)
                             
-                            if act1_result == "GAME_OVER":
+                            if act1_result == GameState.MAIN_MENU.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from Act 1")
+                                return
+                            
+                            if act1_result == GameState.GAME_OVER.value:
                                 Logger.debug("WelcomPageView._startGameFlow", "Game over")
-                                break
-                            elif act1_result == "QUIT":
+                                return
+                            elif act1_result == GameState.QUIT.value:
                                 Logger.debug("WelcomPageView._startGameFlow", "Quit requested")
-                                break
-                            elif act1_result == "MAP":
+                                return GameState.QUIT.value
+                            elif act1_result == GameState.MAP.value:
                                 # Continue to next map phase
                                 current_act = 2
                                 continue
@@ -259,19 +263,23 @@ class WelcomPageView(PageView):
                             break
                     
                     # === ACT 2 ===
-                    elif result == "ACT2":
+                    elif result == GameState.ACT2.value:
                         try:
                             act2_view = Act2View(screen, player)
                             act2_result = act2_view.run()
                             Logger.debug("WelcomPageView._startGameFlow", "Act 2 completed", result=act2_result)
                             
-                            if act2_result == "GAME_OVER":
+                            if act2_result == GameState.MAIN_MENU.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from Act 2")
+                                return
+                            
+                            if act2_result == GameState.GAME_OVER.value:
                                 Logger.debug("WelcomPageView._startGameFlow", "Game over")
-                                break
-                            elif act2_result == "QUIT":
+                                return
+                            elif act2_result == GameState.QUIT.value:
                                 Logger.debug("WelcomPageView._startGameFlow", "Quit requested")
-                                break
-                            elif act2_result == "MAP":
+                                return GameState.QUIT.value
+                            elif act2_result == GameState.MAP.value:
                                 # Continue to next map phase
                                 current_act = 3
                                 continue
@@ -280,16 +288,20 @@ class WelcomPageView(PageView):
                             break
                     
                     # === RHYTHM (FINAL) ===
-                    elif result == "RHYTHM":
+                    elif result == GameState.RHYTHM.value:
                         try:
                             rhythm_view = RhythmPageView(screen, player)
                             rhythm_result = rhythm_view.run()
                             Logger.debug("WelcomPageView._startGameFlow", "Rhythm completed", result=rhythm_result)
                             
+                            if rhythm_result == GameState.MAIN_MENU.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from Rhythm")
+                                return
+                            
                             # Game complete
-                            if rhythm_result == "COMPLETE":
+                            if rhythm_result == GameState.COMPLETE.value:
                                 Logger.debug("WelcomPageView._startGameFlow", "Game completed successfully!")
-                            break
+                                return
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                             break
@@ -305,8 +317,4 @@ class WelcomPageView(PageView):
             
         except Exception as e:
             Logger.error("WelcomPageView._startGameFlow", e)
-            try:
-                pygame.quit()
-            except Exception:
-                pass
             raise
