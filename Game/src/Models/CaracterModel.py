@@ -16,6 +16,28 @@ class CaracterModel:
     Possible types: PNJ, SBIRE, BOSS, PLAYER (can be extended as needed).
     Manages character stats, position, and basic combat functionality.
     """
+    def __init__(self, name, x=175, y=175, type="PNJ"):
+
+        #Types possible: PNJ, SBIRE, BOSS, PLAYER (we can add more if needed)
+        self._type = type
+        self._name = name
+        self._health = 100
+        self._damage=5
+        self._accuracy=1
+        self._x = x
+        self._y = y
+        self._drunkenness = 0
+        self._coma_risk = 0
+        self._selected_bottle = None
+
+    def getType(self):
+        return self._type
+
+    def setType(self, type):
+        self._type = type
+       
+    def getName(self):
+        return self._name
     
     # === INITIALIZATION ===
     
@@ -230,3 +252,25 @@ class CaracterModel:
                         new_health=new_health)
         except Exception as e:
             Logger.error("CaracterModel.attack", e)
+
+    def attack(caracter1,caracter2):
+
+        caracter1.setHealth(caracter1.getHealth()-caracter2.getDamage())
+
+    def getDrunkenness(self):
+        return self._drunkenness
+
+    def setDrunkenness(self, drunkenness):
+        self._drunkenness = drunkenness
+
+    def getComaRisk(self):
+        return self._coma_risk
+
+    def setComaRisk(self, coma_risk):
+        self._coma_risk = coma_risk
+
+    def getSelectedBottle(self):
+        return self._selected_bottle
+
+    def setSelectedBottle(self, bottle):
+        self._selected_bottle = bottle
