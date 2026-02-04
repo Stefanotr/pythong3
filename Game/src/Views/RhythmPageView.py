@@ -6,6 +6,7 @@ Uses existing RhythmModel, RhythmController, and RhythmView classes.
 """
 
 import pygame
+import os
 from Models.PlayerModel import PlayerModel
 from Controllers.GameState import GameState
 from Models.RhythmModel import RhythmModel
@@ -165,6 +166,10 @@ class RhythmPageView:
                                 
                                 # Update screen if it's a resizable window
                                 try:
+                                    try:
+                                        os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
+                                    except Exception as e:
+                                        Logger.error("RhythmPageView.run", e)
                                     self.screen = pygame.display.set_mode((new_width, new_height), pygame.RESIZABLE)
                                 except Exception:
                                     # Screen might not be resizable, just update dimensions

@@ -107,8 +107,7 @@ class WelcomPageView(PageView):
                     try:
                         new_width = event.w
                         new_height = event.h
-                        self.screen = pygame.display.set_mode((new_width, new_height), self.resizable)
-                        self.rescaleBackground(new_width, new_height)
+                        self.set_window_size(new_width, new_height, self.resizable)
                         Logger.debug(
                             "WelcomPageView.handle_events",
                             "Window resized",
@@ -180,15 +179,39 @@ class WelcomPageView(PageView):
         try:
             Logger.debug("WelcomPageView._startGameFlow", "Starting game flow")
             
-            # Reuse existing window from the welcome menu (do NOT quit/re-init pygame)
+            # Save current menu size and attempt to switch to screen resolution for gameplay
+            menu_size = None
+            menu_resizable = getattr(self, "resizable", pygame.RESIZABLE)
             try:
                 screen = self.screen
+                menu_size = (screen.get_width(), screen.get_height())
                 pygame.display.set_caption("Six-String Hangover")
-                Logger.debug("WelcomPageView._startGameFlow", "Reusing existing screen", 
-                           width=screen.get_width(), height=screen.get_height())
+                Logger.debug("WelcomPageView._startGameFlow", "Menu size saved", width=menu_size[0], height=menu_size[1])
             except Exception as e:
                 Logger.error("WelcomPageView._startGameFlow", e)
-                raise
+
+            try:
+                screen_info = pygame.display.Info()
+                full_size = (screen_info.current_w, screen_info.current_h)
+                # If not already fullscreen, switch to fullscreen for gameplay
+                try:
+                    pre_fullscreen = bool(self.screen.get_flags() & pygame.FULLSCREEN)
+                except Exception:
+                    pre_fullscreen = False
+
+                if not pre_fullscreen:
+                    try:
+                        # Switch to exclusive fullscreen mode
+                        pygame.display.set_mode(full_size, pygame.FULLSCREEN)
+                        screen = pygame.display.get_surface()
+                        self.screen = screen
+                        Logger.debug("WelcomPageView._startGameFlow", "Switched to FULLSCREEN for gameplay", width=full_size[0], height=full_size[1])
+                    except Exception as e:
+                        Logger.error("WelcomPageView._startGameFlow", e)
+                else:
+                    Logger.debug("WelcomPageView._startGameFlow", "Already in fullscreen", width=full_size[0], height=full_size[1])
+            except Exception as e:
+                Logger.error("WelcomPageView._startGameFlow", e)
             
             # Create player once - will be passed through all views to preserve state
             try:
@@ -318,3 +341,15 @@ class WelcomPageView(PageView):
         except Exception as e:
             Logger.error("WelcomPageView._startGameFlow", e)
             raise
+        finally:
+            # Restore the menu window size if it was saved
+            try:
+                if menu_size:
+                    try:
+                        # Restore menu window centered
+                        self.set_window_size(menu_size[0], menu_size[1], menu_resizable if menu_resizable else pygame.RESIZABLE)
+                        Logger.debug("WelcomPageView._startGameFlow", "Restored menu window size", width=menu_size[0], height=menu_size[1])
+                    except Exception as e:
+                        Logger.error("WelcomPageView._startGameFlow", e)
+            except Exception:
+                pass

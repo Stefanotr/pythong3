@@ -53,7 +53,10 @@ class PageView:
             self.resizable = RESIZABLE if RESIZABLE else pygame.RESIZABLE
             self.backgroud_image = backgroud_image
 
-            # Create or reuse display surface
+            # Ensure attribute exists early to avoid AttributeError if __init__ partially fails
+            self._original_background = None
+
+            # Create or reuse display surface (use helper to ensure centering)
             try:
                 existing = pygame.display.get_surface()
                 if existing is not None:
@@ -64,7 +67,7 @@ class PageView:
                     if not RESIZABLE:
                         try:
                             # Recreate window with RESIZABLE flag while preserving size
-                            self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+                            self.set_window_size(self.width, self.height, pygame.RESIZABLE)
                             self.resizable = pygame.RESIZABLE
                         except Exception:
                             # If recreate fails (platform restrictions), keep existing surface
@@ -73,29 +76,38 @@ class PageView:
                     Logger.debug("PageView.__init__", "Reusing existing display surface", size=(self.width, self.height), resizable=self.resizable)
                 else:
                     # No existing surface -> create one
-                    self.screen = pygame.display.set_mode((self.width, self.height), self.resizable)
-                    pygame.display.set_caption(self.name)
+                    self.set_window_size(self.width, self.height, self.resizable)
                     Logger.debug("PageView.__init__", "Display surface created", size=(self.width, self.height), resizable=self.resizable)
             except Exception as e:
                 Logger.error("PageView.__init__", e)
                 raise
             
-            # Load original background image (store for rescaling)
+            # Load original background image (store for rescaling), or use a solid background if none provided or missing
             try:
-                self._original_background = pygame.image.load(self.backgroud_image)
-                # Scale to initial window size
-                self.background = pygame.transform.scale(self._original_background, (self.width, self.height))
-                Logger.debug("PageView.__init__", "Background image loaded", path=backgroud_image)
-            except FileNotFoundError as e:
+                if self.backgroud_image and isinstance(self.backgroud_image, str) and os.path.exists(self.backgroud_image):
+                    try:
+                        self._original_background = pygame.image.load(self.backgroud_image)
+                        # Scale to initial window size
+                        self.background = pygame.transform.scale(self._original_background, (self.width, self.height))
+                        Logger.debug("PageView.__init__", "Background image loaded", path=self.backgroud_image)
+                    except Exception as e:
+                        Logger.error("PageView.__init__", e)
+                        self._original_background = None
+                        self.background = pygame.Surface((self.width, self.height))
+                        self.background.fill((0, 0, 0))
+                        Logger.debug("PageView.__init__", "Using default black background due to load failure")
+                else:
+                    # No background specified or file doesn't exist -> use default solid background
+                    self._original_background = None
+                    self.background = pygame.Surface((self.width, self.height))
+                    self.background.fill((0, 0, 0))
+                    Logger.debug("PageView.__init__", "Using default black background (no image provided or file missing)", path=self.backgroud_image)
+            except Exception as e:
                 Logger.error("PageView.__init__", e)
-                # Create a default black background if image not found
+                # Ensure we still have a usable background
                 self._original_background = None
                 self.background = pygame.Surface((self.width, self.height))
                 self.background.fill((0, 0, 0))
-                Logger.debug("PageView.__init__", "Using default black background")
-            except Exception as e:
-                Logger.error("PageView.__init__", e)
-                raise
                 
         except Exception as e:
             Logger.error("PageView.__init__", e)
@@ -129,6 +141,43 @@ class PageView:
                            width=new_width, height=new_height)
         except Exception as e:
             Logger.error("PageView.rescaleBackground", e)
+
+    def set_window_size(self, new_width, new_height, flags=None):
+        """
+        Set the window size and flags while ensuring the window is centered.
+        Args:
+            new_width: int
+            new_height: int
+            flags: pygame display flags (e.g., pygame.RESIZABLE or pygame.FULLSCREEN)
+        """
+        try:
+            # Ensure window will be created centered
+            try:
+                import os
+                os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
+            except Exception as e:
+                Logger.error("PageView.set_window_size", e)
+
+            try:
+                used_flags = flags if flags is not None else self.resizable
+                screen = pygame.display.set_mode((new_width, new_height), used_flags)
+                self.screen = screen
+                self.width, self.height = self.screen.get_size()
+                pygame.display.set_caption(self.name)
+
+                # Rescale background to new size
+                try:
+                    self.rescaleBackground(self.width, self.height)
+                except Exception as e:
+                    Logger.error("PageView.set_window_size", e)
+
+                Logger.debug("PageView.set_window_size", "Window mode set", width=self.width, height=self.height, flags=used_flags)
+            except Exception as e:
+                Logger.error("PageView.set_window_size", e)
+                raise
+        except Exception as e:
+            Logger.error("PageView.set_window_size", e)
+            raise
 
     # === RENDERING ===
     

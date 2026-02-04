@@ -20,6 +20,7 @@ from Models.TileModel import TileModel
 from Models.BottleModel import BottleModel
 from Utils.Logger import Logger
 from Controllers.GameState import GameState
+import random
 
 
 # === MAP PAGE VIEW CLASS ===
@@ -46,9 +47,10 @@ class MapPageView(PageView):
             screen_width = screen.get_width()
             screen_height = screen.get_height()
             
-            # Initialize PageView
-            super().__init__("Map - Six-String Hangover", screen_width, screen_height, pygame.RESIZABLE, "Game/Assets/welcomePage.png")
+            # Initialize PageView without background image to avoid visual artifacts on the map
+            super().__init__("Map - Six-String Hangover", screen_width, screen_height, pygame.RESIZABLE, None)
             self.screen = screen
+            Logger.debug("MapPageView.__init__", "Map view created with no background image to avoid visual bugs")
             self.current_act = current_act
             
             Logger.debug("MapPageView.__init__", "Map page view initialized", 
@@ -59,12 +61,20 @@ class MapPageView(PageView):
             # === MAP INITIALIZATION ===
             
             try:
-                tile_kinds = [
-                    TileModel("road", "Game/Assets/road3_carre.png", False),
-                    TileModel("road2", "Game/Assets/road3_carre.png", False)
-                ]
-                self.map = MapModel("Game/Assets/maps/map.map", tile_kinds, 106)
-                Logger.debug("MapPageView.__init__", "Map created")
+                # Use TMX map file if available
+                tmx_path = "Game/Assets/maps/sans titre.tmx"
+                try:
+                    self.map = MapModel(tmx_path, [], None)
+                    Logger.debug("MapPageView.__init__", "TMX Map loaded", path=tmx_path)
+                except Exception as e:
+                    Logger.error("MapPageView.__init__", e)
+                    # Fallback to old simple map if TMX not available
+                    tile_kinds = [
+                        TileModel("road", "Game/Assets/road3_carre.png", False),
+                        TileModel("road2", "Game/Assets/road3_carre.png", False)
+                    ]
+                    self.map = MapModel("Game/Assets/maps/map.map", tile_kinds, 106)
+                    Logger.debug("MapPageView.__init__", "Fallback map loaded")
             except Exception as e:
                 Logger.error("MapPageView.__init__", e)
                 raise
@@ -103,8 +113,9 @@ class MapPageView(PageView):
             # === CONTROLLER INITIALIZATION ===
             
             try:
+                # Instantiate controller; shop collision rects will be assigned after shop geometry is computed below
                 self.controller = PlayerController(self.screen, self.johnny)
-                Logger.debug("MapPageView.__init__", "Player controller created")
+                Logger.debug("MapPageView.__init__", "Player controller created (collisions assigned later)")
             except Exception as e:
                 Logger.error("MapPageView.__init__", e)
                 raise
@@ -126,24 +137,268 @@ class MapPageView(PageView):
             self.transition_ready = True  # Enable transition immediately
             
             # === SHOP STATE ===
-            
-            # Define shop building position based on map tiles
-            # Shop will be on tiles at position (shop_tile_x, shop_tile_y)
-            # Using tile coordinates: shop at column 18-20, row 8-10 (3x3 tiles)
-            self.shop_tile_x = 18  # Column position
-            self.shop_tile_y = 8   # Row position
-            self.shop_tile_width = 3  # Shop spans 3 tiles wide
-            self.shop_tile_height = 3  # Shop spans 3 tiles tall
-            
-            # Calculate pixel position from tile coordinates
-            map_width = len(self.map.tiles[0]) * self.map.tile_size if self.map.tiles else screen_width
-            map_height = len(self.map.tiles) * self.map.tile_size if self.map.tiles else screen_height
-            self.shop_x = self.shop_tile_x * self.map.tile_size + (self.shop_tile_width * self.map.tile_size) // 2
-            self.shop_y = self.shop_tile_y * self.map.tile_size + (self.shop_tile_height * self.map.tile_size) // 2
-            self.shop_width = self.shop_tile_width * self.map.tile_size
-            self.shop_height = self.shop_tile_height * self.map.tile_size
+            # Determine shop location by preferring TMX object layers (explicit shop object) then by finding buildings
+            try:
+                tiles = self.map.tiles
+                h = len(tiles)
+                w = len(tiles[0]) if h > 0 else 0
+
+                # Check for explicit shop object in object layers
+                shop_obj = None
+                try:
+                    if hasattr(self.map, 'object_layers'):
+                        for layer_name, objs in self.map.object_layers.items():
+                            for o in objs:
+                                props = o.get('properties', {}) or {}
+                                name = (o.get('name') or '').lower()
+                                otype = (o.get('type') or '').lower()
+                                if name == 'shop' or otype == 'shop' or props.get('shop') in ('true', True, '1', 'yes') or props.get('is_shop') in ('true', '1'):
+                                    shop_obj = o
+                                    break
+                            if shop_obj:
+                                break
+                except Exception as e:
+                    Logger.error('MapPageView.__init__', e)
+
+                # If found, use it directly
+                if shop_obj:
+                    sx = shop_obj['x']
+                    sy = shop_obj['y']
+                    sw = max(1, int(shop_obj.get('width', self.map.tile_size)))
+                    sh = max(1, int(shop_obj.get('height', self.map.tile_size)))
+                    # TMX object y is top coordinate; use as-is
+                    self.shop_left = sx
+                    self.shop_top = sy
+                    self.shop_width = sw
+                    self.shop_height = sh
+                    self.shop_rect_world = pygame.Rect(self.shop_left, self.shop_top, self.shop_width, self.shop_height)
+                    # door at bottom center unless door property specified
+                    door_w = max(8, self.map.tile_size // 2)
+                    door_h = max(8, self.map.tile_size // 2)
+                    door_x = self.shop_left + (self.shop_width - door_w) // 2
+                    door_y = self.shop_top + self.shop_height - door_h
+                    self.shop_door_rect = pygame.Rect(door_x, door_y, door_w, door_h)
+                    self.shop_tile_x = self.shop_left // self.map.tile_size
+                    self.shop_tile_y = self.shop_top // self.map.tile_size
+                    self.shop_tile_width = max(1, self.shop_width // self.map.tile_size)
+                    self.shop_tile_height = max(1, self.shop_height // self.map.tile_size)
+                    self.chosen_building = (self.shop_tile_x, self.shop_tile_y, self.shop_tile_x + self.shop_tile_width - 1, self.shop_tile_y + self.shop_tile_height -1)
+                    Logger.debug('MapPageView.__init__', 'Using shop object from TMX', shop=self.chosen_building, obj=shop_obj)
+                else:
+                    # === No explicit object -> fall back to tile-component detection
+                    visited = [[False]*w for _ in range(h)]
+
+                    def neighbors(x, y):
+                        for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                            nx, ny = x+dx, y+dy
+                            if 0 <= nx < w and 0 <= ny < h:
+                                yield nx, ny
+
+                    components = []  # list of (area, minx,miny,maxx,maxy)
+                    for y in range(h):
+                        for x in range(w):
+                            if visited[y][x] or tiles[y][x] == 0:
+                                continue
+                            # BFS to find component
+                            stack = [(x,y)]
+                            visited[y][x] = True
+                            minx, miny, maxx, maxy = x, y, x, y
+                            area = 0
+                            while stack:
+                                cx, cy = stack.pop()
+                                area += 1
+                                minx = min(minx, cx)
+                                miny = min(miny, cy)
+                                maxx = max(maxx, cx)
+                                maxy = max(maxy, cy)
+                                for nx, ny in neighbors(cx, cy):
+                                    if not visited[ny][nx] and tiles[ny][nx] != 0:
+                                        visited[ny][nx] = True
+                                        stack.append((nx, ny))
+                            components.append((area, minx, miny, maxx, maxy))
+
+                    # Prefer the 'city' layer if available (buildings are there), else choose largest component
+                    search_tiles = None
+                    try:
+                        if hasattr(self.map, 'layers') and 'city' in self.map.layers:
+                            search_tiles = self.map.layers['city']
+                            Logger.debug("MapPageView.__init__", "Using 'city' layer to find buildings")
+                        else:
+                            search_tiles = tiles
+                    except Exception:
+                        search_tiles = tiles
+
+                    # Recompute components on selected layer
+                    visited = [[False]*w for _ in range(h)]
+                    components = []
+                    for y in range(h):
+                        for x in range(w):
+                            if visited[y][x] or search_tiles[y][x] == 0:
+                                continue
+                            # BFS to find component
+                            stack = [(x,y)]
+                            visited[y][x] = True
+                            minx, miny, maxx, maxy = x, y, x, y
+                            area = 0
+                            while stack:
+                                cx, cy = stack.pop()
+                                area += 1
+                                minx = min(minx, cx)
+                                miny = min(miny, cy)
+                                maxx = max(maxx, cx)
+                                maxy = max(maxy, cy)
+                                for nx, ny in neighbors(cx, cy):
+                                    if not visited[ny][nx] and search_tiles[ny][nx] != 0:
+                                        visited[ny][nx] = True
+                                        stack.append((nx, ny))
+                            components.append((area, minx, miny, maxx, maxy))
+
+                    if components:
+                        # Prefer components that look like buildings (not thin roads): require both width and height >=2
+                        candidates = [c for c in components if (c[3]-c[1]+1) >= 2 and (c[4]-c[2]+1) >= 2]
+                        if not candidates:
+                            candidates = components
+
+                        # Choose randomly among candidates so shop is different each map open
+                        chosen = random.choice(candidates)
+                        area, minx, miny, maxx, maxy = chosen
+
+                        # Use building's actual bounding box as the shop area (don't force-to-top)
+                        self.shop_tile_x = minx
+                        self.shop_tile_y = miny
+                        self.shop_tile_width = (maxx - minx + 1)
+                        self.shop_tile_height = (maxy - miny + 1)
+
+                        # Remember chosen building for debug / possible future adjustments
+                        self.chosen_building = (minx, miny, maxx, maxy)
+                        Logger.debug("MapPageView.__init__", "Random shop building chosen", building=self.chosen_building, area=area)
+                    else:
+                        # Fallback to a small 3x3 area near the center
+                        center_x = max(0, (w // 2) - 1)
+                        center_y = max(0, (h // 2) - 1)
+                        self.shop_tile_x = center_x
+                        self.shop_tile_y = center_y
+                        self.shop_tile_width = 3
+                        self.shop_tile_height = 3
+
+                # Pixel dimensions
+                self.shop_width = self.shop_tile_width * self.map.tile_size
+                self.shop_height = self.shop_tile_height * self.map.tile_size
+                self.shop_left = self.shop_tile_x * self.map.tile_size
+                self.shop_top = self.shop_tile_y * self.map.tile_size
+                self.shop_rect_world = pygame.Rect(self.shop_left, self.shop_top, self.shop_width, self.shop_height)
+
+                # Initialize collision rects early to avoid attribute errors during spawn checks
+                # Start with structure collision rects from TMX object layers if present
+                self.world_collision_rects = []
+                try:
+                    if hasattr(self.map, 'object_layers'):
+                        for layer_name, objs in self.map.object_layers.items():
+                            # consider layers named 'collision' or objects with property collidable
+                            for o in objs:
+                                props = o.get('properties', {}) or {}
+                                name_l = (layer_name or '').lower()
+                                if name_l in ('collision', 'collisions', 'obstacles') or props.get('collidable') in ('true', True, '1', 'yes') or (o.get('type') or '').lower() == 'collision':
+                                    try:
+                                        r = pygame.Rect(int(o['x']), int(o['y']), int(o['width']), int(o['height']))
+                                        self.world_collision_rects.append(r)
+                                    except Exception:
+                                        continue
+                except Exception:
+                    pass
+
+                # By default, add the shop building rect to world collisions (unless collisions provided by TMX)
+                if not self.world_collision_rects:
+                    self.world_collision_rects.append(self.shop_rect_world)
+
+                # Door -- place at bottom center of the building if not already set by object
+                door_w = max(8, self.map.tile_size // 2)
+                door_h = max(8, self.map.tile_size // 2)
+                door_x = self.shop_left + (self.shop_width - door_w) // 2
+                door_y = self.shop_top + self.shop_height - door_h
+                self.shop_door_rect = pygame.Rect(door_x, door_y, door_w, door_h)
+
+                # After computing shop geometry, force window size to map pixel dim to avoid scaling artifacts
+                try:
+                    map_pixel_width = len(self.map.tiles[0]) * self.map.tile_size if self.map.tiles else screen_width
+                    map_pixel_height = len(self.map.tiles) * self.map.tile_size if self.map.tiles else screen_height
+                    # Use PageView helper to set window size and keep resizable flag as configured
+                    self.set_window_size(map_pixel_width, map_pixel_height, self.resizable)
+                    Logger.debug("MapPageView.__init__", "Window resized to map dimensions", width=map_pixel_width, height=map_pixel_height)
+                except Exception as e:
+                    Logger.error("MapPageView.__init__", e)
+
+                # Ensure player spawn not inside blocking collision rects
+                try:
+                    half = self.controller.PLAYER_SIZE // 2 if hasattr(self, 'controller') else 25
+                    px = int(self.johnny.getX())
+                    py = int(self.johnny.getY())
+                    player_rect = pygame.Rect(px - half, py - half, half*2, half*2)
+                    for r in self.world_collision_rects:
+                        if player_rect.colliderect(r):
+                            # move player above collision
+                            new_y = r.top - half - 10
+                            self.johnny.setY(new_y)
+                            Logger.debug("MapPageView.__init__", "Player repositioned to avoid spawn inside collision", new_y=new_y)
+                            break
+                except Exception as e:
+                    Logger.error("MapPageView.__init__", e)
+                # Collision rects: left and right of the door (blocking building body) - also add to world_collision_rects
+                left_width = (self.shop_width - door_w) // 2
+                right_x = door_x + door_w
+                right_width = self.shop_width - left_width - door_w
+
+                self.shop_collision_rects = [
+                    pygame.Rect(self.shop_left, self.shop_top, left_width, self.shop_height),
+                    pygame.Rect(right_x, self.shop_top, right_width, self.shop_height),
+                ]
+
+                # Always include building body collisions in world collision set
+                for r in self.shop_collision_rects:
+                    self.world_collision_rects.append(r)
+
+                Logger.debug("MapPageView.__init__", "Shop geometry determined", tile_rect=(self.shop_tile_x, self.shop_tile_y, self.shop_tile_width, self.shop_tile_height), world_rect=self.shop_rect_world, world_collisions=len(self.world_collision_rects))
+
+            except Exception as e:
+                Logger.error("MapPageView.__init__", e)
+                # Fallback
+                self.shop_tile_x = 18
+                self.shop_tile_y = 8
+                self.shop_tile_width = 3
+                self.shop_tile_height = 3
+                self.shop_left = self.shop_tile_x * self.map.tile_size
+                self.shop_top = self.shop_tile_y * self.map.tile_size
+                self.shop_width = self.shop_tile_width * self.map.tile_size
+                self.shop_height = self.shop_tile_height * self.map.tile_size
+                self.shop_rect_world = pygame.Rect(self.shop_left, self.shop_top, self.shop_width, self.shop_height)
+                door_w = self.map.tile_size // 2
+                door_h = self.map.tile_size // 2
+                door_x = self.shop_left + (self.shop_width - door_w) // 2
+                door_y = self.shop_top + self.shop_height - door_h
+                self.shop_door_rect = pygame.Rect(door_x, door_y, door_w, door_h)
+                self.shop_collision_rects = [self.shop_rect_world]
+
             self.near_shop = False
             self.show_shop_prompt = False
+
+            # Simple cooldown to avoid re-entering shop every frame when overlapping the door
+            self._shop_cooldown_frames = 0
+
+            # Debug overlay toggle (press F1 in-map to toggle)
+            self.show_debug_overlay = False
+            Logger.debug("MapPageView.__init__", "Shop & map debug", shop_rect=self.shop_rect_world, door_rect=self.shop_door_rect, tile_size=self.map.tile_size, map_size=(getattr(self.map,'width',None), getattr(self.map,'height',None)))
+
+# Assign world collision rects to player controller now that they exist
+            try:
+                if hasattr(self, 'controller') and self.controller is not None:
+                    self.controller.collision_rects = self.world_collision_rects
+                    Logger.debug("MapPageView.__init__", "Assigned world collision rects to PlayerController", collisions=len(self.world_collision_rects))
+            except Exception as e:
+                Logger.error("MapPageView.__init__", e)
+
+            # Shop enter delay counters (frames)
+            self._shop_enter_counter = 0
+            self._shop_enter_frames_required = 45  # ~0.75s at 60fps
             
         except Exception as e:
             Logger.error("MapPageView.__init__", e)
@@ -178,21 +433,28 @@ class MapPageView(PageView):
                             try:
                                 new_width = event.w
                                 new_height = event.h
-                                self.screen = pygame.display.set_mode((new_width, new_height), self.resizable)
-                                self.rescaleBackground(new_width, new_height)
+                                self.set_window_size(new_width, new_height, self.resizable)
                                 Logger.debug("MapPageView.run", "Window resized", 
                                           width=new_width, height=new_height)
                             except Exception as e:
                                 Logger.error("MapPageView.run", e)
                         
                         elif event.type == pygame.KEYDOWN:
+                            # Toggle debug overlay
+                            if event.key == pygame.K_F1:
+                                try:
+                                    self.show_debug_overlay = not getattr(self, 'show_debug_overlay', False)
+                                    Logger.debug('MapPageView.run', 'Toggled debug overlay', show=self.show_debug_overlay)
+                                except Exception as e:
+                                    Logger.error('MapPageView.run', e)
+
                             # Check for pause menu (ESC)
                             if event.key == pygame.K_ESCAPE:
                                 # Open pause menu
                                 try:
                                     pause_menu = PauseMenuView(self.screen)
                                     pause_result = pause_menu.run()
-                                    
+
                                     if pause_result == GameState.QUIT.value:
                                         Logger.debug("MapPageView.run", "Quit requested from pause menu")
                                         return GameState.QUIT.value
@@ -200,53 +462,42 @@ class MapPageView(PageView):
                                         Logger.debug("MapPageView.run", "Main menu requested from pause menu")
                                         return GameState.MAIN_MENU.value
                                     elif pause_result == GameState.CONTINUE.value:
-                                        # If CONTINUE, just resume the game loop
                                         Logger.debug("MapPageView.run", "Resuming from pause menu")
-                                        # Continue the loop normally
                                     else:
-                                        # Default: continue
                                         Logger.debug("MapPageView.run", "Resuming from pause menu (default)")
                                 except Exception as e:
                                     Logger.error("MapPageView.run", e)
-                            
-                            # Check for shop entry (E key when near shop)
-                            elif event.key == pygame.K_e and self.near_shop:
+
+                            # Enter shop if near door and press E
+                            elif event.key == pygame.K_e:
                                 try:
-                                    # Open shop
-                                    shop_model = ShopModel(self.johnny)
-                                    shop_view = ShopPageView(self.screen, shop_model)
-                                    shop_controller = ShopController(shop_model, shop_view)
-                                    
-                                    # Shop loop
-                                    shop_running = True
-                                    shop_clock = pygame.time.Clock()
-                                    
-                                    while shop_running:
-                                        for shop_event in pygame.event.get():
-                                            if shop_event.type == pygame.QUIT:
-                                                shop_running = False
+                                    # Respect shop cooldown
+                                    if getattr(self, '_shop_cooldown_frames', 0) > 0:
+                                        Logger.debug("MapPageView.run", "E pressed but shop cooldown active", frames=self._shop_cooldown_frames)
+                                    else:
+                                        px = int(self.johnny.getX())
+                                        py = int(self.johnny.getY())
+                                        # Player rectangle (centered on player's coordinates)
+                                        half = 25
+                                        player_rect = pygame.Rect(px - half, py - half, half * 2, half * 2)
+                                        # Use an inflated door rect to make interaction forgiving
+                                        try:
+                                            infl_w = int(self.map.tile_size * 1.5)
+                                            infl_h = int(self.map.tile_size * 1.0)
+                                            door_hit = self.shop_door_rect.inflate(infl_w, infl_h)
+                                        except Exception:
+                                            door_hit = self.shop_door_rect
+                                        if player_rect.colliderect(door_hit):
+                                            Logger.debug("MapPageView.run", "Entering shop via door (collision)", player=(px, py), door=door_hit)
+                                            shop_result = self._run_shop()
+                                            if shop_result == GameState.QUIT.value:
                                                 return GameState.QUIT.value
-                                            
-                                            result = shop_controller.handleInput(shop_event)
-                                            if result == "exit":
-                                                shop_running = False
-                                                Logger.debug("MapPageView.run", "Shop closed")
-                                        
-                                        shop_controller.update()
-                                        shop_view.draw()
-                                        pygame.display.flip()
-                                        shop_clock.tick(60)
-                                    
-                                    Logger.debug("MapPageView.run", "Returned from shop")
+                                        else:
+                                            Logger.debug("MapPageView.run", "E pressed but player not colliding with door", player=(px, py), door=door_hit)
                                 except Exception as e:
                                     Logger.error("MapPageView.run", e)
-                            
-                            # Check for transition trigger (SPACE) - must be checked before movement
-                            if event.key == pygame.K_SPACE and self.transition_ready:
-                                Logger.debug("MapPageView.run", "Transition triggered by SPACE", next_act=self.current_act)
-                                transition_triggered = True
-                                running = False
-                                break
+                                except Exception as e:
+                                    Logger.error("MapPageView.run", e)
 
                         # Handle mouse click on transition prompt or shop
                         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -275,11 +526,14 @@ class MapPageView(PageView):
 
                                 if (shop_left <= mouse_x <= shop_right and
                                     shop_top <= mouse_y <= shop_bottom):
-                                    # Open shop on click
+                                    # Open shop on click (respect cooldown)
                                     try:
-                                        shop_model = ShopModel(self.johnny)
-                                        shop_view = ShopPageView(self.screen, shop_model)
-                                        shop_controller = ShopController(shop_model, shop_view)
+                                        if getattr(self, '_shop_cooldown_frames', 0) > 0:
+                                            Logger.debug('MapPageView.run', 'Click on shop ignored due to cooldown', frames=self._shop_cooldown_frames)
+                                        else:
+                                            shop_model = ShopModel(self.johnny)
+                                            shop_view = ShopPageView(self.screen, shop_model)
+                                            shop_controller = ShopController(shop_model, shop_view)
                                         
                                         # Shop loop
                                         shop_running = True
@@ -318,23 +572,64 @@ class MapPageView(PageView):
                         player_x = self.johnny.getX()
                         player_y = self.johnny.getY()
                         
-                        # Calculate shop bounds
+                        # Calculate shop bounds (world coords)
                         shop_left = self.shop_tile_x * self.map.tile_size
                         shop_right = (self.shop_tile_x + self.shop_tile_width) * self.map.tile_size
                         shop_top = self.shop_tile_y * self.map.tile_size
                         shop_bottom = (self.shop_tile_y + self.shop_tile_height) * self.map.tile_size
-                        
-                        # Check if player is within 2 tiles of shop (interaction range)
+
+                        # Check if player is within interaction range of the shop (world coords)
                         interaction_range = self.map.tile_size * 2
-                        if (player_x >= shop_left - interaction_range and 
-                            player_x <= shop_right + interaction_range and
-                            player_y >= shop_top - interaction_range and 
-                            player_y <= shop_bottom + interaction_range):
-                            self.near_shop = True
-                            self.show_shop_prompt = True
-                        else:
+                        try:
+                            shop_area = self.shop_rect_world.inflate(interaction_range, interaction_range)
+                            if shop_area.collidepoint((player_x, player_y)):
+                                self.near_shop = True
+                                # Show prompt only when player is near the door specifically (more forgiving)
+                                try:
+                                    infl_w = int(self.map.tile_size * 1.5)
+                                    infl_h = int(self.map.tile_size * 1.0)
+                                    if self.shop_door_rect.inflate(infl_w, infl_h).collidepoint((player_x, player_y)):
+                                        self.show_shop_prompt = True
+                                    else:
+                                        self.show_shop_prompt = False
+                                except Exception:
+                                    self.show_shop_prompt = False
+                            else:
+                                self.near_shop = False
+                                self.show_shop_prompt = False
+                        except Exception as e:
+                            Logger.error("MapPageView.run", e)
                             self.near_shop = False
                             self.show_shop_prompt = False
+
+                        # If player's rectangle collides with the door (forgiving), open shop automatically (with cooldown)
+                        try:
+                            half = 25
+                            player_rect = pygame.Rect(int(player_x) - half, int(player_y) - half, half * 2, half * 2)
+                            try:
+                                infl_w = int(self.map.tile_size * 1.5)
+                                infl_h = int(self.map.tile_size * 1.0)
+                                door_hit = self.shop_door_rect.inflate(infl_w, infl_h)
+                            except Exception:
+                                door_hit = self.shop_door_rect
+                            if getattr(self, '_shop_cooldown_frames', 0) == 0:
+                                if player_rect.colliderect(door_hit):
+                                    # Increment counter while touching the door; require sustained contact
+                                    self._shop_enter_counter = getattr(self, '_shop_enter_counter', 0) + 1
+                                    Logger.debug('MapPageView.run', 'Player at door', counter=self._shop_enter_counter)
+                                    if self._shop_enter_counter >= getattr(self, '_shop_enter_frames_required', 45):
+                                        Logger.debug("MapPageView.run", "Player dwell reached - auto-entering shop", player=(player_x, player_y), door=door_hit)
+                                        shop_result = self._run_shop()
+                                        # Apply longer cooldown (10s) to prevent immediate re-opening
+                                        self._shop_cooldown_frames = 60 * 10
+                                        self._shop_enter_counter = 0
+                                        if shop_result == GameState.QUIT.value:
+                                            return GameState.QUIT.value
+                                else:
+                                    # Reset if player moves away
+                                    self._shop_enter_counter = 0
+                        except Exception as e:
+                            Logger.error("MapPageView.run", e)
                     except Exception as e:
                         Logger.error("MapPageView.run", e)
                     
@@ -348,26 +643,77 @@ class MapPageView(PageView):
                     try:
                         # Draw background first
                         self.draw()
-                        # Draw map tiles
-                        self.map_view.draw(self.screen)
-                        # Draw shop building (visual indicator)
-                        self._drawShopBuilding()
-                        # Draw player character (centered, can move)
-                        self.player_view.drawCaracter(self.screen, self.johnny)
-                        
-                        # Draw shop prompt
+
+                        # Draw map and objects at world coordinates (no camera offset)
+                        try:
+                            self.map_view.draw(self.screen, (0, 0))
+                            self._drawShopBuilding((0, 0))
+                            self.player_view.drawCaracter(self.screen, self.johnny, offset=(0, 0))
+                        except Exception as e:
+                            Logger.error("MapPageView.render.draw", e)
+
+# Marker: show red point and label on chosen shop building
+                        try:
+                            shop_left = self.shop_left if hasattr(self, 'shop_left') else self.shop_tile_x * self.map.tile_size
+                            shop_top = self.shop_top if hasattr(self, 'shop_top') else self.shop_tile_y * self.map.tile_size
+                            shop_center = (int(shop_left + self.shop_width // 2), int(shop_top + self.shop_height // 2))
+                            try:
+                                pygame.draw.circle(self.screen, (220, 40, 40), shop_center, 6)  # small red marker
+                                try:
+                                    font = pygame.font.SysFont('Arial', 14, bold=True)
+                                except Exception:
+                                    font = pygame.font.Font(None, 14)
+                                label = font.render('SHOP', True, (255, 255, 255))
+                                self.screen.blit(label, (shop_center[0] - label.get_width()//2, shop_center[1] - self.shop_height//2 - label.get_height() - 4))
+                            except Exception:
+                                pass
+                            Logger.debug("MapPageView.run", "Shop marker", shop_center=shop_center)
+                        except Exception as e:
+                            Logger.error("MapPageView.debugPositions", e)
+
+                        # Draw shop prompt (door-specific)
                         if self.show_shop_prompt:
-                                    self.drawShopPrompt()
-                        
+                            self.drawShopPrompt()
+
                         # Draw transition prompt
                         if self.show_transition_prompt:
-                                self.drawTransitionPrompt()
+                            self.drawTransitionPrompt()
+
+                        # Draw debug overlay if enabled
+                        try:
+                            if getattr(self, 'show_debug_overlay', False):
+                                try:
+                                    font = pygame.font.SysFont('Consolas', 14)
+                                except Exception:
+                                    font = pygame.font.Font(None, 14)
+                                lines = []
+                                lines.append(f'tile_size={self.map.tile_size} map={getattr(self.map, "width",None)}x{getattr(self.map,"height",None)}')
+                                lines.append(f'map_pixels={len(self.map.tiles[0])*self.map.tile_size}x{len(self.map.tiles)*self.map.tile_size}')
+                                lines.append(f'shop_rect={self.shop_rect_world}')
+                                lines.append(f'shop_door={self.shop_door_rect}')
+                                px, py = int(self.johnny.getX()), int(self.johnny.getY())
+                                lines.append(f'player=({px},{py})')
+                                lines.append(f'shop_collision_count={len(getattr(self, "shop_collision_rects", []))}')
+                                y0 = 10
+                                for ln in lines:
+                                    surf = font.render(ln, True, (255,255,255))
+                                    self.screen.blit(surf, (10, y0))
+                                    y0 += surf.get_height() + 2
+                        except Exception as e:
+                            Logger.error('MapPageView.debugOverlay', e)
                     except Exception as e:
-                        Logger.error("MapPageView.run", e)
-                    
+                        Logger.error("MapPageView.render", e)
+
+                    # Decrement shop cooldown
+                    try:
+                        if self._shop_cooldown_frames > 0:
+                            self._shop_cooldown_frames -= 1
+                    except Exception:
+                        pass
+
+                    # Present the frame
                     pygame.display.flip()
                     clock.tick(60)
-                
                 except Exception as e:
                     Logger.error("MapPageView.run", e)
                     return GameState.QUIT.value
@@ -497,37 +843,101 @@ class MapPageView(PageView):
                 Logger.error("MapPageView.drawShopPrompt", e)
         except Exception as e:
             Logger.error("MapPageView.drawShopPrompt", e)
-    
-    def _drawShopBuilding(self):
+
+    def _run_shop(self):
         """
-        Draw the shop building on the map as a visual indicator.
-        The shop is drawn on specific tiles of the map.
+        Blocking loop to handle shop interaction. Returns GameState.QUIT.value if quit requested, else None.
         """
         try:
-            # Calculate shop position based on tile coordinates
-            shop_left = self.shop_tile_x * self.map.tile_size
-            shop_top = self.shop_tile_y * self.map.tile_size
-            
-            # Draw shop building rectangle covering the tiles
-            shop_rect = pygame.Rect(
-                shop_left,
-                shop_top,
-                self.shop_width,
-                self.shop_height
-            )
-            # Draw building with a distinct color
-            pygame.draw.rect(self.screen, (139, 69, 19), shop_rect)  # Brown color
-            pygame.draw.rect(self.screen, (255, 215, 0), shop_rect, 3)  # Gold border
-            
-            # Draw shop icon/text
+            clock = pygame.time.Clock()
+            shop_model = ShopModel(self.johnny)
+            shop_view = ShopPageView(self.screen, shop_model)
+            shop_controller = ShopController(shop_model, shop_view)
+
+            in_shop = True
+            Logger.debug("MapPageView._run_shop", "Shop interaction started")
+            while in_shop:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        Logger.debug("MapPageView._run_shop", "QUIT received in shop")
+                        return GameState.QUIT.value
+                    # Let shop controller handle inputs
+                    try:
+                        res = shop_controller.handle_input(event)
+                        if res == "exit":
+                            in_shop = False
+                            Logger.debug("MapPageView._run_shop", "Exit requested from shop")
+                            break
+                    except Exception as e:
+                        Logger.error("MapPageView._run_shop", e)
+
+                try:
+                    shop_view.draw()
+                except Exception as e:
+                    Logger.error("MapPageView._run_shop.draw", e)
+
+                pygame.display.flip()
+                clock.tick(60)
+
+            # Apply cooldown after leaving shop to avoid immediate re-opening (10 seconds @ 60fps)
             try:
-                font = pygame.font.SysFont("Arial", 24, bold=True)
-                shop_text = font.render("🛒 SHOP", True, (255, 255, 255))
-                text_x = shop_left + (self.shop_width - shop_text.get_width()) // 2
-                text_y = shop_top + (self.shop_height - shop_text.get_height()) // 2
-                self.screen.blit(shop_text, (text_x, text_y))
+                self._shop_cooldown_frames = 60 * 10
+                Logger.debug("MapPageView._run_shop", "Applied shop exit cooldown", frames=self._shop_cooldown_frames)
+            except Exception:
+                pass
+            Logger.debug("MapPageView._run_shop", "Shop interaction ended")
+            return None
+        except Exception as e:
+            Logger.error("MapPageView._run_shop", e)
+            return None
+
+    def _drawShopBuilding(self, offset=(0, 0)):
+        """
+        Draw the shop building on the map as a visual indicator.
+        The shop is drawn on specific tiles of the map. Accepts a camera offset (dx, dy)
+        to draw in screen coordinates.
+        """
+        try:
+            dx, dy = offset
+            # Calculate shop position based on tile coordinates and camera offset
+            shop_left = self.shop_tile_x * self.map.tile_size + dx
+            shop_top = self.shop_tile_y * self.map.tile_size + dy
+
+            # Draw the door as a visible opening (screen coords)
+            try:
+                door_rect_screen = pygame.Rect(self.shop_door_rect.x + dx, self.shop_door_rect.y + dy, self.shop_door_rect.width, self.shop_door_rect.height)
+                # Draw a slightly larger bright outline and a dark center so it's visible on any background
+                outline_rect = door_rect_screen.inflate(6, 6)
+                try:
+                    pygame.draw.rect(self.screen, (255, 215, 0), outline_rect)  # bright outline
+                    pygame.draw.rect(self.screen, (40, 40, 40), door_rect_screen)  # dark door
+                except Exception:
+                    # Drawing might fail if screen/surface invalid
+                    pass
+
+                # If player is near, draw a subtle glow
+                try:
+                    if getattr(self, 'show_shop_prompt', False):
+                        glow_rect = door_rect_screen.inflate(self.map.tile_size // 2, self.map.tile_size // 2)
+                        glow_surf = pygame.Surface((glow_rect.width, glow_rect.height), pygame.SRCALPHA)
+                        glow_surf.fill((255, 215, 0, 80))
+                        self.screen.blit(glow_surf, (glow_rect.x, glow_rect.y))
+                except Exception:
+                    pass
+
+                # Optional small label for clarity
+                try:
+                    door_font = pygame.font.SysFont("Arial", 12)
+                    door_text = door_font.render("E", True, (255, 255, 255))
+                    self.screen.blit(door_text, (door_rect_screen.x + (door_rect_screen.width - door_text.get_width())//2, door_rect_screen.y - door_text.get_height() - 2))
+                except Exception:
+                    pass
+
             except Exception as e:
-                Logger.error("MapPageView._drawShopBuilding", e)
+                Logger.error("MapPageView._drawShopDoor", e)
+
+            # Marker drawing handled in main render loop; nothing additional here
+            return
         except Exception as e:
             Logger.error("MapPageView._drawShopBuilding", e)
-
+            return

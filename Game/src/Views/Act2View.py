@@ -6,6 +6,7 @@ Manages combat against Security Chief and rhythm mini-game phase.
 """
 
 import pygame
+import os
 from Models.CaracterModel import CaracterModel
 from Controllers.GameState import GameState
 from Models.PlayerModel import PlayerModel
@@ -213,21 +214,21 @@ class Act2View:
                                 
                                 # Update screen if it's a resizable window
                                 try:
-                                    self.screen = pygame.display.set_mode((new_width, new_height), pygame.RESIZABLE)
+                                    
+                                        try:
+                                         os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
+                                        except Exception as e:
+                                            Logger.error("Act2View.run", e)
+                                        self.screen = pygame.display.set_mode((new_width, new_height), pygame.RESIZABLE)
                                 except Exception:
                                     # Screen might not be resizable, just update dimensions
                                     pass
                                 
                                 # Recreate views with new dimensions
                                 try:
-                                    if self.phase == "combat":
-                                        self.combat_view = CombatView(self.screen_width, self.screen_height)
-                                    elif self.phase == "rhythm" and self.rhythm_view:
-                                        self.rhythm_view = RhythmView(self.screen_width, self.screen_height)
-                                        # Reinitialize controller with new view
                                         if self.rhythm_controller:
                                             self.rhythm_controller.view = self.rhythm_view
-                                    Logger.debug("Act2View.run", "Window resized, views updated", 
+                                            Logger.debug("Act2View.run", "Window resized, views updated", 
                                                width=new_width, height=new_height)
                                 except Exception as e:
                                     Logger.error("Act2View.run", e)
