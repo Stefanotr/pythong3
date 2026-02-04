@@ -40,26 +40,42 @@ class PageView:
             except Exception as e:
                 Logger.error("PageView.__init__", e)
             
-            # Initialize pygame
-            try:
-                pygame.init()
-                Logger.debug("PageView.__init__", "Pygame initialized")
-            except Exception as e:
-                Logger.error("PageView.__init__", e)
-                raise
+            # Pygame initialization is expected to be done by the caller (e.g., WelcomePageView)
+            if not pygame.get_init():
+                Logger.error("PageView.__init__", "Pygame not initialized. PageView requires pygame to be initialized before instantiation.")
+                raise RuntimeError("Pygame must be initialized before creating PageView")
             
             # Store properties
             self.name = name
             self.width = width
             self.height = height
-            self.resizable = RESIZABLE
+            # If caller explicitely provided a RESIZABLE flag, use it; otherwise default to pygame.RESIZABLE
+            self.resizable = RESIZABLE if RESIZABLE else pygame.RESIZABLE
             self.backgroud_image = backgroud_image
 
-            # Create display surface
+            # Create or reuse display surface
             try:
-                self.screen = pygame.display.set_mode((self.width, self.height), self.resizable)
-                pygame.display.set_caption(self.name)
-                Logger.debug("PageView.__init__", "Display surface created", size=(width, height))
+                existing = pygame.display.get_surface()
+                if existing is not None:
+                    # Reuse existing display surface and adopt its current size
+                    self.screen = existing
+                    self.width, self.height = self.screen.get_size()
+                    # Make sure window is resizable by setting mode if caller didn't force non-resizable
+                    if not RESIZABLE:
+                        try:
+                            # Recreate window with RESIZABLE flag while preserving size
+                            self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+                            self.resizable = pygame.RESIZABLE
+                        except Exception:
+                            # If recreate fails (platform restrictions), keep existing surface
+                            pass
+                    pygame.display.set_caption(self.name)
+                    Logger.debug("PageView.__init__", "Reusing existing display surface", size=(self.width, self.height), resizable=self.resizable)
+                else:
+                    # No existing surface -> create one
+                    self.screen = pygame.display.set_mode((self.width, self.height), self.resizable)
+                    pygame.display.set_caption(self.name)
+                    Logger.debug("PageView.__init__", "Display surface created", size=(self.width, self.height), resizable=self.resizable)
             except Exception as e:
                 Logger.error("PageView.__init__", e)
                 raise

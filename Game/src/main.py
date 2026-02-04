@@ -20,13 +20,7 @@ def main():
     try:
         Logger.debug("main.main", "Game application starting")
         
-        # Initialize pygame
-        try:
-            pygame.init()
-            Logger.debug("main.main", "Pygame initialized successfully")
-        except Exception as e:
-            Logger.error("main.main", e)
-            raise
+        # Pygame initialization is handled by WelcomePageView (single init point)
         
         # Create and run welcome page
         try:

@@ -19,6 +19,7 @@ from Models.MapModel import MapModel
 from Models.TileModel import TileModel
 from Models.BottleModel import BottleModel
 from Utils.Logger import Logger
+from Controllers.GameState import GameState
 
 
 # === MAP PAGE VIEW CLASS ===
@@ -154,7 +155,7 @@ class MapPageView(PageView):
         """
         Main game loop for the map page view.
         Handles events, updates game state, and renders the map.
-        Returns a string indicating the next view: "ACT1", "ACT2", "RHYTHM", or "QUIT".
+        Returns a string indicating the next view (GameState values): "ACT1", "ACT2", "RHYTHM", or "QUIT".
         """
         try:
             clock = pygame.time.Clock()
@@ -170,7 +171,7 @@ class MapPageView(PageView):
                     for event in events:
                         if event.type == pygame.QUIT:
                             Logger.debug("MapPageView.run", "QUIT event received")
-                            return "QUIT"
+                            return GameState.QUIT.value
                         
                         elif event.type == pygame.VIDEORESIZE:
                             # Handle window resize
@@ -192,14 +193,14 @@ class MapPageView(PageView):
                                     pause_menu = PauseMenuView(self.screen)
                                     pause_result = pause_menu.run()
                                     
-                                    if pause_result == "quit":
+                                    if pause_result == GameState.QUIT.value:
                                         Logger.debug("MapPageView.run", "Quit requested from pause menu")
-                                        return "QUIT"
-                                    elif pause_result == "main_menu":
+                                        return GameState.QUIT.value
+                                    elif pause_result == GameState.MAIN_MENU.value:
                                         Logger.debug("MapPageView.run", "Main menu requested from pause menu")
-                                        return "MAIN_MENU"
-                                    elif pause_result == "continue":
-                                        # If "continue", just resume the game loop
+                                        return GameState.MAIN_MENU.value
+                                    elif pause_result == GameState.CONTINUE.value:
+                                        # If CONTINUE, just resume the game loop
                                         Logger.debug("MapPageView.run", "Resuming from pause menu")
                                         # Continue the loop normally
                                     else:
@@ -224,7 +225,7 @@ class MapPageView(PageView):
                                         for shop_event in pygame.event.get():
                                             if shop_event.type == pygame.QUIT:
                                                 shop_running = False
-                                                return "QUIT"
+                                                return GameState.QUIT.value
                                             
                                             result = shop_controller.handleInput(shop_event)
                                             if result == "exit":
@@ -288,7 +289,7 @@ class MapPageView(PageView):
                                             for shop_event in pygame.event.get():
                                                 if shop_event.type == pygame.QUIT:
                                                     shop_running = False
-                                                    return "QUIT"
+                                                    return GameState.QUIT.value
                                                 
                                                 result = shop_controller.handleInput(shop_event)
                                                 if result == "exit":
@@ -369,38 +370,33 @@ class MapPageView(PageView):
                 
                 except Exception as e:
                     Logger.error("MapPageView.run", e)
-                    return "QUIT"
-            
-            # After loop exits, check if transition was triggered
+                    return GameState.QUIT.value
             if transition_triggered:
                 # === DETERMINE NEXT VIEW ===
                 try:
                     if self.current_act == 1:
                         Logger.debug("MapPageView.run", "Transitioning to Act 1")
-                        return "ACT1"
+                        return GameState.ACT1.value
                     elif self.current_act == 2:
                         Logger.debug("MapPageView.run", "Transitioning to Act 2")
-                        return "ACT2"
+                        return GameState.ACT2.value
                     elif self.current_act == 3:
                         Logger.debug("MapPageView.run", "Transitioning to Rhythm")
-                        return "RHYTHM"
+                        return GameState.RHYTHM.value
                     else:
                         Logger.debug("MapPageView.run", "No more acts, returning to menu")
-                        return "QUIT"
+                        return GameState.QUIT.value
                 except Exception as e:
                     Logger.error("MapPageView.run", e)
-                    return "QUIT"
+                    return GameState.QUIT.value
             else:
                 # Loop exited without transition (shouldn't happen normally)
                 Logger.debug("MapPageView.run", "Loop exited without transition")
-                return "QUIT"
-                        
+                return GameState.QUIT.value
         except Exception as e:
             Logger.error("MapPageView.run", e)
-            return "QUIT"
-    
-    # === RENDERING HELPERS ===
-    
+            return GameState.QUIT.value
+
     def drawTransitionPrompt(self):
         """
         Draws the transition prompt on screen.

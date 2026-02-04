@@ -7,6 +7,7 @@ Manages combat against Security Chief and rhythm mini-game phase.
 
 import pygame
 from Models.CaracterModel import CaracterModel
+from Controllers.GameState import GameState
 from Models.PlayerModel import PlayerModel
 from Models.BottleModel import BottleModel
 from Models.GuitarModel import GuitarFactory
@@ -182,7 +183,7 @@ class Act2View:
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:
                             Logger.debug("Act2View.run", "QUIT event received")
-                            return "QUIT"
+                            return GameState.QUIT.value
                         
                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                             # Open pause menu (delegates its own event loop to PauseMenuView.run)
@@ -190,14 +191,14 @@ class Act2View:
                                 pause_menu = PauseMenuView(self.screen)
                                 pause_result = pause_menu.run()
 
-                                if pause_result == "quit":
+                                if pause_result == GameState.QUIT.value:
                                     Logger.debug("Act2View.run", "Quit requested from pause menu")
-                                    return "QUIT"
-                                elif pause_result == "main_menu":
+                                    return GameState.QUIT.value
+                                elif pause_result == GameState.MAIN_MENU.value:
                                     Logger.debug("Act2View.run", "Main menu requested from pause menu")
-                                    return "MAIN_MENU"
+                                    return GameState.MAIN_MENU.value
 
-                                # If "continue" or anything else, just resume the game loop
+                                # If CONTINUE or anything else, just resume the game loop
                                 Logger.debug("Act2View.run", "Resuming from pause menu")
                             except Exception as e:
                                 Logger.error("Act2View.run", e)
@@ -340,20 +341,20 @@ class Act2View:
             try:
                 if self.phase == "finished" or (self.phase == "rhythm" and self.isRhythmComplete()):
                     Logger.debug("Act2View.run", "Act 2 completed - VICTORY")
-                    return "MAP"  # Return to map
+                    return GameState.MAP.value  # Return to map
                 elif self.phase == "combat" and self.combat_model.getWinner() != "PLAYER":
                     Logger.debug("Act2View.run", "Act 2 completed - DEFEAT")
-                    return "GAME_OVER"
+                    return GameState.GAME_OVER.value
                 else:
                     Logger.debug("Act2View.run", "Act 2 completed - VICTORY")
-                    return "MAP"
+                    return GameState.MAP.value
             except Exception as e:
                 Logger.error("Act2View.run", e)
-                return "GAME_OVER"
+                return GameState.GAME_OVER.value
                 
         except Exception as e:
             Logger.error("Act2View.run", e)
-            return "QUIT"
+            return GameState.QUIT.value
     
     # === RHYTHM PHASE INITIALIZATION ===
     

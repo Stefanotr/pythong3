@@ -9,6 +9,7 @@ import pygame
 import sys
 from Utils.Logger import Logger
 from Controllers import BaseController
+from Controllers.GameState import GameState
 
 
 # === BUTTON CONTROLLER CLASS ===
@@ -69,11 +70,11 @@ class ButtonController(BaseController):
             
             if self.action == "start_game":
                 Logger.debug("ButtonController.handleClick", "Start game action triggered")
-                return "start_game"
+                return GameState.START_GAME.value
             elif self.action == "quit_game":
                 Logger.debug("ButtonController.handleClick", "Quit game action triggered")
                 self.quitGame()
-                return "quit_game"
+                return GameState.QUIT.value
             
             return None
         except Exception as e:

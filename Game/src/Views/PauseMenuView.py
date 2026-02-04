@@ -9,6 +9,7 @@ import pygame
 from Utils.Logger import Logger
 from Controllers.ButtonController import ButtonController
 from Controllers.PauseMenuController import PauseMenuController
+from Controllers.GameState import GameState
 from Views.ButtonView import ButtonView
 
 
@@ -147,7 +148,7 @@ class PauseMenuView:
                         # Fallback: basic quit handling
                         for event in events:
                             if event.type == pygame.QUIT:
-                                result = "quit"
+                                result = GameState.QUIT.value
                                 running = False
 
                     # === RENDERING ===
@@ -165,11 +166,11 @@ class PauseMenuView:
                     continue
             
             Logger.debug("PauseMenuView.run", "Pause menu closed", result=result)
-            return result if result else "continue"
+            return result if result else GameState.CONTINUE.value
             
         except Exception as e:
             Logger.error("PauseMenuView.run", e)
-            return "continue"
+            return GameState.CONTINUE.value
     
     # === RENDERING ===
     

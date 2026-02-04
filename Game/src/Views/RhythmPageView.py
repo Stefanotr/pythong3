@@ -7,6 +7,7 @@ Uses existing RhythmModel, RhythmController, and RhythmView classes.
 
 import pygame
 from Models.PlayerModel import PlayerModel
+from Controllers.GameState import GameState
 from Models.RhythmModel import RhythmModel
 from Controllers.RhythmController import RhythmController
 from Views.RhythmView import RhythmView
@@ -133,7 +134,7 @@ class RhythmPageView:
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:
                             Logger.debug("RhythmPageView.run", "QUIT event received")
-                            return "QUIT"
+                            return GameState.QUIT.value
                         
                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                             # Open pause menu (only if countdown is finished)
@@ -142,14 +143,14 @@ class RhythmPageView:
                                     pause_menu = PauseMenuView(self.screen)
                                     pause_result = pause_menu.run()
 
-                                    if pause_result == "quit":
+                                    if pause_result == GameState.QUIT.value:
                                         Logger.debug("RhythmPageView.run", "Quit requested from pause menu")
-                                        return "QUIT"
-                                    elif pause_result == "main_menu":
+                                        return GameState.QUIT.value
+                                    elif pause_result == GameState.MAIN_MENU.value:
                                         Logger.debug("RhythmPageView.run", "Main menu requested from pause menu")
-                                        return "MAIN_MENU"
+                                        return GameState.MAIN_MENU.value
 
-                                    # If "continue" or anything else, just resume the game loop
+                                    # If CONTINUE or anything else, just resume the game loop
                                     Logger.debug("RhythmPageView.run", "Resuming from pause menu")
                                 except Exception as e:
                                     Logger.error("RhythmPageView.run", e)
@@ -241,17 +242,17 @@ class RhythmPageView:
             try:
                 if self.game_complete:
                     Logger.debug("RhythmPageView.run", "Final rhythm sequence completed")
-                    return "COMPLETE"
+                    return GameState.COMPLETE.value
                 else:
                     Logger.debug("RhythmPageView.run", "Rhythm sequence ended")
-                    return "QUIT"
+                    return GameState.QUIT.value
             except Exception as e:
                 Logger.error("RhythmPageView.run", e)
-                return "QUIT"
+                return GameState.QUIT.value
                 
         except Exception as e:
             Logger.error("RhythmPageView.run", e)
-            return "QUIT"
+            return GameState.QUIT.value
     
     # === RHYTHM COMPLETION CHECK ===
     

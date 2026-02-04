@@ -7,6 +7,7 @@ Handles input for the pause menu: navigation, selection, and quit/continue actio
 import pygame
 from Utils.Logger import Logger
 from Controllers import BaseController
+from Controllers.GameState import GameState
 
 
 class PauseMenuController(BaseController):
@@ -71,9 +72,7 @@ class PauseMenuController(BaseController):
             # Window close
             if event.type == pygame.QUIT:
                 Logger.debug("PauseMenuController.handle_input", "QUIT event received")
-                return "quit"
-
-            if event.type == pygame.KEYDOWN:
+                return GameState.QUIT.value
                 # ESC to continue
                 if event.key == pygame.K_ESCAPE:
                     Logger.debug("PauseMenuController.handle_input", "ESC pressed -> continue")
@@ -132,14 +131,14 @@ class PauseMenuController(BaseController):
 
     def _map_button_action(self, action):
         """
-        Map a ButtonController.action to a pause menu result.
+        Map a ButtonController.action to a pause menu result (GameState values).
         """
         if action == "continue_game":
-            return "continue"
+            return GameState.CONTINUE.value
         if action == "main_menu":
-            return "main_menu"
+            return GameState.MAIN_MENU.value
         if action == "quit_game":
-            return "quit"
+            return GameState.QUIT.value
         return None
 
 
