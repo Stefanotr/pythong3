@@ -122,6 +122,10 @@ class PageView:
         Should be called at the start of each frame's rendering.
         """
         try:
+            # If pygame display is not initialized or surface is gone, skip drawing
+            if not pygame.get_init() or pygame.display.get_surface() is None:
+                return
+
             # Get current screen size to ensure background matches
             current_width, current_height = self.screen.get_size()
             
@@ -139,3 +143,74 @@ class PageView:
                 self.screen.blit(self.background, (0, 0))
         except Exception as e:
             Logger.error("PageView.draw", e)
+
+    # === GENERIC GAME LOOP HOOKS ===
+
+    def handle_events(self, events):
+        """
+        Handle a batch of events for this page.
+
+        Subclasses can override this to implement their own logic.
+
+        Args:
+            events: iterable of pygame events
+
+        Returns:
+            bool: True to keep running, False to exit the loop.
+        """
+        # Default: keep running and ignore events
+        return True
+
+    def update(self):
+        """
+        Update page state.
+
+        Called once per frame after event handling.
+        """
+        # Default: no-op
+        return None
+
+    def render(self):
+        """
+        Render the page content.
+
+        Called once per frame after update.
+        """
+        # Default: just draw the background
+        self.draw()
+
+    def run(self):
+        """
+        Generic main loop for simple pages.
+
+        Subclasses can either:
+          - use this implementation by overriding handle_events/update/render
+          - or override run() completely for more complex flows (with return codes).
+        """
+        try:
+            clock = pygame.time.Clock()
+            running = True
+            Logger.debug("PageView.run", "Generic page loop started", name=self.name)
+
+            while running:
+                try:
+                    events = pygame.event.get()
+                    running = self.handle_events(events)
+
+                    if not running:
+                        break
+
+                    self.update()
+                    self.render()
+
+                    pygame.display.flip()
+                    clock.tick(60)
+                except Exception as e:
+                    Logger.error("PageView.run", e)
+                    # Continue running even if one frame fails
+                    continue
+
+            Logger.debug("PageView.run", "Generic page loop ended", name=self.name)
+        except Exception as e:
+            Logger.error("PageView.run", e)
+            raise

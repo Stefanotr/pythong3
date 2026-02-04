@@ -141,14 +141,15 @@ class RhythmPageView:
                                 try:
                                     pause_menu = PauseMenuView(self.screen)
                                     pause_result = pause_menu.run()
-                                    
+
                                     if pause_result == "quit":
                                         Logger.debug("RhythmPageView.run", "Quit requested from pause menu")
                                         return "QUIT"
                                     elif pause_result == "main_menu":
                                         Logger.debug("RhythmPageView.run", "Main menu requested from pause menu")
                                         return "MAIN_MENU"
-                                    # If "continue", just resume the game loop
+
+                                    # If "continue" or anything else, just resume the game loop
                                     Logger.debug("RhythmPageView.run", "Resuming from pause menu")
                                 except Exception as e:
                                     Logger.error("RhythmPageView.run", e)

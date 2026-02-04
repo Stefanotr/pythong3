@@ -185,18 +185,19 @@ class Act2View:
                             return "QUIT"
                         
                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                            # Open pause menu
+                            # Open pause menu (delegates its own event loop to PauseMenuView.run)
                             try:
                                 pause_menu = PauseMenuView(self.screen)
                                 pause_result = pause_menu.run()
-                                
+
                                 if pause_result == "quit":
                                     Logger.debug("Act2View.run", "Quit requested from pause menu")
                                     return "QUIT"
                                 elif pause_result == "main_menu":
                                     Logger.debug("Act2View.run", "Main menu requested from pause menu")
                                     return "MAIN_MENU"
-                                # If "continue", just resume the game loop
+
+                                # If "continue" or anything else, just resume the game loop
                                 Logger.debug("Act2View.run", "Resuming from pause menu")
                             except Exception as e:
                                 Logger.error("Act2View.run", e)

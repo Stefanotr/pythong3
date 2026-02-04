@@ -8,11 +8,12 @@ Manages combat flow, status effects, and turn switching.
 import pygame
 import random
 from Utils.Logger import Logger
+from Controllers import BaseController
 
 
 # === COMBAT CONTROLLER CLASS ===
 
-class CombatController:
+class CombatController(BaseController):
     """
     Controller for managing turn-based combat logic.
     Handles player actions, enemy AI, status effects, and combat flow.
@@ -63,8 +64,8 @@ class CombatController:
             Logger.error("CombatController.update", e)
     
     # === INPUT HANDLING ===
-    
-    def handleInput(self, event):
+
+    def handle_input(self, event):
         """
         Handle player input events.
         
@@ -72,41 +73,49 @@ class CombatController:
             event: Pygame event object
         """
         try:
-            if event.type == pygame.KEYDOWN and self.combat.isPlayerTurn() and self.action_delay == 0:
-                
+            if (
+                event.type == pygame.KEYDOWN
+                and self.combat.isPlayerTurn()
+                and self.action_delay == 0
+            ):
                 # Simple attack (A)
                 if event.key == pygame.K_a:
                     try:
                         self.playerSimpleAttack()
                         self.action_delay = self.action_cooldown
                     except Exception as e:
-                        Logger.error("CombatController.handleInput", e)
-                
+                        Logger.error("CombatController.handle_input", e)
+
                 # Power Chord (P) - Consumes health
                 elif event.key == pygame.K_p:
                     try:
                         self.playerPowerChord()
                         self.action_delay = self.action_cooldown
                     except Exception as e:
-                        Logger.error("CombatController.handleInput", e)
-                
+                        Logger.error("CombatController.handle_input", e)
+
                 # Dégueulando (D) - Special alcohol-related attack
                 elif event.key == pygame.K_d:
                     try:
                         self.playerDegueulando()
                         self.action_delay = self.action_cooldown
                     except Exception as e:
-                        Logger.error("CombatController.handleInput", e)
-                
+                        Logger.error("CombatController.handle_input", e)
+
                 # Drink (B) - Increases stats
                 elif event.key == pygame.K_b:
                     try:
                         self.playerDrink()
                         self.action_delay = self.action_cooldown
                     except Exception as e:
-                        Logger.error("CombatController.handleInput", e)
+                        Logger.error("CombatController.handle_input", e)
         except Exception as e:
-            Logger.error("CombatController.handleInput", e)
+            Logger.error("CombatController.handle_input", e)
+
+    # Backwards compatible alias
+    def handleInput(self, event):
+        """Legacy alias keeping existing calls working."""
+        return self.handle_input(event)
     
     # === PLAYER ACTIONS ===
     

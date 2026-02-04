@@ -165,8 +165,9 @@ class MapPageView(PageView):
             while running:
                 try:
                     # === EVENT HANDLING ===
-                    
-                    for event in pygame.event.get():
+                    events = pygame.event.get()
+
+                    for event in events:
                         if event.type == pygame.QUIT:
                             Logger.debug("MapPageView.run", "QUIT event received")
                             return "QUIT"
@@ -245,26 +246,7 @@ class MapPageView(PageView):
                                 transition_triggered = True
                                 running = False
                                 break
-                            
-                            # Handle player movement (arrow keys and WASD) - only if not SPACE
-                            if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN,
-                                           pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]:
-                                try:
-                                    # Create a copy of the event for movement
-                                    movement_event = pygame.event.Event(pygame.KEYDOWN, key=event.key)
-                                    # Convert WASD to arrow keys for controller
-                                    if event.key == pygame.K_a:
-                                        movement_event.key = pygame.K_LEFT
-                                    elif event.key == pygame.K_d:
-                                        movement_event.key = pygame.K_RIGHT
-                                    elif event.key == pygame.K_w:
-                                        movement_event.key = pygame.K_UP
-                                    elif event.key == pygame.K_s:
-                                        movement_event.key = pygame.K_DOWN
-                                    self.controller.handleInput(movement_event)
-                                except Exception as e:
-                                    Logger.error("MapPageView.run", e)
-                        
+
                         # Handle mouse click on transition prompt or shop
                         elif event.type == pygame.MOUSEBUTTONDOWN:
                             if event.button == 1:  # Left click
@@ -289,7 +271,7 @@ class MapPageView(PageView):
                                 shop_right = (self.shop_tile_x + self.shop_tile_width) * self.map.tile_size
                                 shop_top = self.shop_tile_y * self.map.tile_size
                                 shop_bottom = (self.shop_tile_y + self.shop_tile_height) * self.map.tile_size
-                                
+
                                 if (shop_left <= mouse_x <= shop_right and
                                     shop_top <= mouse_y <= shop_bottom):
                                     # Open shop on click
@@ -321,7 +303,13 @@ class MapPageView(PageView):
                                         Logger.debug("MapPageView.run", "Returned from shop")
                                     except Exception as e:
                                         Logger.error("MapPageView.run", e)
-                    
+
+                    # === PLAYER CONTROLLER UPDATE (continuous movement) ===
+                    try:
+                        self.controller.handle_events(events)
+                    except Exception as e:
+                        Logger.error("MapPageView.run", e)
+
                     # === UPDATE ===
                     
                     # Check if player is near shop (within 2 tiles distance)

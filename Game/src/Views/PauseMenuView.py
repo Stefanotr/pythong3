@@ -8,6 +8,7 @@ Based on WelcomePageView design.
 import pygame
 from Utils.Logger import Logger
 from Controllers.ButtonController import ButtonController
+from Controllers.PauseMenuController import PauseMenuController
 from Views.ButtonView import ButtonView
 
 
@@ -37,10 +38,9 @@ class PauseMenuView:
                         width=self.screen_width, height=self.screen_height)
             
             # === BUTTON INITIALIZATION ===
-            
+
             self.buttons = []
             self.buttons_controllers = []
-            self.selected_index = 0
             
             # Calculate button positions (centered vertically)
             button_y_start = self.screen_height // 2 - 100
@@ -100,6 +100,13 @@ class PauseMenuView:
                 Logger.error("PauseMenuView.__init__", e)
                 self.title_font = pygame.font.Font(None, 72)
                 self.button_font = pygame.font.Font(None, 36)
+
+            # === CONTROLLER INITIALIZATION ===
+            try:
+                self.controller = PauseMenuController(self.buttons_controllers)
+            except Exception as e:
+                Logger.error("PauseMenuView.__init__", e)
+                self.controller = None
                 
         except Exception as e:
             Logger.error("PauseMenuView.__init__", e)
@@ -123,65 +130,26 @@ class PauseMenuView:
             
             while running:
                 try:
-                    # === EVENT HANDLING ===
-                    
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            result = "quit"
+                    events = pygame.event.get()
+
+                    # === INPUT HANDLING VIA CONTROLLER ===
+                    if self.controller is not None:
+                        try:
+                            action = self.controller.handle_events(events)
+                        except Exception as e:
+                            Logger.error("PauseMenuView.run", e)
+                            action = None
+
+                        if action is not None:
+                            result = action
                             running = False
-                            Logger.debug("PauseMenuView.run", "QUIT event received")
-                        
-                        elif event.type == pygame.KEYDOWN:
-                            # ESC to continue
-                            if event.key == pygame.K_ESCAPE:
-                                result = "continue"
+                    else:
+                        # Fallback: basic quit handling
+                        for event in events:
+                            if event.type == pygame.QUIT:
+                                result = "quit"
                                 running = False
-                                Logger.debug("PauseMenuView.run", "ESC pressed, continuing")
-                            
-                            # Arrow keys for navigation
-                            elif event.key == pygame.K_UP:
-                                self.selected_index = (self.selected_index - 1) % len(self.buttons)
-                                Logger.debug("PauseMenuView.run", "Selection moved up", index=self.selected_index)
-                            
-                            elif event.key == pygame.K_DOWN:
-                                self.selected_index = (self.selected_index + 1) % len(self.buttons)
-                                Logger.debug("PauseMenuView.run", "Selection moved down", index=self.selected_index)
-                            
-                            # Enter to select
-                            elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
-                                if self.selected_index < len(self.buttons_controllers):
-                                    button_controller = self.buttons_controllers[self.selected_index]
-                                    action = button_controller.action  # Get action directly
-                                    if action == "continue_game":
-                                        result = "continue"
-                                    elif action == "main_menu":
-                                        result = "main_menu"
-                                    elif action == "quit_game":
-                                        result = "quit"
-                                    running = False
-                                    Logger.debug("PauseMenuView.run", "Action selected", action=action)
-                        
-                        # Mouse click on buttons
-                        elif event.type == pygame.MOUSEBUTTONDOWN:
-                            if event.button == 1:  # Left click
-                                mouse_pos = event.pos
-                                for i, button_controller in enumerate(self.buttons_controllers):
-                                    try:
-                                        if button_controller.isClicked(mouse_pos):
-                                            action = button_controller.action
-                                            if action == "continue_game":
-                                                result = "continue"
-                                            elif action == "main_menu":
-                                                result = "main_menu"
-                                            elif action == "quit_game":
-                                                result = "quit"
-                                            running = False
-                                            Logger.debug("PauseMenuView.run", "Button clicked", action=action)
-                                            break
-                                    except Exception as e:
-                                        Logger.error("PauseMenuView.run", e)
-                                        continue
-                    
+
                     # === RENDERING ===
                     
                     try:

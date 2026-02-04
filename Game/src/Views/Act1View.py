@@ -173,18 +173,19 @@ class Act1View:
                             return "QUIT"
                         
                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                            # Open pause menu
+                            # Open pause menu (delegates its own event loop to PauseMenuView.run)
                             try:
                                 pause_menu = PauseMenuView(self.screen)
                                 pause_result = pause_menu.run()
-                                
+
                                 if pause_result == "quit":
                                     Logger.debug("Act1View.run", "Quit requested from pause menu")
                                     return "QUIT"
                                 elif pause_result == "main_menu":
                                     Logger.debug("Act1View.run", "Main menu requested from pause menu")
                                     return "MAIN_MENU"
-                                # If "continue", just resume the game loop
+
+                                # If "continue" or anything else, just resume the game loop
                                 Logger.debug("Act1View.run", "Resuming from pause menu")
                             except Exception as e:
                                 Logger.error("Act1View.run", e)
@@ -247,21 +248,21 @@ class Act1View:
                         except Exception as e:
                             Logger.error("Act1View.run", e)
                     
-                            # === RENDERING ===
-                            
+                    # === RENDERING ===
+                    
+                    try:
+                        if self.show_intro:
+                            self.drawIntro()
+                        else:
+                            self.combat_view.draw(self.screen, self.combat_model)
+                            # Draw static character sprites
                             try:
-                                if self.show_intro:
-                                    self.drawIntro()
-                                else:
-                                    self.combat_view.draw(self.screen, self.combat_model)
-                                    # Draw static character sprites
-                                    try:
-                                        self.player_view.drawCaracter(self.screen, self.johnny)
-                                        self.boss_view.drawCaracter(self.screen, self.gros_bill)
-                                    except Exception as e:
-                                        Logger.error("Act1View.run", e)
+                                self.player_view.drawCaracter(self.screen, self.johnny)
+                                self.boss_view.drawCaracter(self.screen, self.gros_bill)
                             except Exception as e:
                                 Logger.error("Act1View.run", e)
+                    except Exception as e:
+                        Logger.error("Act1View.run", e)
                     
                     pygame.display.flip()
                     clock.tick(60)
@@ -279,7 +280,7 @@ class Act1View:
                     return "MAP"  # Return to map
                 else:
                     Logger.debug("Act1View.run", "Act 1 completed - DEFEAT")
-                    return "GAME_OVER"
+                    return "MAIN_MENU"
             except Exception as e:
                 Logger.error("Act1View.run", e)
                 return "GAME_OVER"

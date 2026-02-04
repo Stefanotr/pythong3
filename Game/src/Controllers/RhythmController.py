@@ -7,11 +7,12 @@ Manages note movement, hit detection, scoring, and combo system.
 
 import pygame
 from Utils.Logger import Logger
+from Controllers import BaseController
 
 
 # === RHYTHM CONTROLLER CLASS ===
 
-class RhythmController:
+class RhythmController(BaseController):
     """
     Controller for managing rhythm game mechanics.
     Handles note updates, input processing, hit detection, and scoring.
@@ -70,7 +71,7 @@ class RhythmController:
             raise
 
     # === UPDATE ===
-    
+
     def update(self):
         """
         Update rhythm game state.
@@ -126,8 +127,8 @@ class RhythmController:
             Logger.error("RhythmController.update", e)
 
     # === INPUT HANDLING ===
-    
-    def handleInput(self, event):
+
+    def handle_input(self, event):
         """
         Handle input events for rhythm game.
         
@@ -135,15 +136,19 @@ class RhythmController:
             event: Pygame event object
         """
         try:
-            if event.type == pygame.KEYDOWN:
-                if event.key in self.key_map:
-                    try:
-                        lane = self.key_map[event.key]
-                        self.checkHit(lane)
-                    except Exception as e:
-                        Logger.error("RhythmController.handleInput", e)
+            if event.type == pygame.KEYDOWN and event.key in self.key_map:
+                try:
+                    lane = self.key_map[event.key]
+                    self.checkHit(lane)
+                except Exception as e:
+                    Logger.error("RhythmController.handle_input", e)
         except Exception as e:
-            Logger.error("RhythmController.handleInput", e)
+            Logger.error("RhythmController.handle_input", e)
+
+    # Backwards compatible alias
+    def handleInput(self, event):
+        """Legacy alias keeping existing calls working."""
+        return self.handle_input(event)
 
     # === HIT DETECTION ===
     
