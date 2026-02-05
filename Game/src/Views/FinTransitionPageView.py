@@ -78,9 +78,16 @@ class FinTransitionPageView(PageView):
                     # === INCREMENT TIMER ===
                     self.elapsed_frames += 1
                     
+                    # Log progress every 30 frames (0.5 seconds at 60 FPS)
+                    if self.elapsed_frames % 30 == 0:
+                        time_remaining = max(0, self.duration_seconds - (self.elapsed_frames / 60))
+                        Logger.debug("FinTransitionPageView.run", "Transition progress",
+                                    elapsed_frames=self.elapsed_frames, time_remaining=time_remaining)
+                    
                     # Check if duration elapsed
                     if self.elapsed_frames >= self.duration_frames:
-                        Logger.debug("FinTransitionPageView.run", "Transition duration elapsed")
+                        Logger.debug("FinTransitionPageView.run", "Transition duration elapsed",
+                                    total_frames=self.elapsed_frames, duration_frames=self.duration_frames)
                         return ""
                     
                     # === RENDERING ===
@@ -90,6 +97,11 @@ class FinTransitionPageView(PageView):
                         
                         # Calculate progress (0 to 1)
                         progress = self.elapsed_frames / self.duration_frames
+                        
+                        # Log rendering start on first frame
+                        if self.elapsed_frames == 1:
+                            Logger.debug("FinTransitionPageView.run", "Starting render loop",
+                                        screen_width=self.screen.get_width(), screen_height=self.screen.get_height())
                         
                         # Fade in/out effect: alpha increases then decreases
                         if progress < 0.5:
@@ -132,6 +144,11 @@ class FinTransitionPageView(PageView):
                         self.screen.blit(text_hint, hint_rect)
                         
                         pygame.display.flip()
+                        
+                        # Log every 60 frames (1 second at 60 FPS)
+                        if self.elapsed_frames % 60 == 0:
+                            Logger.debug("FinTransitionPageView.run", "Rendering frame",
+                                        frame=self.elapsed_frames, progress=progress, alpha=alpha)
                     except Exception as e:
                         Logger.error("FinTransitionPageView.run", e)
                     

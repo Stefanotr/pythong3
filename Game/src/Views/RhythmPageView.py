@@ -13,6 +13,7 @@ from Models.RhythmModel import RhythmModel
 from Controllers.RhythmController import RhythmController
 from Views.RhythmView import RhythmView
 from Views.PauseMenuView import PauseMenuView
+from Views.FinTransitionPageView import FinTransitionPageView
 from Utils.Logger import Logger
 from Controllers.GameSequenceController import GameSequenceController
 
@@ -252,6 +253,7 @@ class RhythmPageView:
                             # Check if rhythm is complete
                             if self.isRhythmComplete() and not self.game_complete:
                                 self.game_complete = True
+                                running = False
                                 Logger.debug("RhythmPageView.run", "Rhythm game completed automatically")
                         except Exception as e:
                             Logger.error("RhythmPageView.run", e)
@@ -278,19 +280,58 @@ class RhythmPageView:
             # === DETERMINE RESULT ===
             
             try:
+                # Log game_complete status after loop ends
+                Logger.debug("RhythmPageView.run", "Main loop ended", 
+                           game_complete=self.game_complete,
+                           running=running)
+                
                 if self.game_complete:
                     # Check if it's a victory or defeat based on crowd satisfaction
                     is_victory = self.rhythm_model.crowd_satisfaction > 0
                     
                     Logger.debug("RhythmPageView.run", "Rhythm game completed", 
                                satisfaction=self.rhythm_model.crowd_satisfaction,
-                               is_victory=is_victory)
+                               is_victory=is_victory,
+                               total_notes=len(self.rhythm_model.notes),
+                               active_notes=len([n for n in self.rhythm_model.notes if n.get("active", False)]))
                     
                     if is_victory:
-                        Logger.debug("RhythmPageView.run", "Rhythm sequence won - returning to next stage")
+                        Logger.debug("RhythmPageView.run", "Rhythm sequence won - showing transition")
+                        Logger.debug("RhythmPageView.run", "Creating FinTransitionPageView",
+                                   screen=self.screen,
+                                   screen_size=self.screen.get_size() if self.screen else None)
+                        
+                        # Show victory transition screen with 5-second auto-advance
+                        transition = FinTransitionPageView(
+                            self.screen,
+                            message="Stage Complete!",
+                            next_stage_name="Next Chapter",
+                            duration_seconds=5
+                        )
+                        
+                        Logger.debug("RhythmPageView.run", "FinTransitionPageView created, calling run()")
+                        transition.run()
+                        Logger.debug("RhythmPageView.run", "FinTransitionPageView.run() returned")
+                        
                         return GameState.COMPLETE.value
                     else:
-                        Logger.debug("RhythmPageView.run", "Rhythm sequence lost - returning to main menu")
+                        Logger.debug("RhythmPageView.run", "Rhythm sequence lost - showing defeat transition")
+                        Logger.debug("RhythmPageView.run", "Creating defeat transition",
+                                   screen=self.screen,
+                                   screen_size=self.screen.get_size() if self.screen else None)
+                        
+                        # Show defeat transition screen with 3-second auto-advance
+                        transition = FinTransitionPageView(
+                            self.screen,
+                            message="Game Over",
+                            next_stage_name="Main Menu",
+                            duration_seconds=3
+                        )
+                        
+                        Logger.debug("RhythmPageView.run", "Defeat transition created, calling run()")
+                        transition.run()
+                        Logger.debug("RhythmPageView.run", "Defeat transition.run() returned")
+                        
                         return GameState.MAIN_MENU.value
                 else:
                     Logger.debug("RhythmPageView.run", "Rhythm sequence cancelled")

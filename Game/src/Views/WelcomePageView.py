@@ -376,8 +376,15 @@ class WelcomPageView(PageView):
                         return
                     
                     elif result == GameState.COMPLETE.value:
-                        Logger.debug("WelcomPageView._startGameFlow", "Game completed successfully!")
-                        return
+                        Logger.debug("WelcomPageView._startGameFlow", "Stage completed successfully, advancing to next stage")
+                        # Advance to next stage instead of returning
+                        if sequence_controller.advance_stage():
+                            Logger.debug("WelcomPageView._startGameFlow", "Advanced to next stage",
+                                       new_stage=sequence_controller.get_current_stage())
+                        else:
+                            Logger.debug("WelcomPageView._startGameFlow", "Already at final stage")
+                            break
+                        continue
                     
                     elif result.startswith("STAGE_"):
                         # Stage jump requested via numeric key
