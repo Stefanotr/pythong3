@@ -99,6 +99,9 @@ class MapModel:
                     self.tiles = merged
                     # expose parsed layers
                     self.layers = layers_by_name
+                    # preserve ordered list of layers (bottom -> top) to allow proper rendering
+                    # (some views rely on layering and transparency; merged map discards lower layers)
+                    self.layer_ordered = layers
                     self.width = width
                     self.height = height
                     self.tilewidth = tilewidth
@@ -212,6 +215,25 @@ class MapModel:
 
                                 tileset_columns = int(tsx_root.attrib.get('columns', 0))
                                 tileset_tilecount = int(tsx_root.attrib.get('tilecount', 0))
+                                # If we successfully loaded the tileset image, validate and
+                                # infer columns/tilecount from the actual image size when
+                                # the TSX attributes appear incorrect. This prevents
+                                # wrong slicing when the TSX metadata doesn't match the
+                                # referenced image (common when paths were edited).
+                                if image_surface is not None:
+                                    try:
+                                        img_w, img_h = image_surface.get_size()
+                                        inferred_columns = img_w // tilewidth if tilewidth > 0 else 0
+                                        inferred_rows = img_h // tileheight if tileheight > 0 else 0
+                                        inferred_tilecount = inferred_columns * inferred_rows
+                                        if inferred_columns > 0 and tileset_columns != inferred_columns:
+                                            Logger.debug('MapModel.__init__', 'Tileset columns mismatch - using inferred value', tsx_columns=tileset_columns, inferred_columns=inferred_columns)
+                                            tileset_columns = inferred_columns
+                                        if inferred_tilecount > 0 and tileset_tilecount != inferred_tilecount:
+                                            Logger.debug('MapModel.__init__', 'Tileset tilecount mismatch - using inferred value', tsx_tilecount=tileset_tilecount, inferred_tilecount=inferred_tilecount)
+                                            tileset_tilecount = inferred_tilecount
+                                    except Exception as e:
+                                        Logger.error('MapModel.__init__', e)
                             except Exception as e:
                                 Logger.error('MapModel.__init__', e)
 
