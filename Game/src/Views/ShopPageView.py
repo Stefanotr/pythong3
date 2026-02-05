@@ -7,6 +7,7 @@ Displays shop interface for purchasing items (View-only, MVC pattern).
 
 import pygame
 from Utils.Logger import Logger
+from Views.InventoryView import InventoryView
 
 
 # === SHOP PAGE VIEW CLASS ===
@@ -63,6 +64,14 @@ class ShopPageView:
                 self.item_font = pygame.font.Font(None, 24)
                 self.small_font = pygame.font.Font(None, 18)
             
+            # Inventory view for displaying owned bottles
+            try:
+                self.inventory_view = InventoryView(self.screen_width, self.screen_height)
+                Logger.debug("ShopPageView.__init__", "Inventory view initialized")
+            except Exception as e:
+                Logger.error("ShopPageView.__init__", e)
+                self.inventory_view = None
+            
             # Message timer
             self.message_timer = 0
                 
@@ -72,7 +81,7 @@ class ShopPageView:
 
     # === RENDERING ===
     
-    def draw(self):
+    def draw(self, player=None):
         """
         Draw the shop interface to the screen.
         Renders background, items, currency, and UI elements.
@@ -161,6 +170,18 @@ class ShopPageView:
                 self.screen.blit(instruction_surf, (instruction_x, instruction_y))
             except Exception as e:
                 Logger.error("ShopPageView.draw", e)
+            
+            # --- DISPLAY PLAYER INVENTORY (Bottom Right) ---
+            try:
+                if player and hasattr(player, 'inventory') and self.inventory_view:
+                    self.inventory_view.draw_shop_inventory(
+                        self.screen,
+                        player.inventory,
+                        self.screen_width - 20,
+                        self.screen_height - 20
+                    )
+            except Exception as e:
+                Logger.error("ShopPageView.draw - inventory display", e)
                 
         except Exception as e:
             Logger.error("ShopPageView.draw", e)

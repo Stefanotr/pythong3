@@ -505,7 +505,7 @@ class MapPageView(PageView):
                                                     Logger.debug("MapPageView.run", "Shop closed")
                                             
                                             shop_controller.update()
-                                            shop_view.draw()
+                                            shop_view.draw(self.johnny)
                                             pygame.display.flip()
                                             shop_clock.tick(60)
                                         
@@ -838,7 +838,7 @@ class MapPageView(PageView):
                         Logger.error("MapPageView._run_shop", e)
 
                 try:
-                    shop_view.draw()
+                    shop_view.draw(self.johnny)
                 except Exception as e:
                     Logger.error("MapPageView._run_shop.draw", e)
 
