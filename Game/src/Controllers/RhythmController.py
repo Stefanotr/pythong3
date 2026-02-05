@@ -72,6 +72,18 @@ class RhythmController:
             sound = random.choice(self.fail_sounds)
             sound.play()
 
+    def stop_all_audio(self):
+        """Arrête tous les sons du jeu"""
+        try:
+            self.guitar_channel.stop()
+            self.track_backing.stop()
+            self.track_guitar.stop()
+            # Arrêter tous les fail_sounds
+            for sound in self.fail_sounds:
+                sound.stop()
+        except Exception as e:
+            print(f"Erreur en arrêtant les audios: {e}")
+
     def start_music(self):
         """Lance vraiment la musique après le décompte"""
         self.start_time = pygame.time.get_ticks()
@@ -154,8 +166,7 @@ class RhythmController:
         if self.rhythm.crowd_satisfaction <= 0:
             self.game_over = True
             print("GAME OVER : Le public vous a dégagé !")
-            self.guitar_channel.stop()
-            self.track_backing.stop()
+            self.stop_all_audio()
 
     def handle_input(self, event):
         # On bloque les touches pendant le décompte
@@ -274,6 +285,7 @@ class RhythmController:
         self.rhythm.feedback = text
         self.rhythm.feedback_timer = 20
         self.rhythm.combo += 1
+        self.rhythm.total_hits += 1  # Incrémenter le compteur de bonnes notes
         
         # Multiplicateur de score basé sur le combo
         # Ex: Combo 10 = x1.5, Combo 20 = x2.0
@@ -293,10 +305,10 @@ class RhythmController:
         """
         Calculate and award cash based on context, player level, and performance.
         
-        Base rewards:
-        - Act 1: $100 at level 0
-        - Act 2: $150 at level 0 (1.5x Act 1)
-        - Rhythm Combat: $250 at level 0 (2.5x Act 1)
+        Base rewards per hit:
+        - Act 1: 1$ per hit
+        - Act 2: 1$ per hit (same as Act 1)
+        - Rhythm Combat: 2$ per hit (2x multiplier)
         
         All scale by (player_level + 1)
         """
@@ -304,16 +316,15 @@ class RhythmController:
             player_level = self.character.getLevel() if self.character else 0
             level_multiplier = player_level + 1  # Level 0 = 1x, Level 1 = 2x, etc.
             
-            # Determine base reward by context
+            # Determine cash per hit by context
             if self.context == "rhythm_combat":
-                base_reward = 250  # Final boss pays the most
-            elif self.context == "act2":
-                base_reward = 150  # Act 2 medium reward
-            else:  # Default to "act1"
-                base_reward = 100  # Act 1 beginner reward
+                cash_per_hit = 2  # Boss combat pays 2$ per hit
+            else:  # "act1" or "act2"
+                cash_per_hit = 1  # Regular concerts pay 1$ per hit
             
-            # Apply level scaling
-            base_cash = int(base_reward * level_multiplier)
+            # Calculate total cash based on total hits
+            total_hits = getattr(self.rhythm, 'total_hits', 0)
+            base_cash = total_hits * cash_per_hit * level_multiplier
             
             # Bonus for excellent performance (satisfaction > 90)
             bonus_cash = 0
@@ -333,7 +344,7 @@ class RhythmController:
             # Debug output
             print(f"=== CONCERT COMPLETE ===")
             print(f"Context: {self.context} | Player Level: {player_level}")
-            print(f"Base Reward: ${base_reward} × {level_multiplier} (level multiplier) = ${base_cash}")
+            print(f"Total Hits: {total_hits} × ${cash_per_hit} × {level_multiplier} (level multiplier) = ${base_cash}")
             print(f"Crowd Satisfaction: {self.rhythm.crowd_satisfaction}%")
             if bonus_cash > 0:
                 print(f"Performance Bonus: +${bonus_cash} (20% for satisfaction > 90%)")

@@ -114,6 +114,21 @@ class RhythmCombatController:
             sound = random.choice(self.hit_sounds)
             sound.play()
 
+    def stop_all_audio(self):
+        """Arrête tous les sons du jeu"""
+        try:
+            self.guitar_channel.stop()
+            self.track_backing.stop()
+            self.track_guitar.stop()
+            # Arrêter tous les fail_sounds
+            for sound in self.fail_sounds:
+                sound.stop()
+            # Arrêter tous les hit_sounds
+            for sound in self.hit_sounds:
+                sound.stop()
+        except Exception as e:
+            print(f"Erreur en arrêtant les audios: {e}")
+
     def start_music(self):
         """Lance la musique"""
         self.start_time = pygame.time.get_ticks()
@@ -132,8 +147,7 @@ class RhythmCombatController:
             self.game_over = True
             self.victory = False
             print(f"GAME OVER : {self.player.getName()} est K.O. !")
-            self.guitar_channel.stop()
-            self.track_backing.stop()
+            self.stop_all_audio()
             return
 
         # --- 1. COMPTE À REBOURS ---
@@ -316,6 +330,7 @@ class RhythmCombatController:
             if self.player.getHealth() <= 0:
                 self.game_over = True
                 self.victory = False
+                self.stop_all_audio()
 
     def deal_damage_to_boss(self, damage, feedback):
         """Inflige des dégâts au boss"""
@@ -369,8 +384,7 @@ class RhythmCombatController:
             self.victory = True
             self.game_over = True
             print(f"VICTOIRE ! {self.boss.getName()} est vaincu !")
-            self.guitar_channel.stop()
-            self.track_backing.stop()
+            self.stop_all_audio()
 
     def end_combat(self):
         """
@@ -438,8 +452,7 @@ class RhythmCombatController:
         print(f"   HP Joueur : {self.player.getHealth() if self.player else '?'}")
         print(f"   HP Boss : {self.boss.getHealth()}")
         
-        self.guitar_channel.stop()
-        self.track_backing.stop()
+        self.stop_all_audio()
 
     def get_lane_x(self, lane):
         """Retourne la position X d'une lane"""

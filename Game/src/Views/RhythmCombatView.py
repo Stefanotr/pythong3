@@ -221,6 +221,15 @@ class RhythmCombatView:
         combat_title = self.title_font.render("COMBAT RHYTHM", True, (255, 215, 0))
         screen.blit(combat_title, (self.screen_width//2 - combat_title.get_width()//2, 10))
         
+        # Update player max health dynamically (in case player gained HP from leveling)
+        try:
+            current_player_health = player_model.getHealth()
+            if current_player_health > self.player_max_health:
+                # Player gained health (leveled up), update max_health
+                self.player_max_health = current_player_health
+        except Exception:
+            pass
+        
         # HP JOUEUR (Gauche)
         player_hp_width = int(self.screen_width * 0.3)
         self.draw_health_bar(
@@ -343,6 +352,14 @@ class RhythmCombatView:
             alcohol_color = (255, 100, 100) if alcohol > 60 else (100, 255, 100)
             alcohol_text = self.font.render(f"ALCOHOL: {alcohol}%", True, alcohol_color)
             screen.blit(alcohol_text, (self.screen_width - alcohol_text.get_width() - 20, self.screen_height - 50))
+            
+            # Cash en bas au centre
+            # Calcul: total_hits * 2 * (player_level + 1)
+            total_hits = getattr(rhythm_model, 'total_hits', 0)
+            base_hit_cash = total_hits * 2  # 2$ per hit for boss combat
+            display_cash = base_hit_cash * (level + 1)
+            cash_text = self.font.render(f"CASH: ${display_cash}", True, (100, 200, 255))
+            screen.blit(cash_text, (self.screen_width//2 - cash_text.get_width()//2, self.screen_height - 50))
         except Exception as e:
             pass
 

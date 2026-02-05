@@ -162,13 +162,13 @@ class ActView:
                 try:
                     player_level = self.johnny.getLevel() if self.johnny else 0
                     current_health = self.boss.getHealth()
-                    # Add HP progression: +25 HP per level
-                    scaled_health = int(current_health + (player_level * 25))
+                    # Add HP progression: +50 HP per level
+                    scaled_health = int(current_health + (player_level * 50))
                     self.boss.setHealth(scaled_health)
                     
-                    # Also scale damage: +2 damage per level
+                    # Also scale damage: +1 damage per level
                     current_damage = self.boss.getDamage()
-                    scaled_damage = int(current_damage + (player_level * 2))
+                    scaled_damage = int(current_damage + (player_level * 1))
                     self.boss.setDamage(scaled_damage)
                 except Exception as e:
                     Logger.error("ActView.__init__", "Error scaling boss stats", error=str(e))

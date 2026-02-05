@@ -260,9 +260,24 @@ class RhythmView:
         score_label = self.font.render("SCORE", True, (200, 200, 200))
         screen.blit(score_label, (self.screen_width//2 - score_label.get_width()//2, int(hud_h*0.1)))
         
-        # Display actual earned cash from rhythm_model
-        actual_cash = rhythm_model.cash_earned if hasattr(rhythm_model, 'cash_earned') and rhythm_model.cash_earned > 0 else 0
-        cash_txt = self.score_font.render(f"{actual_cash}$", True, (100, 255, 100))
+        # Display earned cash - calculate in real-time based on current performance
+        # If cash_earned was set (end of game), use that; otherwise estimate from current hits
+        if hasattr(rhythm_model, 'cash_earned') and rhythm_model.cash_earned > 0:
+            # Use actual final cash amount
+            display_cash = rhythm_model.cash_earned
+        else:
+            # Calculate cash based on total hits and player level
+            # 1$ per hit × (player_level + 1)
+            try:
+                player_level = character_model.getLevel() if hasattr(character_model, 'getLevel') else 0
+            except:
+                player_level = 0
+            
+            total_hits = getattr(rhythm_model, 'total_hits', 0)
+            base_hit_cash = total_hits * 1  # 1$ per hit
+            display_cash = base_hit_cash * (player_level + 1)
+        
+        cash_txt = self.score_font.render(f"{display_cash}$", True, (100, 255, 100))
         screen.blit(cash_txt, (self.screen_width - cash_txt.get_width() - 20, hud_h//2 - 20))
 
         # Feedback & Combo
