@@ -27,43 +27,187 @@ class ShopModel:
         try:
             self.player = player
             
-            # Available shop items
+            # All shop items in a single list (all alcohol categories together)
             self.available_items = [
+                # Light Beers
                 {
-                    "name": "Rum",
+                    "name": "Light Beer",
                     "type": "bottle",
-                    "price": 25,
-                    "description": "Strong rum: restores 50 HP, increases drunkenness (+50%)",
-                    "effect": "bottle_rum"
+                    "price": 8,
+                    "category": "Light Beers",
+                    "description": "8% alc. Light: +1 damage",
+                    "effect": "bottle_light_beer",
+                    "alcohol_level": 8,
+                    "bonus_damage": 1,
+                    "accuracy_penalty": 0
                 },
                 {
                     "name": "Beer",
                     "type": "bottle",
                     "price": 15,
-                    "description": "Increases drunkenness (+15), damage (+3), accuracy (-5%)",
-                    "effect": "bottle_beer"
+                    "category": "Light Beers",
+                    "description": "15% alc. Classic: +3 damage, -5% accuracy",
+                    "effect": "bottle_beer",
+                    "alcohol_level": 15,
+                    "bonus_damage": 3,
+                    "accuracy_penalty": 5
                 },
+                # Cocktails
+                {
+                    "name": "Mojito",
+                    "type": "bottle",
+                    "price": 16,
+                    "category": "Cocktails",
+                    "description": "10% alc. Refreshing: +2 damage",
+                    "effect": "bottle_mojito",
+                    "alcohol_level": 10,
+                    "bonus_damage": 2,
+                    "accuracy_penalty": 0
+                },
+                {
+                    "name": "Daiquiri",
+                    "type": "bottle",
+                    "price": 18,
+                    "category": "Cocktails",
+                    "description": "20% alc. Smooth: +3 damage, -5% accuracy",
+                    "effect": "bottle_daiquiri",
+                    "alcohol_level": 20,
+                    "bonus_damage": 3,
+                    "accuracy_penalty": 5
+                },
+                {
+                    "name": "Margarita",
+                    "type": "bottle",
+                    "price": 20,
+                    "category": "Cocktails",
+                    "description": "25% alc. Tangy: +4 damage, -8% accuracy",
+                    "effect": "bottle_margarita",
+                    "alcohol_level": 25,
+                    "bonus_damage": 4,
+                    "accuracy_penalty": 8
+                },
+                {
+                    "name": "Piña Colada",
+                    "type": "bottle",
+                    "price": 24,
+                    "category": "Cocktails",
+                    "description": "12% alc. Sweet: +2 damage, -3% accuracy",
+                    "effect": "bottle_pina_colada",
+                    "alcohol_level": 12,
+                    "bonus_damage": 2,
+                    "accuracy_penalty": 3
+                },
+                # Vodka
+                {
+                    "name": "Vodka",
+                    "type": "bottle",
+                    "price": 20,
+                    "category": "Vodka",
+                    "description": "40% alc. Clean: +4 damage, -8% accuracy",
+                    "effect": "bottle_vodka",
+                    "alcohol_level": 40,
+                    "bonus_damage": 4,
+                    "accuracy_penalty": 8
+                },
+                # Rum Varieties
+                {
+                    "name": "Rum",
+                    "type": "bottle",
+                    "price": 25,
+                    "category": "Rum Varieties",
+                    "description": "50% alc. Classic: +0 damage, restores 50 HP",
+                    "effect": "bottle_rum",
+                    "alcohol_level": 50,
+                    "bonus_damage": 0,
+                    "accuracy_penalty": 0,
+                    "hp_restore": 50
+                },
+                {
+                    "name": "Spiced Rum",
+                    "type": "bottle",
+                    "price": 26,
+                    "category": "Rum Varieties",
+                    "description": "38% alc. Fiery: +5 damage, -10% accuracy",
+                    "effect": "bottle_spiced_rum",
+                    "alcohol_level": 38,
+                    "bonus_damage": 5,
+                    "accuracy_penalty": 10
+                },
+                # Whiskey & Spirits
                 {
                     "name": "Whiskey",
                     "type": "bottle",
                     "price": 30,
-                    "description": "Strong drink: drunkenness (+25), damage (+5), accuracy (-10%)",
-                    "effect": "bottle_whiskey"
+                    "category": "Whiskey & Spirits",
+                    "description": "25% alc. Smooth: +5 damage, -10% accuracy",
+                    "effect": "bottle_whiskey",
+                    "alcohol_level": 25,
+                    "bonus_damage": 5,
+                    "accuracy_penalty": 10
                 },
                 {
-                    "name": "Guitar String",
+                    "name": "Scotch",
+                    "type": "bottle",
+                    "price": 32,
+                    "category": "Whiskey & Spirits",
+                    "description": "45% alc. Premium: +7 damage, -15% accuracy",
+                    "effect": "bottle_scotch",
+                    "alcohol_level": 45,
+                    "bonus_damage": 7,
+                    "accuracy_penalty": 15
+                },
+                {
+                    "name": "Cognac",
+                    "type": "bottle",
+                    "price": 35,
+                    "category": "Whiskey & Spirits",
+                    "description": "40% alc. Refined: +6 damage, -12% accuracy",
+                    "effect": "bottle_cognac",
+                    "alcohol_level": 40,
+                    "bonus_damage": 6,
+                    "accuracy_penalty": 12
+                },
+                # Tequila
+                {
+                    "name": "Tequila",
+                    "type": "bottle",
+                    "price": 28,
+                    "category": "Tequila",
+                    "description": "35% alc. Wild: +6 damage, -12% accuracy",
+                    "effect": "bottle_tequila",
+                    "alcohol_level": 35,
+                    "bonus_damage": 6,
+                    "accuracy_penalty": 12
+                },
+                # Extreme
+                {
+                    "name": "Absinthe",
+                    "type": "bottle",
+                    "price": 50,
+                    "category": "Extreme",
+                    "description": "68% alc. EXTREME: +8 damage, -18% accuracy",
+                    "effect": "bottle_absinthe",
+                    "alcohol_level": 68,
+                    "bonus_damage": 8,
+                    "accuracy_penalty": 18
+                },
+                # Upgrades
+                {
+                    "name": "Amplifier",
                     "type": "upgrade",
                     "price": 50,
-                    "description": "Permanently increases damage by +2",
+                    "category": "Upgrades",
+                    "description": "Damage upgrade: +3 permanently",
                     "effect": "upgrade_damage"
                 }
             ]
             
+            # Pagination state
             self.selected_index = 0
+            self.current_page = 0
+            self.items_per_page = 8
             self.purchase_success = False
             self.purchase_message = ""
-            self.items_per_page = 8
-            self.current_page = 0
             
             Logger.debug("ShopModel.__init__", "Shop model initialized", 
                         currency=self.player.getCurrency(),
@@ -134,7 +278,7 @@ class ShopModel:
             list: List of item dictionaries
         """
         try:
-            return self.available_items.copy()  # Return a copy to prevent external modification
+            return self.available_items.copy()
         except Exception as e:
             Logger.error("ShopModel.getAvailableItems", e)
             return []
@@ -241,7 +385,7 @@ class ShopModel:
         Attempt to purchase an item.
         
         Args:
-            item_index: Index of the item to purchase
+            item_index: Index of the item to purchase (absolute index)
             
         Returns:
             bool: True if purchase succeeded, False otherwise
@@ -258,7 +402,7 @@ class ShopModel:
             
             # Check if player has enough currency
             if self.player.getCurrency() < price:
-                self.setPurchaseMessage(f"Not enough currency! Need {price}, have {self.player.getCurrency()}")
+                self.setPurchaseMessage(f"Not enough currency! Need ${price}, have ${self.player.getCurrency()}")
                 self.setPurchaseSuccess(False)
                 Logger.debug("ShopModel.purchaseItem", "Insufficient currency", 
                            required=price, available=self.player.getCurrency())
@@ -268,37 +412,37 @@ class ShopModel:
             try:
                 if item["type"] == "bottle":
                     from Models.BottleModel import BottleModel
-                    if item["effect"] == "bottle_rum":
-                        bottle = BottleModel("Rum", 50, 0, 0)
-                        # Restore 50 HP when buying rum
+                    
+                    # Get bottle properties from item
+                    alcohol_level = item.get("alcohol_level", 0)
+                    bonus_damage = item.get("bonus_damage", 0)
+                    accuracy_penalty = item.get("accuracy_penalty", 0)
+                    hp_restore = item.get("hp_restore", 0)
+                    
+                    # Create bottle with dynamic properties
+                    bottle = BottleModel(item["name"], alcohol_level, bonus_damage, accuracy_penalty)
+                    
+                    # Apply any HP restoration
+                    if hp_restore > 0:
                         current_hp = self.player.getHealth()
-                        self.player.setHealth(min(100, current_hp + 50))
-                        # Add to player inventory
-                        if hasattr(self.player, 'inventory'):
-                            self.player.inventory.add_item(bottle)
-                        self.setPurchaseMessage(f"Purchased {item['name']}! Restored 50 HP, bottle added to inventory.")
-                        Logger.debug("ShopModel.purchaseItem", "Rum purchased", new_hp=self.player.getHealth())
-                    elif item["effect"] == "bottle_beer":
-                        bottle = BottleModel("Beer", 15, 3, 5)
-                        # Add to player inventory instead of just selecting
-                        if hasattr(self.player, 'inventory'):
-                            self.player.inventory.add_item(bottle)
+                        self.player.setHealth(min(100, current_hp + hp_restore))
+                        self.setPurchaseMessage(f"Purchased {item['name']}! Restored {hp_restore} HP, bottle added to inventory.")
+                        Logger.debug("ShopModel.purchaseItem", f"{item['name']} purchased", 
+                                   new_hp=self.player.getHealth())
+                    else:
                         self.setPurchaseMessage(f"Purchased {item['name']}! Bottle added to inventory.")
-                        Logger.debug("ShopModel.purchaseItem", "Beer purchased")
-                    elif item["effect"] == "bottle_whiskey":
-                        bottle = BottleModel("Whiskey", 25, 5, 10)
-                        # Add to player inventory instead of just selecting
-                        if hasattr(self.player, 'inventory'):
-                            self.player.inventory.add_item(bottle)
-                        self.setPurchaseMessage(f"Purchased {item['name']}! Bottle added to inventory.")
-                        Logger.debug("ShopModel.purchaseItem", "Whiskey purchased")
-                
+                        Logger.debug("ShopModel.purchaseItem", f"{item['name']} purchased")
+                    
+                    # Add to player inventory
+                    if hasattr(self.player, 'inventory'):
+                        self.player.inventory.add_item(bottle)
+                    
                 elif item["type"] == "upgrade":
                     if item["effect"] == "upgrade_damage":
                         current_damage = self.player.getDamage()
-                        self.player.setDamage(current_damage + 2)
-                        self.setPurchaseMessage(f"Purchased {item['name']}! Damage increased by +2.")
-                        Logger.debug("ShopModel.purchaseItem", "Damage upgrade purchased", 
+                        self.player.setDamage(current_damage + 3)  # Amplifier gives +3
+                        self.setPurchaseMessage(f"Purchased {item['name']}! Damage increased by +3.")
+                        Logger.debug("ShopModel.purchaseItem", "Amplifier purchased", 
                                    new_damage=self.player.getDamage())
                 
                 # Deduct currency
@@ -349,7 +493,11 @@ class ShopModel:
 
     def getPageCount(self):
         """Get total number of pages"""
-        return (len(self.available_items) - 1) // self.items_per_page + 1
+        try:
+            return (len(self.available_items) - 1) // self.items_per_page + 1
+        except Exception as e:
+            Logger.error("ShopModel.getPageCount", e)
+            return 1
 
     def getItemsForCurrentPage(self):
         """Get items for the current page"""
