@@ -188,101 +188,21 @@ class MapPageView(PageView):
                     self.chosen_building = (self.shop_tile_x, self.shop_tile_y, self.shop_tile_x + self.shop_tile_width - 1, self.shop_tile_y + self.shop_tile_height -1)
                     Logger.debug('MapPageView.__init__', 'Using shop object from TMX', shop=self.chosen_building, obj=shop_obj)
                 else:
-                    # === No explicit object -> fall back to tile-component detection
-                    visited = [[False]*w for _ in range(h)]
-
-                    def neighbors(x, y):
-                        for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
-                            nx, ny = x+dx, y+dy
-                            if 0 <= nx < w and 0 <= ny < h:
-                                yield nx, ny
-
-                    components = []  # list of (area, minx,miny,maxx,maxy)
-                    for y in range(h):
-                        for x in range(w):
-                            if visited[y][x] or tiles[y][x] == 0:
-                                continue
-                            # BFS to find component
-                            stack = [(x,y)]
-                            visited[y][x] = True
-                            minx, miny, maxx, maxy = x, y, x, y
-                            area = 0
-                            while stack:
-                                cx, cy = stack.pop()
-                                area += 1
-                                minx = min(minx, cx)
-                                miny = min(miny, cy)
-                                maxx = max(maxx, cx)
-                                maxy = max(maxy, cy)
-                                for nx, ny in neighbors(cx, cy):
-                                    if not visited[ny][nx] and tiles[ny][nx] != 0:
-                                        visited[ny][nx] = True
-                                        stack.append((nx, ny))
-                            components.append((area, minx, miny, maxx, maxy))
-
-                    # Prefer the 'city' layer if available (buildings are there), else choose largest component
-                    search_tiles = None
-                    try:
-                        if hasattr(self.map, 'layers') and 'city' in self.map.layers:
-                            search_tiles = self.map.layers['city']
-                            Logger.debug("MapPageView.__init__", "Using 'city' layer to find buildings")
-                        else:
-                            search_tiles = tiles
-                    except Exception:
-                        search_tiles = tiles
-
-                    # Recompute components on selected layer
-                    visited = [[False]*w for _ in range(h)]
-                    components = []
-                    for y in range(h):
-                        for x in range(w):
-                            if visited[y][x] or search_tiles[y][x] == 0:
-                                continue
-                            # BFS to find component
-                            stack = [(x,y)]
-                            visited[y][x] = True
-                            minx, miny, maxx, maxy = x, y, x, y
-                            area = 0
-                            while stack:
-                                cx, cy = stack.pop()
-                                area += 1
-                                minx = min(minx, cx)
-                                miny = min(miny, cy)
-                                maxx = max(maxx, cx)
-                                maxy = max(maxy, cy)
-                                for nx, ny in neighbors(cx, cy):
-                                    if not visited[ny][nx] and search_tiles[ny][nx] != 0:
-                                        visited[ny][nx] = True
-                                        stack.append((nx, ny))
-                            components.append((area, minx, miny, maxx, maxy))
-
-                    if components:
-                        # Prefer components that look like buildings (not thin roads): require both width and height >=2
-                        candidates = [c for c in components if (c[3]-c[1]+1) >= 2 and (c[4]-c[2]+1) >= 2]
-                        if not candidates:
-                            candidates = components
-
-                        # Choose randomly among candidates so shop is different each map open
-                        chosen = random.choice(candidates)
-                        area, minx, miny, maxx, maxy = chosen
-
-                        # Use building's actual bounding box as the shop area (don't force-to-top)
-                        self.shop_tile_x = minx
-                        self.shop_tile_y = miny
-                        self.shop_tile_width = (maxx - minx + 1)
-                        self.shop_tile_height = (maxy - miny + 1)
-
-                        # Remember chosen building for debug / possible future adjustments
-                        self.chosen_building = (minx, miny, maxx, maxy)
-                        Logger.debug("MapPageView.__init__", "Random shop building chosen", building=self.chosen_building, area=area)
-                    else:
-                        # Fallback to a small 3x3 area near the center
-                        center_x = max(0, (w // 2) - 1)
-                        center_y = max(0, (h // 2) - 1)
-                        self.shop_tile_x = center_x
-                        self.shop_tile_y = center_y
-                        self.shop_tile_width = 3
-                        self.shop_tile_height = 3
+                    # === No explicit object -> use predefined shop positions ===
+                    SHOP_ROW = 16
+                    SHOP_COLUMNS = [0, 3, 6, 10, 17, 20, 23, 28, 32, 50, 55, 60, 71, 76, 81, 96, 101, 106]
+                    
+                    # Choose a random shop location from predefined positions
+                    chosen_col = random.choice(SHOP_COLUMNS)
+                    self.shop_tile_x = chosen_col
+                    self.shop_tile_y = SHOP_ROW
+                    self.shop_tile_width = 3  # 3x3 hitbox
+                    self.shop_tile_height = 3  # 3x3 hitbox
+                    
+                    self.chosen_building = (self.shop_tile_x, self.shop_tile_y, self.shop_tile_x, self.shop_tile_y)
+                    Logger.debug("MapPageView.__init__", "Shop placed at predefined position", 
+                               position=(self.shop_tile_x, self.shop_tile_y), 
+                               columns=SHOP_COLUMNS)
 
                 # Pixel dimensions
                 self.shop_width = self.shop_tile_width * self.map.tile_size
@@ -676,7 +596,7 @@ class MapPageView(PageView):
                                     font = pygame.font.SysFont('Arial', 14, bold=True)
                                 except Exception:
                                     font = pygame.font.Font(None, 14)
-                                label = font.render('SHOP', True, (255, 255, 255))
+                                label = font.render('SHOP', True, (100, 255, 100))  # Green color
                                 self.screen.blit(label, (shop_center[0] - label.get_width()//2, shop_center[1] - self.shop_height//2 - label.get_height() - 4))
                             except Exception:
                                 pass
