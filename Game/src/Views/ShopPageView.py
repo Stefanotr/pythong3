@@ -115,8 +115,10 @@ class ShopPageView:
             
             # Draw items
             try:
-                items = self.shop_model.getAvailableItems()
+                items = self.shop_model.getItemsForCurrentPage()
                 selected_index = self.shop_model.getSelectedIndex()
+                current_page = self.shop_model.getCurrentPage()
+                page_count = self.shop_model.getPageCount()
                 
                 item_y_start = 150
                 item_spacing = 80
@@ -125,13 +127,14 @@ class ShopPageView:
                     item_y = item_y_start + i * item_spacing
                     
                     # Highlight selected item
-                    if i == selected_index:
+                    abs_index = self.shop_model.getItemIndexOnCurrentPage(i)
+                    if abs_index == selected_index:
                         highlight_rect = pygame.Rect(50, item_y - 10, self.screen_width - 100, 70)
                         pygame.draw.rect(self.screen, (255, 215, 0, 100), highlight_rect, 3)
                     
                     # Item name
                     name_text = item["name"]
-                    name_color = (255, 255, 255) if i == selected_index else (200, 200, 200)
+                    name_color = (255, 255, 255) if abs_index == selected_index else (200, 200, 200)
                     name_surf = self.item_font.render(name_text, True, name_color)
                     self.screen.blit(name_surf, (70, item_y))
                     
@@ -149,6 +152,53 @@ class ShopPageView:
             except Exception as e:
                 Logger.error("ShopPageView.draw", e)
             
+            # Draw pagination info
+            try:
+                current_page = self.shop_model.getCurrentPage()
+                page_count = self.shop_model.getPageCount()
+                page_text = f"Page {current_page + 1} / {page_count}"
+                page_surf = self.small_font.render(page_text, True, (150, 150, 255))
+                page_x = self.screen_width // 2 - page_surf.get_width() // 2
+                page_y = self.screen_height - 200
+                self.screen.blit(page_surf, (page_x, page_y))
+            except Exception as e:
+                Logger.error("ShopPageView.draw - pagination", e)
+            
+            # Draw navigation buttons
+            try:
+                current_page = self.shop_model.getCurrentPage()
+                page_count = self.shop_model.getPageCount()
+                
+                button_y = self.screen_height - 150
+                button_width = 150
+                button_height = 40
+                
+                # Previous button
+                prev_x = self.screen_width // 2 - 200
+                prev_rect = pygame.Rect(prev_x, button_y, button_width, button_height)
+                pygame.draw.rect(self.screen, (100, 100, 150) if current_page > 0 else (50, 50, 70), prev_rect)
+                pygame.draw.rect(self.screen, (200, 200, 255), prev_rect, 2)
+                prev_text = self.item_font.render("< Previous", True, (255, 255, 255))
+                prev_text_x = prev_x + (button_width - prev_text.get_width()) // 2
+                prev_text_y = button_y + (button_height - prev_text.get_height()) // 2
+                self.screen.blit(prev_text, (prev_text_x, prev_text_y))
+                
+                # Next button
+                next_x = self.screen_width // 2 + 50
+                next_rect = pygame.Rect(next_x, button_y, button_width, button_height)
+                pygame.draw.rect(self.screen, (100, 100, 150) if current_page < page_count - 1 else (50, 50, 70), next_rect)
+                pygame.draw.rect(self.screen, (200, 200, 255), next_rect, 2)
+                next_text = self.item_font.render("Next >", True, (255, 255, 255))
+                next_text_x = next_x + (button_width - next_text.get_width()) // 2
+                next_text_y = button_y + (button_height - next_text.get_height()) // 2
+                self.screen.blit(next_text, (next_text_x, next_text_y))
+                
+                # Store button rects for click detection
+                self.prev_button_rect = prev_rect
+                self.next_button_rect = next_rect
+            except Exception as e:
+                Logger.error("ShopPageView.draw - buttons", e)
+            
             # Draw purchase message
             try:
                 if self.shop_model.getPurchaseMessage():
@@ -163,7 +213,7 @@ class ShopPageView:
             
             # Draw instructions
             try:
-                instruction_text = "↑↓ Navigate | ENTER/SPACE Purchase | ESC/E Exit"
+                instruction_text = "↑↓ Navigate | ← → Pages | ENTER/SPACE Purchase | ESC/E Exit"
                 instruction_surf = self.small_font.render(instruction_text, True, (150, 150, 150))
                 instruction_x = self.screen_width // 2 - instruction_surf.get_width() // 2
                 instruction_y = self.screen_height - 40

@@ -11,10 +11,12 @@ class RhythmController:
     Plus tu es précis, plus tu gagnes de points.
     """
     # 🆕 MODIFICATION : On ajoute 'song_data' dans les paramètres
-    def __init__(self, rhythm_model, character_model, screen_height, view, song_data):
+    
+    def __init__(self, rhythm_model, character_model, screen_height, view,song_data, context="act1"):
         self.rhythm = rhythm_model
         self.character = character_model 
         self.view = view
+        self.context = context  # "act1", "act2", or "rhythm_combat"
         
         # --- 1. INITIALISATION DE LA MAP & AUDIO ---
         # On utilise la chanson reçue en paramètre
@@ -410,26 +412,65 @@ class RhythmController:
         return remaining_s
     def end_concert(self):
         """
-        💰 ÉCONOMIE RADINE : Calcul du gain final
+        Calculate and award cash based on context, player level, and performance.
+        
+        Base rewards:
+        - Act 1: $100 at level 0
+        - Act 2: $150 at level 0 (1.5x Act 1)
+        - Rhythm Combat: $250 at level 0 (2.5x Act 1)
+        
+        All scale by (player_level + 1)
         """
-        # On divise le score par 250 pour être radin
-        raw_cash = int(self.rhythm.score / 250)
-        
-        # On plafonne à 100$ MAX
-        cash = min(100, raw_cash)
-        
-        # Petit bonus si public en feu
-        if self.rhythm.crowd_satisfaction > 90:
-            cash += 20
-            print("🌟 Bonus Star : +20$")
+        try:
+            player_level = self.character.getLevel() if self.character else 0
+            level_multiplier = player_level + 1  # Level 0 = 1x, Level 1 = 2x, etc.
             
-        self.rhythm.cash_earned = cash
-        print(f"💰 FIN DU CONCERT - Gains : {cash}$ (Plafonné)")
-        print(f"📊 Stats finales:")
-        print(f"   Score: {self.rhythm.score}")
-        print(f"   Max Combo: {self.rhythm.max_combo}")
-        print(f"   Hype finale: {self.rhythm.crowd_satisfaction}%")
-        return cash
+            # Determine base reward by context
+            if self.context == "rhythm_combat":
+                base_reward = 250  # Final boss pays the most
+            elif self.context == "act2":
+                base_reward = 150  # Act 2 medium reward
+            else:  # Default to "act1"
+                base_reward = 100  # Act 1 beginner reward
+            
+            # Apply level scaling
+            base_cash = int(base_reward * level_multiplier)
+            
+            # Bonus for excellent performance (satisfaction > 90)
+            bonus_cash = 0
+            if self.rhythm.crowd_satisfaction > 90:
+                # 20% bonus for really good crowd
+                bonus_cash = int(base_cash * 0.20)
+            
+            # Final cash
+            cash = base_cash + bonus_cash
+            
+            self.rhythm.cash_earned = cash
+            
+            # Award currency to player
+            if self.character:
+                self.character.addCurrency(cash)
+            
+            # Debug output
+            print(f"=== CONCERT COMPLETE ===")
+            print(f"Context: {self.context} | Player Level: {player_level}")
+            print(f"Base Reward: ${base_reward} × {level_multiplier} (level multiplier) = ${base_cash}")
+            print(f"Crowd Satisfaction: {self.rhythm.crowd_satisfaction}%")
+            if bonus_cash > 0:
+                print(f"Performance Bonus: +${bonus_cash} (20% for satisfaction > 90%)")
+            print(f"Total Earnings: ${cash}")
+            if self.character:
+                print(f"Player Total Currency: ${self.character.getCurrency()}")
+            print(f"Stats:")
+            print(f"   Score: {self.rhythm.score}")
+            print(f"   Max Combo: {self.rhythm.max_combo}")
+            print(f"   Final Hype: {self.rhythm.crowd_satisfaction}%")
+            
+            return cash
+        except Exception as e:
+            print(f"ERROR in end_concert: {e}")
+            self.rhythm.cash_earned = 0
+            return 0
 
     # Backward compatible aliases for old function names
     def play_random_fail(self):

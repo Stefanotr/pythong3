@@ -28,7 +28,7 @@ class RhythmPageView:
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen, player=None, sequence_controller=None):
+    def __init__(self, screen, player=None, sequence_controller=None, context="act1"):
         """
         Initialize the rhythm page view.
         
@@ -36,10 +36,12 @@ class RhythmPageView:
             screen: Pygame surface for rendering
             player: Optional PlayerModel instance to preserve state (if None, creates new)
             sequence_controller: Optional GameSequenceController for stage navigation
+            context: Context for reward calculation ("act1" by default)
         """
         try:
             self.screen = screen
             self.sequence_controller = sequence_controller
+            self.context = context  # Store context for reward calculation
             
             # Get screen dimensions and create resizable window
             try:
@@ -110,7 +112,8 @@ class RhythmPageView:
                     self.rhythm_model, 
                     self.johnny, 
                     self.screen_height, 
-                    self.rhythm_view
+                    self.rhythm_view,
+                    context=self.context
                 )
                 
                 Logger.debug("RhythmPageView.__init__", "Rhythm system initialized", 
@@ -328,6 +331,9 @@ class RhythmPageView:
                            running=running)
                 
                 if self.game_complete:
+                    # Calculate and apply rewards from rhythm game
+                    self.rhythm_controller.end_concert()
+                    
                     # Check if it's a victory or defeat based on crowd satisfaction
                     is_victory = self.rhythm_model.crowd_satisfaction > 0
                     

@@ -16,6 +16,7 @@ class CaracterModel:
         self._selected_bottle = None
         self._current_action = "idle"  # idle, attacking, drinking, dodging
         self._action_timer = 0  # Timer for action animation
+        self._currency = 0  # Player currency (starts at 0)
 
     def getType(self):
         return self._type
@@ -119,3 +120,26 @@ class CaracterModel:
 
     def setSelectedBottle(self, bottle):
         self._selected_bottle = bottle
+    def getCurrency(self):
+        """Get player currency"""
+        try:
+            return self._currency
+        except Exception as e:
+            Logger.error("CaracterModel.getCurrency", e)
+            return 0
+
+    def setCurrency(self, amount):
+        """Set player currency"""
+        try:
+            self._currency = max(0, amount)
+            Logger.debug("CaracterModel.setCurrency", "Currency set", amount=self._currency)
+        except Exception as e:
+            Logger.error("CaracterModel.setCurrency", e)
+
+    def addCurrency(self, amount):
+        """Add to player currency"""
+        try:
+            self._currency = max(0, self._currency + amount)
+            Logger.debug("CaracterModel.addCurrency", "Currency added", amount=amount, total=self._currency)
+        except Exception as e:
+            Logger.error("CaracterModel.addCurrency", e)

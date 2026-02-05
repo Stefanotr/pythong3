@@ -17,6 +17,7 @@ class RhythmCombatController:
         self.player = player_model
         self.boss = boss_model
         self.view = view
+        self.context = "rhythm_combat"  # Always rhythm_combat for final boss
         
         # Store boss max health for healing calculations
         self.boss_max_health = getattr(self.boss, '_rhythm_combat_max_health', self.boss.getHealth())
@@ -372,8 +373,17 @@ class RhythmCombatController:
             self.track_backing.stop()
 
     def end_combat(self):
-        """Fin de la chanson - Déterminer victoire/défaite"""
+        """
+        End of combat - Determine victory/defeat and award rewards.
+        
+        Victory rewards (rhythm_combat context):
+        - Base $250 at level 0
+        - Scales by (player_level + 1)
+        - 20% bonus if perfect performance (all notes hit, boss defeated with high health remaining)
+        """
         self.game_over = True
+        self.victory = False
+        self.rhythm.cash_earned = 0
         
         if self.boss.getHealth() > 0:
             # Le boss a survécu = Défaite
@@ -382,6 +392,42 @@ class RhythmCombatController:
         else:
             # Boss vaincu = Victoire
             self.victory = True
+            
+            # Calculate victory rewards
+            try:
+                player_level = self.player.getLevel() if self.player else 0
+                level_multiplier = player_level + 1
+                base_reward = 250  # Rhythm combat pays the most
+                
+                # Apply level scaling
+                base_cash = int(base_reward * level_multiplier)
+                
+                # Calculate performance bonus (20% if perfect)
+                bonus_cash = 0
+                if self.notes_missed == 0 and self.total_notes > 0:
+                    # Perfect performance - all notes hit
+                    bonus_cash = int(base_cash * 0.20)
+                
+                # Final cash
+                cash = base_cash + bonus_cash
+                self.rhythm.cash_earned = cash
+                
+                # Award currency to player
+                if self.player:
+                    self.player.addCurrency(cash)
+                
+                print(f"=== BOSS DEFEATED - VICTORY! ===")
+                print(f"Base Reward: ${base_reward} × {level_multiplier} (level multiplier) = ${base_cash}")
+                print(f"Performance: {self.notes_hit}/{self.total_notes} notes hit")
+                if bonus_cash > 0:
+                    print(f"Perfect Performance Bonus: +${bonus_cash}")
+                print(f"Total Earnings: ${cash}")
+                print(f"Player Total Currency: ${self.player.getCurrency() if self.player else '?'}")
+                
+            except Exception as e:
+                print(f"ERROR calculating victory rewards: {e}")
+                self.rhythm.cash_earned = 0
+            
             print(f"VICTOIRE : {self.boss.getName()} vaincu !")
         
         # Stats finales
@@ -389,7 +435,7 @@ class RhythmCombatController:
         print(f"   Notes touchées : {self.notes_hit}/{self.total_notes}")
         print(f"   Notes ratées : {self.notes_missed}")
         print(f"   Combo max : {self.rhythm.combo}")
-        print(f"   HP Joueur : {self.player.getHealth()}")
+        print(f"   HP Joueur : {self.player.getHealth() if self.player else '?'}")
         print(f"   HP Boss : {self.boss.getHealth()}")
         
         self.guitar_channel.stop()

@@ -239,6 +239,10 @@ class RhythmCombatPageView:
             try:
                 if hasattr(self.controller, 'victory') and self.controller.victory:
                     Logger.debug("RhythmCombatPageView.run", "Rhythm combat completed successfully - showing victory transition")
+                    
+                    # Calculate and apply victory rewards
+                    self.controller.end_combat()
+                    
                     # Increment player level
                     if self.player:
                         current_level = self.player.getLevel()
