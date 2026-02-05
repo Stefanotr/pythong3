@@ -168,8 +168,15 @@ class RhythmCombatPageView:
             # === DETERMINE RESULT ===
             try:
                 if hasattr(self.controller, 'victory') and self.controller.victory:
-                    Logger.debug("RhythmCombatPageView.run", "Rhythm combat completed successfully")
-                    return GameState.COMPLETE.value
+                    Logger.debug("RhythmCombatPageView.run", "Rhythm combat completed successfully - returning to stage 1 with level increment")
+                    # Increment player level
+                    if self.player:
+                        current_level = self.player.getLevel()
+                        self.player.setLevel(current_level + 1)
+                        Logger.debug("RhythmCombatPageView.run", "Player level incremented", 
+                                   old_level=current_level, new_level=current_level + 1)
+                    # Return to stage 1 (RhythmPageView)
+                    return "STAGE_1"
                 else:
                     Logger.debug("RhythmCombatPageView.run", "Rhythm combat ended (not victory)")
                     return GameState.GAME_OVER.value

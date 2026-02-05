@@ -312,6 +312,21 @@ class RhythmView:
             
             screen.blit(shadow, (txt_x + 2, txt_y + 2))
             screen.blit(txt, (txt_x, txt_y))
+        
+        # --- F.2 HUD BAS DE L'ÉCRAN (LEVEL et ALCOOL) ---
+        try:
+            # Level en bas à gauche
+            level = character_model.getLevel() if hasattr(character_model, 'getLevel') else 1
+            level_text = self.font.render(f"LEVEL {level}", True, (100, 255, 100))
+            screen.blit(level_text, (20, self.screen_height - 50))
+            
+            # Alcool en bas à droite
+            alcohol = character_model.getDrunkenness() if hasattr(character_model, 'getDrunkenness') else 0
+            alcohol_color = (255, 100, 100) if alcohol > 60 else (100, 255, 100)
+            alcohol_text = self.font.render(f"ALCOHOL: {alcohol}%", True, alcohol_color)
+            screen.blit(alcohol_text, (self.screen_width - alcohol_text.get_width() - 20, self.screen_height - 50))
+        except Exception as e:
+            pass
 
         # --- G. OVERLAY COMPTE À REBOURS ---
         if countdown_val > 0:

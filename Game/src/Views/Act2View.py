@@ -338,6 +338,12 @@ class Act2View:
                                 self.boss_view.drawCaracter(self.screen, self.security_chief)
                             except Exception as e:
                                 Logger.error("Act2View.run", e)
+                            
+                            # Draw level display
+                            try:
+                                self._drawLevelDisplay()
+                            except Exception as e:
+                                Logger.error("Act2View.run", e)
                         elif self.phase == "rhythm":
                             if self.rhythm_view and self.rhythm_model:
                                 self.rhythm_view.draw(self.screen, self.rhythm_model, self.johnny)
@@ -530,4 +536,16 @@ class Act2View:
                 
         except Exception as e:
             Logger.error("Act2View.drawIntro", e)
+    
+    def _drawLevelDisplay(self):
+        """
+        Draw the level display in the bottom left corner.
+        """
+        try:
+            font = pygame.font.Font(None, 28)
+            level = self.johnny.getLevel() if hasattr(self.johnny, 'getLevel') else 1
+            level_text = font.render(f"LEVEL {level}", True, (100, 255, 100))
+            self.screen.blit(level_text, (20, self.screen_height - 50))
+        except Exception as e:
+            Logger.error("Act2View._drawLevelDisplay", e)
 

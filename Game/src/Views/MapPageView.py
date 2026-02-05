@@ -691,6 +691,12 @@ class MapPageView(PageView):
                         # Draw transition prompt
                         if self.show_transition_prompt:
                             self.drawTransitionPrompt()
+                        
+                        # Draw level display
+                        try:
+                            self._drawLevelDisplay()
+                        except Exception as e:
+                            Logger.error("MapPageView.run", e)
 
                         # Draw debug overlay if enabled
                         try:
@@ -948,9 +954,18 @@ class MapPageView(PageView):
 
             except Exception as e:
                 Logger.error("MapPageView._drawShopDoor", e)
-
-            # Marker drawing handled in main render loop; nothing additional here
-            return
+        
         except Exception as e:
             Logger.error("MapPageView._drawShopBuilding", e)
-            return
+    
+    def _drawLevelDisplay(self):
+        """
+        Draw the level display in the bottom left corner.
+        """
+        try:
+            font = pygame.font.Font(None, 28)
+            level = self.johnny.getLevel() if hasattr(self.johnny, 'getLevel') else 1
+            level_text = font.render(f"LEVEL {level}", True, (100, 255, 100))
+            self.screen.blit(level_text, (20, self.screen_height - 50))
+        except Exception as e:
+            Logger.error("MapPageView._drawLevelDisplay", e)

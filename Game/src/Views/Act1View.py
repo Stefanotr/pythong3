@@ -282,6 +282,12 @@ class Act1View:
                                 self.boss_view.drawCaracter(self.screen, self.gros_bill)
                             except Exception as e:
                                 Logger.error("Act1View.run", e)
+                            
+                            # Draw level display
+                            try:
+                                self._drawLevelDisplay()
+                            except Exception as e:
+                                Logger.error("Act1View.run", e)
                     except Exception as e:
                         Logger.error("Act1View.run", e)
                     
@@ -398,6 +404,18 @@ class Act1View:
                 
         except Exception as e:
             Logger.error("Act1View.draw_intro", e)
+    
+    def _drawLevelDisplay(self):
+        """
+        Draw the level display in the bottom left corner.
+        """
+        try:
+            font = pygame.font.Font(None, 28)
+            level = self.johnny.getLevel() if hasattr(self.johnny, 'getLevel') else 1
+            level_text = font.render(f"LEVEL {level}", True, (100, 255, 100))
+            self.screen.blit(level_text, (20, self.screen_height - 50))
+        except Exception as e:
+            Logger.error("Act1View._drawLevelDisplay", e)
 
 
 # === STANDALONE TEST ===
