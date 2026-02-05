@@ -131,10 +131,10 @@ class Act2View:
                 # Security Chief (boss)
                 self.boss_view = CaracterView("Game/Assets/Agentdesecurité.png", base_name="agent")
                 
-                # Set static positions for display - centered vertically, sides horizontally
-                self.johnny.setX(self.screen_width // 4)  # Left side (Lola)
+                # Set static positions for display - Lola right, Boss far right
+                self.johnny.setX(int(self.screen_width * 0.65))  # Right side (Lola)
                 self.johnny.setY(self.screen_height // 2)  # Middle height
-                self.security_chief.setX(self.screen_width * 3 // 4)  # Right side (Boss)
+                self.security_chief.setX(int(self.screen_width * 0.85))  # Far right (Boss)
                 self.security_chief.setY(self.screen_height // 2)  # Middle height
                 
                 Logger.debug("Act2View.__init__", "Character views created for static display",
@@ -542,13 +542,33 @@ class Act2View:
     
     def _drawLevelDisplay(self):
         """
-        Draw the level display in the bottom left corner.
+        Draw the level and alcohol display in the bottom left corner (map style).
         """
         try:
-            font = pygame.font.Font(None, 28)
+            font = pygame.font.Font(None, 36)
+            
+            # Draw Level
             level = self.johnny.getLevel() if hasattr(self.johnny, 'getLevel') else 1
-            level_text = font.render(f"LEVEL {level}", True, (100, 255, 100))
-            self.screen.blit(level_text, (20, self.screen_height - 50))
+            level_text = font.render(f"LEVEL {level}", True, (0, 255, 0))
+            
+            # Draw black rectangle background for level
+            text_x = 20
+            text_y = self.screen_height - 50
+            bg_rect = pygame.Rect(text_x - 5, text_y - 5, level_text.get_width() + 10, level_text.get_height() + 10)
+            pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
+            self.screen.blit(level_text, (text_x, text_y))
+            
+            # Draw Alcohol
+            alcohol = self.johnny.getDrunkenness() if hasattr(self.johnny, 'getDrunkenness') else 0
+            alcohol_text = font.render(f"Alcohol: {alcohol}%", True, (0, 255, 0))
+            
+            # Draw black rectangle background for alcohol
+            alcohol_x = 20
+            alcohol_y = self.screen_height - 90
+            bg_rect_alcohol = pygame.Rect(alcohol_x - 5, alcohol_y - 5, alcohol_text.get_width() + 10, alcohol_text.get_height() + 10)
+            pygame.draw.rect(self.screen, (0, 0, 0), bg_rect_alcohol)
+            self.screen.blit(alcohol_text, (alcohol_x, alcohol_y))
+            
         except Exception as e:
             Logger.error("Act2View._drawLevelDisplay", e)
 

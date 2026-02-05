@@ -185,8 +185,8 @@ class CombatView:
         player = combat_model.getPlayer()
         enemy = combat_model.getEnemy()
         
-        # Position fighters higher to avoid overlap with action menu and combat log
-        mid_y = self.screen_height // 2 - 200
+        # Position panels much higher to avoid overlap with action menu and sprites
+        mid_y = 100  # Much higher position for clean layout
         
         # === PLAYER (LEFT) ===
         player_x = 100
@@ -311,67 +311,147 @@ class CombatView:
             screen.blit(effect_surf, (x, y + i * 25))
     
     def drawCombatLog(self, screen, combat_model):
-        """Draw the combat log"""
-        # Position log at bottom, but leave space for action menu if visible
-        log_x = self.screen_width // 2 - 400
-        log_y = self.screen_height - 180  # Moved up to avoid overlap
-        log_width = 800
-        log_height = 150  # Reduced height
+        """
+        Draw the combat log with text wrapping.
+        Messages stay within the rectangle boundaries.
+        """
+        # Position log at bottom, centered
+        log_width = 900
+        log_x = self.screen_width // 2 - log_width // 2
+        log_y = self.screen_height - 190
+        log_height = 170
         
-        # Panel
-        self.drawPanel(screen, log_x, log_y, log_width, log_height, (100, 100, 100))
+        # Draw panel background and border
+        self.drawPanel(screen, log_x, log_y, log_width, log_height, (100, 150, 100))
         
         # Title
-        title_surf = self.font.render("📜 Combat Log", True, self.gold_color)
-        screen.blit(title_surf, (log_x + 10, log_y + 10))
+        title_surf = self.font.render("📜 Battle Log", True, (150, 255, 150))
+        screen.blit(title_surf, (log_x + 15, log_y + 10))
         
-        # Messages
+        # Messages with text wrapping
         messages = combat_model.getCombatLog()
-        message_y = log_y + 50
+        message_y = log_y + 45
+        max_width = log_width - 40  # Leave padding on sides
+        line_height = 20
+        displayed_lines = 0
+        max_lines = 5
         
-        for message in messages[-6:]:  # Display the last 6 messages
-            msg_surf = self.log_font.render(message, True, (220, 220, 220))
-            screen.blit(msg_surf, (log_x + 20, message_y))
-            message_y += 25
+        # Display last messages
+        for message in reversed(messages[-10:]):  # Get up to 10 recent messages
+            if displayed_lines >= max_lines:
+                break
+                
+            try:
+                # Word wrap the message
+                wrapped_lines = self._wrap_text(message, max_width)
+                
+                for wrapped_line in reversed(wrapped_lines):
+                    if displayed_lines >= max_lines:
+                        break
+                    
+                    # Color based on message content (emojis hint at action type)
+                    if "💀" in wrapped_line or "defeats" in wrapped_line:
+                        text_color = (255, 100, 100)  # Red for defeat/death
+                    elif "🏆" in wrapped_line or "defeats" in wrapped_line.lower() or "struck" in wrapped_line.lower():
+                        text_color = (100, 255, 100)  # Green for success
+                    elif "❌" in wrapped_line or "misses" in wrapped_line.lower():
+                        text_color = (200, 100, 100)  # Reddish for failure
+                    else:
+                        text_color = (220, 220, 220)  # Default light gray
+                    
+                    msg_surf = self.log_font.render(wrapped_line, True, text_color)
+                    screen.blit(msg_surf, (log_x + 20, message_y))
+                    message_y -= line_height
+                    displayed_lines += 1
+                    
+            except Exception as e:
+                Logger.error("CombatView.drawCombatLog", e)
+    
+    def _wrap_text(self, text, max_width):
+        """
+        Wrap text to fit within max_width.
+        Returns list of wrapped lines.
+        """
+        try:
+            words = text.split()
+            lines = []
+            current_line = ""
+            
+            for word in words:
+                test_line = current_line + (" " if current_line else "") + word
+                test_surf = self.log_font.render(test_line, True, (255, 255, 255))
+                
+                if test_surf.get_width() <= max_width:
+                    current_line = test_line
+                else:
+                    if current_line:
+                        lines.append(current_line)
+                    current_line = word
+            
+            if current_line:
+                lines.append(current_line)
+            
+            return lines
+        except Exception as e:
+            Logger.error("CombatView._wrap_text", e)
+            return [text]  # Return original text if wrapping fails
     
     def drawActionMenu(self, screen, combat_model):
-        """Draw the action menu"""
-        # Position menu on left side, above combat log
-        menu_x = 50
-        menu_y = self.screen_height - 500  # Moved up to avoid overlap with log
-        menu_width = 350
-        menu_height = 300  # Reduced height
+        """
+        Draw the action menu with better alignment and visual hierarchy.
+        """
+        # Position menu on left side, lower on screen to avoid overlap
+        menu_x = 40
+        menu_y = self.screen_height - 450  # Moved down further
+        menu_width = 380
+        menu_height = 320
         
-        # Panel
-        self.drawPanel(screen, menu_x, menu_y, menu_width, menu_height, self.player_color)
+        # Panel with player color accent
+        self.drawPanel(screen, menu_x, menu_y, menu_width, menu_height, (100, 255, 100))
         
         # Title
-        title_surf = self.font.render("🎸 ACTIONS", True, self.gold_color)
-        screen.blit(title_surf, (menu_x + 20, menu_y + 10))
+        title_surf = self.font.render("🎸 ACTIONS", True, (150, 255, 150))
+        screen.blit(title_surf, (menu_x + 20, menu_y + 12))
         
-        # Actions
+        # Divider line
+        pygame.draw.line(screen, (100, 200, 100), 
+                        (menu_x + 15, menu_y + 45), 
+                        (menu_x + menu_width - 15, menu_y + 45), 3)
+        
+        # Actions with better spacing and color-coded keys
         actions = [
-            ("A", "Simple Attack", "Strike with your guitar"),
-            ("P", "Power Chord", "Powerful attack (-10 HP)"),
-            ("D", "Dégueulando", "Paralyzes enemy (60% drunkenness)"),
-            ("B", "Drink", "Increases your stats")
+            ("A", "Simple Attack", "🎸 Strike with your guitar", (150, 255, 100)),
+            ("P", "Power Chord", "⚡ Powerful burst (-10 HP)", (255, 180, 100)),
+            ("D", "Dégueulando", "🤮 Paralyze (60% drunk)", (200, 100, 255)),
+            ("B", "Drink", "🍺 Restore & boost stats", (100, 200, 255))
         ]
         
         action_y = menu_y + 60
-        for key, name, desc in actions:
-            # Key
-            key_surf = self.font.render(f"[{key}]", True, self.gold_color)
-            screen.blit(key_surf, (menu_x + 20, action_y))
+        for key, name, desc, key_color in actions:
+            # Key with custom color
+            key_surf = self.font.render(f"[{key}]", True, key_color)
+            screen.blit(key_surf, (menu_x + 15, action_y))
             
             # Name
             name_surf = self.small_font.render(name, True, (255, 255, 255))
-            screen.blit(name_surf, (menu_x + 80, action_y))
+            screen.blit(name_surf, (menu_x + 70, action_y))
             
             # Description
-            desc_surf = self.log_font.render(desc, True, (180, 180, 180))
-            screen.blit(desc_surf, (menu_x + 80, action_y + 25))
+            desc_surf = self.log_font.render(desc, True, (200, 200, 200))
+            screen.blit(desc_surf, (menu_x + 70, action_y + 22))
             
-            action_y += 60  # Reduced spacing between actions
+            # Divider between actions
+            pygame.draw.line(screen, (80, 150, 80), 
+                            (menu_x + 15, action_y + 50), 
+                            (menu_x + menu_width - 15, action_y + 50), 1)
+            
+            action_y += 70  # Better spacing between actions
+        
+        # Hint text at bottom
+        if combat_model.isPlayerTurn():
+            hint_surf = self.log_font.render("Press KEY to act", True, (150, 200, 150))
+            hint_x = menu_x + menu_width // 2 - hint_surf.get_width() // 2
+            screen.blit(hint_surf, (hint_x, menu_y + menu_height - 30))
     
     def drawTurnIndicator(self, screen, combat_model):
         """Draw the turn indicator"""

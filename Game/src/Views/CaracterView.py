@@ -216,36 +216,7 @@ class CaracterView:
                 except Exception as e:
                     Logger.error("CaracterView.drawCaracter", e)
 
-            # Draw player-specific information (alcohol level)
-            if isinstance(caracter, PlayerModel):
-                try:
-                    alcohol = caracter.getDrunkenness()
-                    text_content = f"Alcohol: {alcohol}%"
-                    
-                    if is_map:
-                        # Green text with black background, same horizontal position as level
-                        text_surface = self.font.render(text_content, True, (0, 255, 0))
-                        text_x = 20  # Same as level
-                        text_y = screen.get_height() - 90  # Below level
-                        
-                        # Draw black rectangle background
-                        bg_rect = pygame.Rect(text_x - 5, text_y - 5, text_surface.get_width() + 10, text_surface.get_height() + 10)
-                        pygame.draw.rect(screen, (0, 0, 0), bg_rect)
-                    else:
-                        # Green text with black background for combat
-                        text_surface = self.font.render(text_content, True, (0, 255, 0))
-                        text_x = 10
-                        text_y = 10
-                        
-                        # Draw black rectangle background
-                        bg_rect = pygame.Rect(text_x - 5, text_y - 5, text_surface.get_width() + 10, text_surface.get_height() + 10)
-                        pygame.draw.rect(screen, (0, 0, 0), bg_rect)
-                    
-                    screen.blit(text_surface, (text_x, text_y))
-                    Logger.debug("CaracterView.drawCaracter", "Player alcohol level displayed", 
-                               alcohol=alcohol, is_map=is_map)
-                except Exception as e:
-                    Logger.error("CaracterView.drawCaracter", e)
+
 
         except Exception as e:
             Logger.error("CaracterView.drawCaracter", e)
