@@ -6,7 +6,7 @@ from Songs.SevenNationArmy import load_seven_nation_army
 class RhythmController:
     """
     Contrôleur principal du MODE CONCERT (Acte 1 & 2).
-    🎯 NOUVEAU : Système de précision progressive !
+    NOUVEAU : Système de précision progressive !
     Plus tu es précis, plus tu gagnes de points.
     """
     def __init__(self, rhythm_model, character_model, screen_height, view):
@@ -92,7 +92,7 @@ class RhythmController:
             # Calcul du chiffre à afficher (5, 4, 3...)
             self.current_countdown_val = math.ceil(remaining / 1000)
             
-            # 🎵 NOUVEAU : Les notes descendent PENDANT le compte à rebours
+            # NOUVEAU : Les notes descendent PENDANT le compte à rebours
             # On simule un temps négatif pour qu'elles arrivent pile quand la musique démarre
             fake_time = -remaining  # Ex: remaining=3000ms → fake_time=-3000ms
             
@@ -152,7 +152,7 @@ class RhythmController:
         # GAME OVER
         if self.rhythm.crowd_satisfaction <= 0:
             self.game_over = True
-            print("💀 GAME OVER : Le public vous a dégagé !")
+            print("GAME OVER : Le public vous a dégagé !")
             self.guitar_channel.stop()
             self.track_backing.stop()
 
@@ -169,7 +169,7 @@ class RhythmController:
     def check_hit(self, lane):
         current_time = pygame.time.get_ticks() - self.start_time
         
-        # --- 🎯 SYSTÈME DE PRÉCISION PROGRESSIVE ---
+        # --- SYSTÈME DE PRÉCISION PROGRESSIVE ---
         # Plus tu es proche du centre, plus tu gagnes !
         # On définit plusieurs zones de tolérance :
         
@@ -201,67 +201,67 @@ class RhythmController:
             self.guitar_channel.set_volume(1.0)
             self.last_hit_time = pygame.time.get_ticks()
             
-            # --- 🎯 CALCUL DES POINTS SELON LA PRÉCISION ---
+            # --- CALCUL DES POINTS SELON LA PRÉCISION ---
             # Plus on est proche de 0ms, plus on gagne !
             
             if best_distance <= perfect_window:
-                # 🌟 PERFECT : ±50ms
+                # PERFECT : ±50ms
                 # Points : 300 (base élevée)
                 # Hype : +5 (grosse récompense)
                 points = 300
                 hype_gain = 5
-                feedback = "PERFECT! ⭐"
+                feedback = "PERFECT!"
                 particle_color = (255, 255, 0)  # Jaune éclatant
                 self.view.create_particles(self.get_lane_x(lane), self.rhythm.hit_line_y, particle_color)
                 
             elif best_distance <= excellent_window:
-                # ✨ EXCELLENT : ±100ms
+                # EXCELLENT : ±100ms
                 # Points : 150-300 - on perd des points progressivement
                 # Formule : 300 - (distance * 1.5)
                 # Ex: à 50ms → 300-75=225, à 100ms → 300-150=150
                 points = max(150, int(300 - best_distance * 1.5))
                 hype_gain = 3
-                feedback = "EXCELLENT! ✨"
+                feedback = "EXCELLENT!"
                 particle_color = (100, 255, 255)  # Cyan
                 self.view.create_particles(self.get_lane_x(lane), self.rhythm.hit_line_y, particle_color)
                 
             elif best_distance <= good_window:
-                # 👍 GOOD : ±150ms
+                # GOOD : ±150ms
                 # Points : 80-150 selon précision
                 # Formule : 200 - distance
                 # Ex: à 100ms → 200-100=100, à 150ms → 200-150=50
                 points = max(80, int(200 - best_distance))
                 hype_gain = 2
-                feedback = "GOOD 👍"
+                feedback = "GOOD"
                 particle_color = (50, 255, 50)  # Vert
                 
             elif best_distance <= ok_window:
-                # 😐 OK : ±200ms
+                # OK : ±200ms
                 # Points : 30-80 selon précision
                 # Formule : 120 - (distance * 0.5)
                 # Ex: à 150ms → 120-75=45, à 200ms → 120-100=20
                 points = max(30, int(120 - best_distance * 0.5))
                 hype_gain = 1
-                feedback = "OK 😐"
+                feedback = "OK"
                 particle_color = (255, 200, 100)  # Orange pâle
                 
             else:
-                # 💩 LATE/EARLY : ±250ms (dernière chance)
+                # LATE/EARLY : ±250ms (dernière chance)
                 # Points : 5-30 (très peu)
                 # Hype : 0 (aucun gain)
                 # On garde le combo mais c'est la honte
                 points = max(5, int(40 - best_distance * 0.1))
                 hype_gain = 0
-                feedback = "LATE! 💩" if (best_note["time"] - current_time) < 0 else "EARLY! 💩"
+                feedback = "LATE!" if (best_note["time"] - current_time) < 0 else "EARLY!"
                 particle_color = (150, 150, 150)  # Gris
             
             # Appliquer les gains
             self.register_hit(points, feedback, hype_gain)
             
         else:
-            # --- ❌ MISS TOTAL ---
+            # --- MISS TOTAL ---
             # Aucune note dans la fenêtre = GROSSE PUNITION
-            self.rhythm.feedback = "MISS! ❌"
+            self.rhythm.feedback = "MISS!"
             self.rhythm.feedback_timer = 30
             self.rhythm.score = max(0, self.rhythm.score - 20)  # Perte de points
             self.rhythm.combo = 0  # Reset combo
@@ -286,11 +286,11 @@ class RhythmController:
         
         # Debug pour voir l'effet de la précision
         if self.rhythm.combo % 10 == 0:  # Affiche tous les 10 combos
-            print(f"🎯 Combo x{self.rhythm.combo} | Score: {self.rhythm.score} | Hype: {self.rhythm.crowd_satisfaction}%")
+            print(f"Combo x{self.rhythm.combo} | Score: {self.rhythm.score} | Hype: {self.rhythm.crowd_satisfaction}%")
 
     def end_concert(self):
         """
-        💰 ÉCONOMIE RADINE : Calcul du gain final
+        # ECONOMIE RADINE : Calcul du gain final
         """
         # On divise le score par 250 pour être radin
         raw_cash = int(self.rhythm.score / 250)
@@ -301,11 +301,11 @@ class RhythmController:
         # Petit bonus si public en feu
         if self.rhythm.crowd_satisfaction > 90:
             cash += 20
-            print("🌟 Bonus Star : +20$")
+            print("Bonus : +20$")
             
         self.rhythm.cash_earned = cash
-        print(f"💰 FIN DU CONCERT - Gains : {cash}$ (Plafonné)")
-        print(f"📊 Stats finales:")
+        print(f"FIN DU CONCERT - Gains : {cash}$ (Plafonné)")
+        print(f"Stats finales:")
         print(f"   Score: {self.rhythm.score}")
         print(f"   Max Combo: {self.rhythm.max_combo}")
         print(f"   Hype finale: {self.rhythm.crowd_satisfaction}%")

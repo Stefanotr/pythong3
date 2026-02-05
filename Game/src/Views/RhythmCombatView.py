@@ -197,7 +197,7 @@ class RhythmCombatView:
         pygame.draw.line(screen, (255, 50, 50), (0, hud_h), (self.screen_width, hud_h), 3)
         
         # Titre du combat
-        combat_title = self.title_font.render("⚔️ COMBAT RHYTHM ⚔️", True, (255, 215, 0))
+        combat_title = self.title_font.render("COMBAT RHYTHM", True, (255, 215, 0))
         screen.blit(combat_title, (self.screen_width//2 - combat_title.get_width()//2, 10))
         
         # HP JOUEUR (Gauche)
@@ -210,7 +210,7 @@ class RhythmCombatView:
             int(hud_h * 0.3),
             player_model.getHealth(),
             100,
-            f"🎸 {player_model.getName()}",
+            f"{player_model.getName()}",
             is_player=True
         )
         
@@ -225,7 +225,7 @@ class RhythmCombatView:
             int(hud_h * 0.3),
             boss_model.getHealth(),
             100,  # Max HP du boss
-            f"👹 {boss_model.getName()}",
+            f"{boss_model.getName()}",
             is_player=False
         )
         
@@ -233,7 +233,7 @@ class RhythmCombatView:
         if rhythm_model.feedback and rhythm_model.feedback_timer > 0:
             fb_col = (255, 255, 255)
             
-            if "MISS" in rhythm_model.feedback or "💀" in rhythm_model.feedback: 
+            if "MISS" in rhythm_model.feedback:
                 fb_col = (255, 0, 0)
             elif "PERFECT" in rhythm_model.feedback: 
                 fb_col = (255, 255, 0)
@@ -286,7 +286,7 @@ class RhythmCombatView:
             
             col = (100, 255, 100) if countdown_val > 3 else ((255, 200, 0) if countdown_val > 1 else (255, 50, 50))
             
-            ready = self.title_font.render("⚔️ PRÊT POUR LE COMBAT ? ⚔️", True, (255, 255, 255))
+            ready = self.title_font.render("PRÊT POUR LE COMBAT ?", True, (255, 255, 255))
             screen.blit(ready, (self.screen_width//2 - ready.get_width()//2, self.screen_height//2 - 150))
             
             nb = self.huge_font.render(str(countdown_val), True, col)

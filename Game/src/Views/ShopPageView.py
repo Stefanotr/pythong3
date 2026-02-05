@@ -86,7 +86,7 @@ class ShopPageView:
             
             # Draw title
             try:
-                title_text = "🛒 SHOP 🛒"
+                title_text = "SHOP"
                 title_surf = self.title_font.render(title_text, True, (255, 215, 0))  # Gold
                 title_x = self.screen_width // 2 - title_surf.get_width() // 2
                 title_y = 30
@@ -96,7 +96,7 @@ class ShopPageView:
             
             # Draw currency
             try:
-                currency_text = f"💰 Currency: {self.shop_model.getPlayerCurrency()}"
+                currency_text = f"Currency: {self.shop_model.getPlayerCurrency()}"
                 currency_surf = self.item_font.render(currency_text, True, (255, 255, 0))
                 currency_x = 20
                 currency_y = 100

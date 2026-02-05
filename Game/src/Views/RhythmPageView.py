@@ -461,7 +461,7 @@ class RhythmPageView:
             
             # Title
             try:
-                title_text = "🎸 FINAL RHYTHM SEQUENCE 🎵"
+                title_text = "FINAL RHYTHM SEQUENCE"
                 title_surf = title_font.render(title_text, True, (255, 215, 0))
                 title_shadow = title_font.render(title_text, True, (100, 80, 0))
                 

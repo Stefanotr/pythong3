@@ -50,15 +50,15 @@ def main():
             screen_height, 
             combat_view
         )
-        print("✅ Contrôleur Combat Rhythm chargé.")
-        print("🎸⚔️ Mode : BOSS COMBAT")
-        print("📜 Règles :")
+        print("Contrôleur Combat Rhythm chargé.")
+        print("Mode : BOSS COMBAT")
+        print("Règles :")
         print("   - Bonnes notes → Dégâts au BOSS")
         print("   - MISS → Dégâts au JOUEUR + Boss récupère HP")
         print("   - Victoire si Boss K.O.")
         print("   - Défaite si Joueur K.O. OU Boss survit")
     except Exception as e:
-        print(f"❌ Erreur critique : {e}")
+        print(f"Erreur critique : {e}")
         import traceback
         traceback.print_exc()
         return
@@ -84,9 +84,9 @@ def main():
         if controller.game_over:
             print("\n=== FIN DU COMBAT ===")
             if controller.victory:
-                print("🏆 VICTOIRE !")
+                print("VICTOIRE !")
             else:
-                print("💀 DÉFAITE !")
+                print("DÉFAITE !")
             
             # Attendre 3 secondes avant de fermer
             pygame.time.wait(3000)
