@@ -18,6 +18,9 @@ class RhythmCombatController:
         self.boss = boss_model
         self.view = view
         
+        # Store boss max health for healing calculations
+        self.boss_max_health = getattr(self.boss, '_rhythm_combat_max_health', self.boss.getHealth())
+        
         # --- 1. INITIALISATION DE LA MAP & AUDIO ---
         if song_loader is None:
             song_loader = load_seven_nation_army
@@ -122,6 +125,15 @@ class RhythmCombatController:
         """Boucle principale"""
         if self.game_over:
             return
+        
+        # === CHECK PLAYER DEATH AT START ===
+        if self.player.getHealth() <= 0:
+            self.game_over = True
+            self.victory = False
+            print(f"GAME OVER : {self.player.getName()} est K.O. !")
+            self.guitar_channel.stop()
+            self.track_backing.stop()
+            return
 
         # --- 1. COMPTE À REBOURS ---
         if self.waiting_to_start:
@@ -198,13 +210,15 @@ class RhythmCombatController:
         current_hp = self.player.getHealth()
         self.player.setHealth(max(0, current_hp - damage_to_player))
         
+        # --- ANIMATION D'ATTAQUE DU BOSS ---
+        self.boss.setCurrentAction("attacking", 30)
+        
         print(f"MISS → {self.player.getName()} prend {damage_to_player} dégâts ! (HP: {self.player.getHealth()})")
         
         # --- LE BOSS RÉCUPÈRE DE LA VIE ---
         boss_heal = 5
         boss_hp = self.boss.getHealth()
-        max_boss_hp = 100  # À ajuster selon ton boss
-        self.boss.setHealth(min(max_boss_hp, boss_hp + boss_heal))
+        self.boss.setHealth(min(self.boss_max_health, boss_hp + boss_heal))
         
         print(f"Le boss récupère {boss_heal} HP ! (HP: {self.boss.getHealth()})")
         
@@ -309,50 +323,45 @@ class RhythmCombatController:
         combo_multiplier = 1 + (self.rhythm.combo // 5) * 0.2  # +20% tous les 5 combos
         final_damage = int(damage * combo_multiplier)
 
-        # --- HIT ROLL BASED ON PLAYER ACCURACY ---
-        try:
-            accuracy = max(20, min(100, int(self.player.getAccuracy() * 100)))
-        except Exception:
-            accuracy = 50
-
-        roll = random.randint(1, 100)
-        if roll > accuracy:
-            # Miss due to low accuracy / drunkenness
-            self.play_random_fail()
-            self.rhythm.feedback = f"MISS! (accuracy {accuracy}%)"
-            self.rhythm.feedback_timer = 20
-            self.rhythm.combo = 0
-            self.notes_missed += 1
-            # Small penalty to player on miss
-            dmg = 5
-            self.player.setHealth(max(0, self.player.getHealth() - dmg))
-            print(f"MISS (roll {roll} > acc {accuracy}) → {self.player.getName()} prend {dmg} dégâts ! (HP: {self.player.getHealth()})")
-            return
-
-        # Apply drunkenness damage bonus like turn combat
+        # --- DRUNKENNESS ONLY AFFECTS DAMAGE OUTPUT, NOT HIT/MISS ---
         try:
             drunkenness = self.player.getDrunkenness()
         except Exception:
             drunkenness = 0
-
+        
+        # At high drunkenness: slight damage reduction (harder to aim well)
+        # But if very drunk (50%+), the hits that DO connect are more powerful (aggression)
+        drunkenness_damage_penalty = int((drunkenness / 100) * 20)  # -0 to -20% damage from poor aim
+        final_damage = max(1, final_damage - drunkenness_damage_penalty)
+        
+        # Very drunk hits (50%+) get a small bonus (reckless aggression)
         if drunkenness >= 50:
-            final_damage = int(final_damage * 1.5)
-            # log feedback
-            self.rhythm.feedback = (f"{feedback} (+DRUNK BONUS) → {final_damage} DMG!")
-            self.rhythm.feedback_timer = 20
+            final_damage = int(final_damage * 1.2)
 
+        # === RHYTHM COMBAT DAMAGE REDUCTION ===
+        # Divide damage by 2 for rhythm combat balance
+        final_damage = final_damage // 2  # Integer division to cut damage in half
+        
+        # --- ANIMATION D'ATTAQUE DU JOUEUR ---
+        self.player.setCurrentAction("attacking", 30)
+        
         # Appliquer dégâts
         boss_hp = self.boss.getHealth()
-        self.boss.setHealth(max(0, boss_hp - final_damage))
+        new_boss_hp = max(0, boss_hp - final_damage)
+        self.boss.setHealth(new_boss_hp)
         
-        # Feedback
-        self.rhythm.feedback = f"{feedback} → {final_damage} DMG!"
+        # Debug logging
+        from Utils.Logger import Logger
+        Logger.debug("RhythmCombatController.deal_damage_to_boss", 
+                    f"Boss health: {boss_hp} -> {new_boss_hp} ({feedback})", 
+                    damage=final_damage)
+        
+        # Set feedback (just the rating, combo will be displayed below)
+        self.rhythm.feedback = feedback
         self.rhythm.feedback_timer = 20
         
         # Son
         self.play_random_hit()
-        
-        print(f"{feedback} → {final_damage} dégâts au boss ! (HP: {self.boss.getHealth()}) [Combo x{self.rhythm.combo}]")
         
         # Vérifier si boss vaincu
         if self.boss.getHealth() <= 0:

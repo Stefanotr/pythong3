@@ -37,6 +37,11 @@ class PlayerModel(CaracterModel):
             self._selected_bottle = ""
             self._drunkenness = 0
             self._level = 0
+            
+            # Initialize inventory for bottle management
+            from Models.InventoryModel import InventoryModel
+            self.inventory = InventoryModel()
+            
             Logger.debug("PlayerModel.__init__", "Player model initialized", name=name, x=x, y=y)
         except Exception as e:
             Logger.error("PlayerModel.__init__", e)

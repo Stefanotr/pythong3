@@ -6,6 +6,7 @@ Allows player navigation and transitions to different acts.
 """
 
 import pygame
+import os
 from Views.PageView import PageView
 from Views.MapView import MapView
 from Views.CaracterView import CaracterView
@@ -46,12 +47,25 @@ class MapPageView(PageView):
         """
         try:
             # Get screen dimensions
-            screen_width = screen.get_width()
-            screen_height = screen.get_height()
+            screen_info = pygame.display.Info()
+            screen_width = screen_info.current_w
+            screen_height = screen_info.current_h
+            
+            # Set window to center
+            try:
+                os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
+            except:
+                pass
+            
+            # Create resizable window at full screen size
+            self.screen = pygame.display.set_mode(
+                (screen_width, screen_height),
+                pygame.RESIZABLE
+            )
             
             # Initialize PageView without background image to avoid visual artifacts on the map
             super().__init__("Map - Six-String Hangover", screen_width, screen_height, pygame.RESIZABLE, None)
-            self.screen = screen
+            
             self.sequence_controller = sequence_controller
             Logger.debug("MapPageView.__init__", "Map view created with no background image to avoid visual bugs")
             self.current_act = current_act
@@ -364,6 +378,12 @@ class MapPageView(PageView):
                                 Logger.error("MapPageView.run", e)
                         
                         elif event.type == pygame.KEYDOWN:
+                            # === HANDLE F11 FOR FULLSCREEN TOGGLE ===
+                            if event.key == pygame.K_F11:
+                                try:
+                                    self._toggle_fullscreen()
+                                except Exception as e:
+                                    Logger.error("MapPageView.run", e)
                             # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
                             if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
                                 stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
@@ -485,7 +505,7 @@ class MapPageView(PageView):
                                                     Logger.debug("MapPageView.run", "Shop closed")
                                             
                                             shop_controller.update()
-                                            shop_view.draw()
+                                            shop_view.draw(self.johnny)
                                             pygame.display.flip()
                                             shop_clock.tick(60)
                                         
@@ -818,7 +838,7 @@ class MapPageView(PageView):
                         Logger.error("MapPageView._run_shop", e)
 
                 try:
-                    shop_view.draw()
+                    shop_view.draw(self.johnny)
                 except Exception as e:
                     Logger.error("MapPageView._run_shop.draw", e)
 
@@ -915,3 +935,28 @@ class MapPageView(PageView):
                 pass
         except Exception as e:
             Logger.error("MapPageView._drawLevelDisplay", e)
+    
+    def _toggle_fullscreen(self):
+        """Toggle between fullscreen and resizable window modes."""
+        try:
+            current_flags = self.screen.get_flags()
+            
+            if current_flags & pygame.FULLSCREEN:
+                # Currently fullscreen, switch to resizable
+                self.screen = pygame.display.set_mode(
+                    (self.screen_width, self.screen_height),
+                    pygame.RESIZABLE
+                )
+                Logger.debug("MapPageView._toggle_fullscreen", "Switched to RESIZABLE mode")
+            else:
+                # Currently resizable, switch to fullscreen
+                screen_info = pygame.display.Info()
+                self.screen = pygame.display.set_mode(
+                    (screen_info.current_w, screen_info.current_h),
+                    pygame.FULLSCREEN
+                )
+                self.screen_width = screen_info.current_w
+                self.screen_height = screen_info.current_h
+                Logger.debug("MapPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
+        except Exception as e:
+            Logger.error("MapPageView._toggle_fullscreen", e)
