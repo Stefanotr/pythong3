@@ -210,6 +210,9 @@ class RhythmCombatController:
         current_hp = self.player.getHealth()
         self.player.setHealth(max(0, current_hp - damage_to_player))
         
+        # --- ANIMATION D'ATTAQUE DU BOSS ---
+        self.boss.setCurrentAction("attacking", 30)
+        
         print(f"MISS → {self.player.getName()} prend {damage_to_player} dégâts ! (HP: {self.player.getHealth()})")
         
         # --- LE BOSS RÉCUPÈRE DE LA VIE ---
@@ -338,6 +341,9 @@ class RhythmCombatController:
         # === RHYTHM COMBAT DAMAGE REDUCTION ===
         # Divide damage by 2 for rhythm combat balance
         final_damage = final_damage // 2  # Integer division to cut damage in half
+        
+        # --- ANIMATION D'ATTAQUE DU JOUEUR ---
+        self.player.setCurrentAction("attacking", 30)
         
         # Appliquer dégâts
         boss_hp = self.boss.getHealth()

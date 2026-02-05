@@ -200,6 +200,12 @@ class RhythmCombatPageView:
                     try:
                         self.screen.fill((0, 0, 0))
                         
+                        # === UPDATE CHARACTER ANIMATIONS ===
+                        if self.player:
+                            self.player.updateActionTimer()
+                        if self.boss:
+                            self.boss.updateActionTimer()
+                        
                         # Get current countdown value
                         countdown_val = 0
                         if hasattr(self.controller, 'waiting_to_start') and self.controller.waiting_to_start:

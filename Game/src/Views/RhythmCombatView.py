@@ -1,5 +1,6 @@
 import pygame
 import math
+from Views.CaracterView import CaracterView
 
 class RhythmCombatView:
     """
@@ -41,6 +42,12 @@ class RhythmCombatView:
         self.combo_font = pygame.font.SysFont("Arial", int(self.game_height * 0.05), bold=True)
         self.title_font = pygame.font.SysFont("Arial", int(self.game_height * 0.035), bold=True)
         self.huge_font = pygame.font.SysFont("Arial", int(self.game_height * 0.3), bold=True)
+        
+        # Character views for player and boss animations
+        # Use DIFFERENT sizes for Lola: smaller for map, larger for combat
+        # For RhythmCombat: use normal size (200x200) without deformation
+        self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(200, 200))
+        self.boss_view = None  # Will be set when boss is known
         
         # Couleurs des lanes
         self.lane_colors = [
@@ -301,6 +308,42 @@ class RhythmCombatView:
             
             screen.blit(shadow, (txt_x + 2, txt_y + 2))
             screen.blit(txt, (txt_x, txt_y))
+        
+        # --- CHARACTER ANIMATIONS (Joueur à gauche, Boss à droite) ---
+        try:
+            # Player on the left (Lola) - centered vertically at middle of screen
+            player_x = 150
+            player_y = self.screen_height // 2  # Middle of screen
+            self.player_view.drawCaracter(screen, player_model, offset=(player_x, player_y), is_map=False)
+            
+            # Boss on the right - same vertical height
+            if self.boss_view is None and boss_model:
+                # Use ManagerCorrompu.png for the boss (assuming it's the manager boss)
+                boss_asset = "Game/Assets/ManagerCorrompu.png"
+                boss_base_name = "manager"
+                self.boss_view = CaracterView(boss_asset, base_name=boss_base_name, sprite_size=(200, 200))
+            
+            if self.boss_view:
+                boss_x = self.screen_width - 150
+                boss_y = self.screen_height // 2  # Same vertical position as player
+                self.boss_view.drawCaracter(screen, boss_model, offset=(boss_x, boss_y), is_map=False)
+        except Exception as e:
+            pass
+        
+        # --- LEVEL AND ALCOHOL (en bas) ---
+        try:
+            # Level en bas à gauche
+            level = player_model.getLevel() if hasattr(player_model, 'getLevel') else 1
+            level_text = self.font.render(f"LEVEL {level}", True, (100, 255, 100))
+            screen.blit(level_text, (20, self.screen_height - 50))
+            
+            # Alcool en bas à droite
+            alcohol = player_model.getDrunkenness() if hasattr(player_model, 'getDrunkenness') else 0
+            alcohol_color = (255, 100, 100) if alcohol > 60 else (100, 255, 100)
+            alcohol_text = self.font.render(f"ALCOHOL: {alcohol}%", True, alcohol_color)
+            screen.blit(alcohol_text, (self.screen_width - alcohol_text.get_width() - 20, self.screen_height - 50))
+        except Exception as e:
+            pass
 
         # --- COMPTE À REBOURS ---
         if countdown_val > 0:
