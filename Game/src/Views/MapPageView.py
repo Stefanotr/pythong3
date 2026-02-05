@@ -90,7 +90,7 @@ class MapPageView(PageView):
                         TileModel("road", "Game/Assets/road3_carre.png", False),
                         TileModel("road2", "Game/Assets/road3_carre.png", False)
                     ]
-                    self.map = MapModel("Game/Assets/maps/map.map", tile_kinds, 106)
+                    self.map = MapModel("Game/Assets/maps/map.map", tile_kinds, 16)
                     Logger.debug("MapPageView.__init__", "Fallback map loaded")
             except Exception as e:
                 Logger.error("MapPageView.__init__", e)
@@ -187,8 +187,13 @@ class MapPageView(PageView):
                     # TMX object y is top coordinate; use as-is
                     self.shop_left = sx
                     self.shop_top = sy
-                    self.shop_width = sw
-                    self.shop_height = sh
+                    self.shop_tile_x = self.shop_left // self.map.tile_size
+                    self.shop_tile_y = self.shop_top // self.map.tile_size
+                    self.shop_tile_width = 3  # 3x3 collision hitbox
+                    self.shop_tile_height = 3  # 3x3 collision hitbox
+                    # Recalculate pixel dimensions based on 3x3 tile collision
+                    self.shop_width = self.shop_tile_width * self.map.tile_size
+                    self.shop_height = self.shop_tile_height * self.map.tile_size
                     self.shop_rect_world = pygame.Rect(self.shop_left, self.shop_top, self.shop_width, self.shop_height)
                     # door at bottom center unless door property specified
                     door_w = max(8, self.map.tile_size // 2)
@@ -196,10 +201,6 @@ class MapPageView(PageView):
                     door_x = self.shop_left + (self.shop_width - door_w) // 2
                     door_y = self.shop_top + self.shop_height - door_h
                     self.shop_door_rect = pygame.Rect(door_x, door_y, door_w, door_h)
-                    self.shop_tile_x = self.shop_left // self.map.tile_size
-                    self.shop_tile_y = self.shop_top // self.map.tile_size
-                    self.shop_tile_width = max(1, self.shop_width // self.map.tile_size)
-                    self.shop_tile_height = max(1, self.shop_height // self.map.tile_size)
                     self.chosen_building = (self.shop_tile_x, self.shop_tile_y, self.shop_tile_x + self.shop_tile_width - 1, self.shop_tile_y + self.shop_tile_height -1)
                     Logger.debug('MapPageView.__init__', 'Using shop object from TMX', shop=self.chosen_building, obj=shop_obj)
                 else:
