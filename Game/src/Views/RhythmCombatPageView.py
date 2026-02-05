@@ -256,6 +256,9 @@ class RhythmCombatPageView:
             
             if current_flags & pygame.FULLSCREEN:
                 # Currently fullscreen, switch to resizable
+                screen_info = pygame.display.Info()
+                self.screen_width = screen_info.current_w
+                self.screen_height = screen_info.current_h
                 self.screen = pygame.display.set_mode(
                     (self.screen_width, self.screen_height),
                     pygame.RESIZABLE

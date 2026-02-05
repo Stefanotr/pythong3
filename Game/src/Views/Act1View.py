@@ -529,8 +529,7 @@ class ActView:
                 self.rhythm_model, 
                 self.johnny, 
                 self.screen_height, 
-                self.rhythm_view,
-                self.boss  # Pass boss for attack simulation
+                self.rhythm_view
             )
             
             # Transition to rhythm phase

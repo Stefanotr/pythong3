@@ -39,8 +39,8 @@ class RhythmCombatView:
             (255, 215, 0)     # Or (N)
         ]
         
-        # Positions des cordes
-        guitar_width = screen_width * 0.4
+        # Positions des cordes - use 85% of screen width for better fullscreen experience
+        guitar_width = screen_width * 0.85
         guitar_start = (screen_width - guitar_width) / 2
         spacing = guitar_width / 5
         
