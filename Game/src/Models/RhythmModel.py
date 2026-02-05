@@ -39,13 +39,13 @@ class RhythmModel:
         Retourne un texte décrivant l'humeur du public (pour le Debug ou l'UI).
         """
         if self.crowd_satisfaction >= 80:
-            return "EN FEU"
+            return "EN FEU 🔥"
         elif self.crowd_satisfaction >= 50:
-            return "CONTENT"
+            return "CONTENT 🙂"
         elif self.crowd_satisfaction >= 20:
-            return "ENNUYÉ"
+            return "ENNUYÉ 😐"
         else:
-            return "EN COLÈRE"
+            return "EN COLÈRE 🤬"
 
     def reset(self):
         """Remet les stats à zéro pour recommencer une chanson sans recréer l'objet."""
