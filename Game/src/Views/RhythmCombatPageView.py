@@ -55,11 +55,18 @@ class RhythmCombatPageView:
                     scaled_health = int(base_health + (player_level * 50))
                     self.boss.setHealth(scaled_health)
                     self.boss._rhythm_combat_max_health = scaled_health
+                    
+                    # Also scale damage: +1 damage per level
+                    base_damage = 15
+                    scaled_damage = int(base_damage + (player_level * 1))
+                    self.boss.setDamage(scaled_damage)
+                    
                     Logger.debug("RhythmCombatPageView.__init__", "Boss initialized for rhythm combat",
-                               boss_name=self.boss.getName(), level=player_level, health=scaled_health)
+                               boss_name=self.boss.getName(), level=player_level, health=scaled_health, damage=scaled_damage)
                 except Exception as e:
                     Logger.error("RhythmCombatPageView.__init__", f"Error scaling boss health: {e}")
                     self.boss.setHealth(3000)
+                    self.boss.setDamage(15)
                     self.boss._rhythm_combat_max_health = 3000
             else:
                 Logger.debug("RhythmCombatPageView.__init__", "Boss already initialized, current health",
@@ -70,12 +77,17 @@ class RhythmCombatPageView:
             Logger.debug("RhythmCombatPageView.__init__", f"Boss max health stored as {self.boss_max_health}, actual health: {self.boss.getHealth()}")
             
             # === PLAYER HEALTH MANAGEMENT ===
-            self.player_max_health = 100  # Default player max health
+            # Use player's current health as the base max health
+            # This will be updated dynamically during gameplay
+            self.player_max_health = 100  # Default fallback
             if self.player:
                 try:
-                    self.player_max_health = self.player.getHealth()  # Use current health as max since player doesn't scale much
-                except Exception:
-                    pass
+                    # Use current player health as max (will update if player gains HP from leveling)
+                    self.player_max_health = self.player.getHealth()
+                    Logger.debug("RhythmCombatPageView.__init__", "Player max health set",
+                               max_health=self.player_max_health)
+                except Exception as e:
+                    Logger.error("RhythmCombatPageView.__init__", "Error setting player max health", error=str(e))
             
             # Get screen dimensions and create resizable window
             try:
