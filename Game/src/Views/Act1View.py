@@ -118,18 +118,34 @@ class ActView:
             # === CREATE BOSS ===
             
             try:
-                boss_name = act_config.get('boss_name', 'Boss')
-                boss_health = act_config.get('boss_health', 150)
-                boss_damage = act_config.get('boss_damage', 12)
-                boss_accuracy = act_config.get('boss_accuracy', 0.75)
+                # Get boss from sequence controller if available, otherwise create new one
+                self.boss = None
+                if self.sequence_controller:
+                    self.boss = self.sequence_controller.get_boss()
                 
-                self.boss = CaracterModel(boss_name, 80, 80)
-                self.boss.setHealth(boss_health)
-                self.boss.setDamage(boss_damage)
-                self.boss.setAccuracy(boss_accuracy)
+                # If no boss yet (shouldn't happen), create one
+                if not self.boss:
+                    boss_name = act_config.get('boss_name', 'Boss')
+                    boss_health = act_config.get('boss_health', 150)
+                    boss_damage = act_config.get('boss_damage', 12)
+                    boss_accuracy = act_config.get('boss_accuracy', 0.75)
+                    
+                    self.boss = CaracterModel(boss_name, 80, 80)
+                    self.boss.setHealth(boss_health)
+                    self.boss.setDamage(boss_damage)
+                    self.boss.setAccuracy(boss_accuracy)
+                    
+                    if self.sequence_controller:
+                        self.sequence_controller.set_boss(self.boss)
                 
-                Logger.debug("ActView.__init__", f"Boss created: {boss_name}",
-                           health=boss_health, damage=boss_damage)
+                # Update boss stats based on player level (scale difficulty)
+                player_level = self.johnny.getLevel() if self.johnny else 1
+                if player_level > 1:
+                    current_health = self.boss.getHealth()
+                    self.boss.setHealth(int(current_health * player_level))
+                
+                Logger.debug("ActView.__init__", f"Boss: {self.boss.getName()}",
+                           health=self.boss.getHealth(), damage=self.boss.getDamage())
             except Exception as e:
                 Logger.error("ActView.__init__", e)
                 raise

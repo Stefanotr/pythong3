@@ -288,6 +288,7 @@ class WelcomPageView(PageView):
                 boss.setDamage(10)
                 
                 sequence_controller.set_player(player)
+                sequence_controller.set_boss(boss)
                 Logger.debug("WelcomPageView._startGameFlow", "Player and boss created and initialized")
             except Exception as e:
                 Logger.error("WelcomPageView._startGameFlow", e)

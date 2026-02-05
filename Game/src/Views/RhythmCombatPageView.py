@@ -28,13 +28,47 @@ class RhythmCombatPageView:
         Args:
             screen: Pygame surface for rendering
             player: PlayerModel instance
-            boss: CaracterModel instance for the boss
+            boss: CaracterModel instance for the boss (optional, uses sequence_controller if not provided)
             sequence_controller: Optional GameSequenceController for stage navigation
         """
         try:
             self.sequence_controller = sequence_controller
             self.player = player
+            
+            # Get boss from parameter or sequence controller
             self.boss = boss
+            if not self.boss and self.sequence_controller:
+                self.boss = self.sequence_controller.get_boss()
+            
+            if not self.boss:
+                Logger.error("RhythmCombatPageView.__init__", "No boss provided or found in sequence controller")
+                raise ValueError("Boss instance is required for rhythm combat")
+            
+            # === BOSS HEALTH MANAGEMENT ===
+            # Ensure boss has 3000 HP once and only once per battle
+            if not hasattr(self.boss, '_rhythm_combat_max_health'):
+                # First time in rhythm combat - set and lock max health
+                Logger.debug("RhythmCombatPageView.__init__", f"Setting boss health to 3000 (current: {self.boss.getHealth()})")
+                self.boss.setHealth(3000)
+                Logger.debug("RhythmCombatPageView.__init__", f"Boss health set, verification: {self.boss.getHealth()}")
+                self.boss._rhythm_combat_max_health = 3000
+                Logger.debug("RhythmCombatPageView.__init__", "Boss initialized with 3000 HP for rhythm combat",
+                           boss_name=self.boss.getName(), confirmed_health=self.boss.getHealth())
+            else:
+                Logger.debug("RhythmCombatPageView.__init__", "Boss already initialized, current health",
+                           boss_name=self.boss.getName(), current_health=self.boss.getHealth())
+            
+            # Store the locked max health for display purposes
+            self.boss_max_health = self.boss._rhythm_combat_max_health
+            Logger.debug("RhythmCombatPageView.__init__", f"Boss max health stored as {self.boss_max_health}, actual health: {self.boss.getHealth()}")
+            
+            # === PLAYER HEALTH MANAGEMENT ===
+            self.player_max_health = 100  # Default player max health
+            if self.player:
+                try:
+                    self.player_max_health = self.player.getHealth()  # Use current health as max since player doesn't scale much
+                except Exception:
+                    pass
             
             # Get screen dimensions and create resizable window
             try:
@@ -65,7 +99,7 @@ class RhythmCombatPageView:
             # Create rhythm model and view
             try:
                 self.rhythm_model = RhythmModel()
-                self.combat_view = RhythmCombatView(self.screen_width, self.screen_height)
+                self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health)
                 Logger.debug("RhythmCombatPageView.__init__", "Rhythm and combat views created")
             except Exception as e:
                 Logger.error("RhythmCombatPageView.__init__", e)
@@ -80,7 +114,8 @@ class RhythmCombatPageView:
                     self.screen_height,
                     self.combat_view
                 )
-                Logger.debug("RhythmCombatPageView.__init__", "Rhythm combat controller created")
+                Logger.debug("RhythmCombatPageView.__init__", "Rhythm combat controller created",
+                           boss_health=self.boss.getHealth())
             except Exception as e:
                 Logger.error("RhythmCombatPageView.__init__", e)
                 raise
@@ -132,7 +167,7 @@ class RhythmCombatPageView:
                             self.screen_width = event.w
                             self.screen_height = event.h
                             # Recreate combat view with new dimensions
-                            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height)
+                            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health)
                             Logger.debug("RhythmCombatPageView.run", "Window resized", width=self.screen_width, height=self.screen_height)
                         
                         
@@ -231,6 +266,16 @@ class RhythmCombatPageView:
                 else:
                     Logger.debug("RhythmCombatPageView.run", "Rhythm combat ended (not victory) - showing defeat transition then returning to main menu")
                     
+                    # Stop music when defeated
+                    try:
+                        if self.controller:
+                            if hasattr(self.controller, 'guitar_channel'):
+                                self.controller.guitar_channel.stop()
+                            if hasattr(self.controller, 'track_backing'):
+                                self.controller.track_backing.stop()
+                    except Exception as e:
+                        Logger.error("RhythmCombatPageView.run - Stop music on defeat", e)
+                    
                     # Show defeat transition screen with 3-second auto-advance
                     transition = FinTransitionPageView(
                         self.screen,
@@ -276,7 +321,7 @@ class RhythmCombatPageView:
                 Logger.debug("RhythmCombatPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
             
             # Recreate combat view with new dimensions
-            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height)
+            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health)
             
             # Update controller's screen height reference if available
             if self.controller and hasattr(self.controller, 'screen_height'):

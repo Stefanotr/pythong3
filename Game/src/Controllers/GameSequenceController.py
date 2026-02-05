@@ -40,6 +40,7 @@ class GameSequenceController:
         """Initialize the sequence controller"""
         self.current_stage = GameStage.RHYTHM_PAGE_1.value
         self.player = None
+        self.boss = None
         Logger.debug("GameSequenceController.__init__", "Game sequence controller created")
     
     def set_player(self, player):
@@ -56,6 +57,21 @@ class GameSequenceController:
     def get_player(self):
         """Get the current player instance"""
         return self.player
+    
+    def set_boss(self, boss):
+        """
+        Set the boss instance for the sequence.
+        
+        Args:
+            boss: CaracterModel instance for the boss
+        """
+        self.boss = boss
+        Logger.debug("GameSequenceController.set_boss", "Boss set in sequence controller", 
+                   name=boss.getName() if boss else None)
+    
+    def get_boss(self):
+        """Get the current boss instance"""
+        return self.boss
     
     def get_current_stage(self):
         """Get the current stage number (1-8)"""

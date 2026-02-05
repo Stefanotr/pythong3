@@ -6,17 +6,28 @@ class RhythmCombatView:
     Vue pour le MODE COMBAT RHYTHM
     Affiche le jeu de rythme + les HP du joueur et du boss
     """
-    def __init__(self, screen_width, screen_height):
+    def __init__(self, screen_width, screen_height, boss_max_health=3000, player_max_health=100):
         self.screen_width = screen_width
         self.screen_height = screen_height
+        self.boss_max_health = boss_max_health  # Store boss max health for health bar display
+        self.player_max_health = player_max_health  # Store player max health for health bar display
         
-        # Background
+        # === FIXED GAME AREA (doesn't scale with window resize) ===
+        self.game_width = 1920  # Fixed internal game width
+        self.game_height = 1080  # Fixed internal game height
+        
+        # Calculate offset to center the fixed game area on the actual screen
+        self.game_offset_x = (screen_width - self.game_width) // 2
+        self.game_offset_y = (screen_height - self.game_height) // 2
+        
+        # Background - scales to fill entire screen
         self.background_image = None
         self.overlay = None
         
         image_path = "Game/Assets/stage.png"
         try:
             loaded_img = pygame.image.load(image_path).convert()
+            # Background scales to actual screen size
             self.background_image = pygame.transform.scale(loaded_img, (screen_width, screen_height))
             self.overlay = pygame.Surface((screen_width, screen_height))
             self.overlay.fill((0, 0, 0))
@@ -24,12 +35,12 @@ class RhythmCombatView:
         except FileNotFoundError:
             pass
 
-        # Fonts
-        self.font = pygame.font.SysFont("Arial", int(screen_height * 0.025), bold=True)
-        self.big_font = pygame.font.SysFont("Arial", int(screen_height * 0.08), bold=True)
-        self.combo_font = pygame.font.SysFont("Arial", int(screen_height * 0.05), bold=True)
-        self.title_font = pygame.font.SysFont("Arial", int(screen_height * 0.035), bold=True)
-        self.huge_font = pygame.font.SysFont("Arial", int(screen_height * 0.3), bold=True)
+        # Fonts - based on fixed game height
+        self.font = pygame.font.SysFont("Arial", int(self.game_height * 0.025), bold=True)
+        self.big_font = pygame.font.SysFont("Arial", int(self.game_height * 0.08), bold=True)
+        self.combo_font = pygame.font.SysFont("Arial", int(self.game_height * 0.05), bold=True)
+        self.title_font = pygame.font.SysFont("Arial", int(self.game_height * 0.035), bold=True)
+        self.huge_font = pygame.font.SysFont("Arial", int(self.game_height * 0.3), bold=True)
         
         # Couleurs des lanes
         self.lane_colors = [
@@ -39,19 +50,20 @@ class RhythmCombatView:
             (255, 215, 0)     # Or (N)
         ]
         
-        # Positions des cordes - use 85% of screen width for better fullscreen experience
-        guitar_width = screen_width * 0.85
-        guitar_start = (screen_width - guitar_width) / 2
+        # Positions des cordes - FIXED WIDTH (not scaled with window)
+        # Use 40% width like RhythmView for narrower, more focused gameplay
+        guitar_width = self.game_width * 0.4
+        guitar_start = (self.game_width - guitar_width) / 2
         spacing = guitar_width / 5
         
         self.lane_x = [
-            int(guitar_start + spacing),
-            int(guitar_start + spacing * 2),
-            int(guitar_start + spacing * 3),
-            int(guitar_start + spacing * 4)
+            self.game_offset_x + int(guitar_start + spacing),
+            self.game_offset_x + int(guitar_start + spacing * 2),
+            self.game_offset_x + int(guitar_start + spacing * 3),
+            self.game_offset_x + int(guitar_start + spacing * 4)
         ]
         
-        self.guitar_start = int(guitar_start)
+        self.guitar_start = self.game_offset_x + int(guitar_start)
         self.guitar_width = int(guitar_width)
         
         # Particules
@@ -115,10 +127,11 @@ class RhythmCombatView:
     def draw(self, screen, rhythm_model, player_model, boss_model, note_speed=0.5, countdown_val=0):
         """
         Dessine l'interface du combat rhythm
+        Utilise un canvas fixe pour les éléments du jeu + background adaptatif
         """
         self.time += 1
         
-        # --- FOND ---
+        # --- FOND (adaptatif à la taille réelle de l'écran) ---
         if self.background_image:
             screen.blit(self.background_image, (0, 0))
             screen.blit(self.overlay, (0, 0))
@@ -127,8 +140,8 @@ class RhythmCombatView:
                 shade = int(20 + y * 0.02)
                 pygame.draw.line(screen, (shade, shade // 2, shade // 3), (0, y), (self.screen_width, y))
         
-        # --- MANCHE DE GUITARE ---
-        guitar_rect = pygame.Rect(self.guitar_start - 15, 0, self.guitar_width + 30, self.screen_height)
+        # --- MANCHE DE GUITARE (dimensions fixes) ---
+        guitar_rect = pygame.Rect(self.guitar_start - 15, self.game_offset_y, self.guitar_width + 30, self.game_height)
         guitar_surf = pygame.Surface((guitar_rect.width, guitar_rect.height), pygame.SRCALPHA)
         
         for i in range(guitar_rect.width):
@@ -149,7 +162,7 @@ class RhythmCombatView:
             color = self.lane_colors[i]
             
             # Corde
-            pygame.draw.line(screen, (color[0]//3, color[1]//3, color[2]//3), (x, 0), (x, self.screen_height), 2)
+            pygame.draw.line(screen, (color[0]//3, color[1]//3, color[2]//3), (x, self.game_offset_y), (x, self.game_offset_y + self.game_height), 2)
             
             # Cible
             pygame.draw.circle(screen, (0, 0, 0), (x, hit_line_y), 32)
@@ -189,7 +202,7 @@ class RhythmCombatView:
                 screen.blit(surf, (particle['x']-size, particle['y']-size))
         self.update_particles()
         
-        # --- HUD COMBAT ---
+        # --- HUD COMBAT (reste relatif à l'écran réel) ---
         hud_h = int(self.screen_height * 0.15)
         hud_bg = pygame.Surface((self.screen_width, hud_h), pygame.SRCALPHA)
         hud_bg.fill((10, 10, 20, 220))
@@ -209,7 +222,7 @@ class RhythmCombatView:
             player_hp_width,
             int(hud_h * 0.3),
             player_model.getHealth(),
-            100,
+            self.player_max_health,
             f"{player_model.getName()}",
             is_player=True
         )
@@ -217,14 +230,25 @@ class RhythmCombatView:
         # HP BOSS (Droite)
         boss_hp_width = int(self.screen_width * 0.3)
         boss_hp_x = self.screen_width - boss_hp_width - 20
+        
+        # Debug: Log health values before drawing
+        boss_current_health = boss_model.getHealth()
+        if boss_current_health != getattr(self, '_last_displayed_boss_health', None):
+            from Utils.Logger import Logger
+            Logger.debug("RhythmCombatView.draw", "Boss health display",
+                        current_health=boss_current_health,
+                        max_health=self.boss_max_health,
+                        boss_name=boss_model.getName())
+            self._last_displayed_boss_health = boss_current_health
+        
         self.draw_health_bar(
             screen,
             boss_hp_x,
             int(hud_h * 0.5),
             boss_hp_width,
             int(hud_h * 0.3),
-            boss_model.getHealth(),
-            100,  # Max HP du boss
+            boss_current_health,
+            self.boss_max_health,  # Use actual max health from initialization
             f"{boss_model.getName()}",
             is_player=False
         )
