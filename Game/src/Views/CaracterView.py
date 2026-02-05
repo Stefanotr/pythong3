@@ -196,8 +196,17 @@ class CaracterView:
             except Exception as e:
                 Logger.error("CaracterView.drawCaracter", e)
 
-            # Draw character name below sprite (smaller font for map)
-            if not is_map:  # Only draw name in combat/act views
+            # Draw character name above sprite (smaller font for map)
+            if is_map:
+                try:
+                    name = caracter.getName()
+                    name_surface = self.small_font.render(name, True, (255, 255, 255))
+                    name_x = draw_x + sprite_w // 2 - name_surface.get_width() // 2
+                    name_y = draw_y - name_surface.get_height() - 5
+                    screen.blit(name_surface, (name_x, name_y))
+                except Exception as e:
+                    Logger.error("CaracterView.drawCaracter", e)
+            else:  # Only draw name below sprite in combat
                 try:
                     name = caracter.getName()
                     name_surface = self.font.render(name, True, (255, 255, 255))
@@ -214,15 +223,23 @@ class CaracterView:
                     text_content = f"Alcohol: {alcohol}%"
                     
                     if is_map:
-                        # Small font, bottom right corner for map
-                        text_surface = self.small_font.render(text_content, True, (255, 100, 100))
-                        text_x = screen.get_width() - text_surface.get_width() - 10
-                        text_y = screen.get_height() - text_surface.get_height() - 10
+                        # Green text with black background, same horizontal position as level
+                        text_surface = self.font.render(text_content, True, (0, 255, 0))
+                        text_x = 20  # Same as level
+                        text_y = screen.get_height() - 90  # Below level
+                        
+                        # Draw black rectangle background
+                        bg_rect = pygame.Rect(text_x - 5, text_y - 5, text_surface.get_width() + 10, text_surface.get_height() + 10)
+                        pygame.draw.rect(screen, (0, 0, 0), bg_rect)
                     else:
-                        # Large font, top left for combat
-                        text_surface = self.font.render(text_content, True, (255, 255, 255))
+                        # Green text with black background for combat
+                        text_surface = self.font.render(text_content, True, (0, 255, 0))
                         text_x = 10
                         text_y = 10
+                        
+                        # Draw black rectangle background
+                        bg_rect = pygame.Rect(text_x - 5, text_y - 5, text_surface.get_width() + 10, text_surface.get_height() + 10)
+                        pygame.draw.rect(screen, (0, 0, 0), bg_rect)
                     
                     screen.blit(text_surface, (text_x, text_y))
                     Logger.debug("CaracterView.drawCaracter", "Player alcohol level displayed", 

@@ -774,8 +774,8 @@ class MapPageView(PageView):
 
             # Draw text
             try:
-                title_surf = font.render("🛒 SHOP", True, (255, 215, 0))
-                instruction_surf = small_font.render("Press E to enter shop", True, (200, 200, 200))
+                title_surf = font.render("🛒 SHOP", True, (0, 0, 0))
+                instruction_surf = small_font.render("Press E to enter shop", True, (0, 0, 0))
                 
                 self.screen.blit(title_surf, (prompt_x + (prompt_width - title_surf.get_width()) // 2, prompt_y + 15))
                 self.screen.blit(instruction_surf, (prompt_x + (prompt_width - instruction_surf.get_width()) // 2, prompt_y + 50))
@@ -884,9 +884,16 @@ class MapPageView(PageView):
         Draw the level display in the bottom left corner.
         """
         try:
-            font = pygame.font.Font(None, 28)
+            font = pygame.font.Font(None, 36)
             level = self.johnny.getLevel() if hasattr(self.johnny, 'getLevel') else 1
-            level_text = font.render(f"LEVEL {level}", True, (100, 255, 100))
-            self.screen.blit(level_text, (20, self.screen.get_height() - 50))
+            level_text = font.render(f"LEVEL {level}", True, (0, 255, 0))
+            
+            # Draw black rectangle background
+            text_x = 20
+            text_y = self.screen.get_height() - 50
+            bg_rect = pygame.Rect(text_x - 5, text_y - 5, level_text.get_width() + 10, level_text.get_height() + 10)
+            pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
+            
+            self.screen.blit(level_text, (text_x, text_y))
         except Exception as e:
             Logger.error("MapPageView._drawLevelDisplay", e)
