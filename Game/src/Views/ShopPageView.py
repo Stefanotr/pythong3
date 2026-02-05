@@ -155,34 +155,12 @@ class ShopPageView:
             except Exception as e:
                 Logger.error("ShopPageView.draw", e)
             
-            # Draw controls text
-            try:
-                from_top = self.screen_height // 2 - 20
-                nav_text = "UP/DOWN: Choose Item | LEFT/RIGHT: Change Page | ENTER: Buy | ESC: Exit"
-                nav_surf = self.small_font.render(nav_text, True, (200, 200, 200))
-                nav_x = self.screen_width // 2 - nav_surf.get_width() // 2
-                self.screen.blit(nav_surf, (nav_x, from_top))
-            except Exception as e:
-                Logger.error("ShopPageView.draw - instructions", e)
-            
-            # Draw pagination info
-            try:
-                current_page = self.shop_model.getCurrentPage()
-                page_count = self.shop_model.getPageCount()
-                page_text = f"Page {current_page + 1} / {page_count}"
-                page_surf = self.small_font.render(page_text, True, (150, 150, 255))
-                page_x = self.screen_width // 2 - page_surf.get_width() // 2
-                page_y = self.screen_height // 2 + 10
-                self.screen.blit(page_surf, (page_x, page_y))
-            except Exception as e:
-                Logger.error("ShopPageView.draw - pagination", e)
-            
-            # Draw navigation buttons (Previous/Next)
+            # Draw navigation buttons (Previous/Next) at the bottom
             try:
                 current_page = self.shop_model.getCurrentPage()
                 page_count = self.shop_model.getPageCount()
                 
-                button_y = self.screen_height // 2 + 50
+                button_y = self.screen_height - 140
                 button_width = 130
                 button_height = 40
                 
@@ -210,12 +188,12 @@ class ShopPageView:
                 self.screen.blit(next_text, (next_text_x, next_text_y))
                 self.next_button_rect = next_rect if next_enabled else None
                 
-                # Show which navigation method to use
-                button_help = "LEFT/RIGHT arrows or Previous/Next buttons"
-                button_help_surf = self.small_font.render(button_help, True, (150, 200, 150))
-                button_help_x = self.screen_width // 2 - button_help_surf.get_width() // 2
-                button_help_y = button_y + button_height + 10
-                self.screen.blit(button_help_surf, (button_help_x, button_help_y))
+                # Draw pagination info below buttons
+                page_text = f"Page {current_page + 1} / {page_count}"
+                page_surf = self.small_font.render(page_text, True, (150, 150, 255))
+                page_x = self.screen_width // 2 - page_surf.get_width() // 2
+                page_y = button_y + button_height + 15
+                self.screen.blit(page_surf, (page_x, page_y))
             except Exception as e:
                 Logger.error("ShopPageView.draw - buttons", e)
             
@@ -233,10 +211,10 @@ class ShopPageView:
             
             # Draw instructions
             try:
-                instruction_text = "↑↓ Navigate | ← → Pages | ENTER/SPACE Purchase | ESC/E Exit"
+                instruction_text = "UP/DOWN: Choose Item  |  LEFT/RIGHT: Change Page  |  ENTER: Buy  |  ESC: Exit"
                 instruction_surf = self.small_font.render(instruction_text, True, (150, 150, 150))
                 instruction_x = self.screen_width // 2 - instruction_surf.get_width() // 2
-                instruction_y = self.screen_height - 40
+                instruction_y = self.screen_height - 55
                 self.screen.blit(instruction_surf, (instruction_x, instruction_y))
             except Exception as e:
                 Logger.error("ShopPageView.draw", e)
