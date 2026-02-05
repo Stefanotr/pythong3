@@ -966,6 +966,6 @@ class MapPageView(PageView):
             font = pygame.font.Font(None, 28)
             level = self.johnny.getLevel() if hasattr(self.johnny, 'getLevel') else 1
             level_text = font.render(f"LEVEL {level}", True, (100, 255, 100))
-            self.screen.blit(level_text, (20, self.screen_height - 50))
+            self.screen.blit(level_text, (20, self.screen.get_height() - 50))
         except Exception as e:
             Logger.error("MapPageView._drawLevelDisplay", e)
