@@ -1,58 +1,80 @@
-# 🎸 Projet : Six-String Hangover (Piscine Python)
+# 🎸 SCENARIO.md - SIX-STRING HANGOVER
 
-## 📝 Pitch
-
-Vous êtes **Johnny Fuzz**, une rockstar sur le déclin qui a plus de bouteille que de disques d'or. Votre mission ? Traverser la tournée la plus chaotique de l'histoire. Entre deux concerts, vous devrez gérer votre taux d'alcoolémie, affronter des fans enragés à coups de guitare et éviter de finir au trou avant le grand final.
-
----
-
-## 🎭 Le Scénario : "La Route de la Déchéance"
-
-### Acte I : Le Bar "Le Gosier Sec"
-
-* **Contexte :** Vous commencez au fond du trou. Le patron du bar refuse de vous payer votre cachet tant que vous n'avez pas viré les motards qui squattent la scène.
-* **Objectif :** Vaincre **Gros Bill** (le chef des motards) dans un combat au tour par tour.
-* **Mécanique spéciale :** Apprentissage du système de "Bourre-Gueule". Si Johnny boit un shot, ses dégâts doublent mais sa précision chute.
-
-### Acte II : Le Festival "Wood-Stock-Option"
-
-* **Contexte :** Vous avez enfin un vrai contrat. Mais la sécurité a confisqué votre matériel. Vous devez récupérer votre guitare dans les loges en affrontant des agents de sécurité zélés.
-* **Objectif :** Infiltrer le backstage et battre le **Chef de la Sécurité** en utilisant une guitare gonflable trouvée par terre.
-* **Mécanique spéciale :** Premier mini-jeu de rythme. Si vous ratez trop de notes, le public lance des canettes de soda (perte de Points de Vie).
-
-### Acte III : L'Ultime Stade de la Gloire
-
-* **Contexte :** C'est le grand soir. Le stade est plein, mais votre manager a tenté de s'enfuir avec la caisse. Il vous attend sur le toit du stade avec ses gardes du corps.
-* **Objectif :** Combat final contre **Le Manager Corrompu**.
-* **Mécanique spéciale :** Mode "Overdrive Éthylique". Si vous atteignez le pic d'ivresse parfait sans tomber dans le coma, vous débloquez l'attaque spéciale : *Le Solo qui Brise les Vitres*.
+## 🍺 PITCH
+Vous êtes **Johnny Fuzz**, une légende du rock sur le déclin (aka "Has-been"). Votre mission : Traverser la tournée la plus foireuse de l'histoire pour payer vos dettes. Entre concerts dans des bars miteux et bastons de rue, vous devez gérer votre **Hype** (Satisfaction du public) et votre **Santé** pour ne pas finir en cure de désintox avant le rappel.
 
 ---
 
-## 🕹️ Mécaniques de Jeu (User Stories)
+## 🎭 STRUCTURE DES ACTES
 
-1. **Système de Combat (The Guitar Duel) :**
-* `Attaque Simple` : Coup de manche de guitare.
-* `Power Chord` : Attaque de zone qui utilise de l'énergie.
-* `Dégueulando` : Johnny vomit, ce qui paralyse l'adversaire de dégoût pour 1 tour.
+### 🟢 ACTE I : LE BAR "LE GOSIER SEC"
+*L'ambiance pue la bière tiède et le désespoir. Johnny doit prouver qu'il a encore le niveau.*
 
+#### 🎵 PHASE 1 : LE CONCERT (Mode Rythme)
+* **Objectif :** Remplir la jauge de **Satisfaction du Public**.
+* **Enjeu :** Le public est difficile (c'est des bikers). Si la jauge tombe à 0, vous recevez des bouteilles et c'est Game Over.
+* **Musique :** *Seven Nation Army* (Version Rock Gras).
+* **Récompense :** Si le concert est réussi, Johnny gagne du **CASH ($)** (la recette du bar).
 
-2. **Gestion de l'État :**
-* `Ivresse (0-100%)` : Influe sur la force et la chance.
-* `Street Cred` : Points d'expérience pour améliorer les compétences de combat.
+#### 🛑 PLOT TWIST (Dialogue)
+> **Le Patron du Bar :** "Pas mal pour un vieux débris. Mais j'ai pas de quoi te payer. Par contre, **Gros Bill** là-bas a pas aimé que tu joues plus fort que sa moto."
+> **Johnny :** "Tu vas me payer, ou je vais accorder ta tête avec le comptoir."
 
-
-3. **L'Arsenal :**
-* *La Pelle* (Guitare de départ) : Dégâts minimes.
-* *L'Électro-Choc* : Guitare chargée à l'électricité, chance de paralyser.
-* *La "Hache" de Guerre* : Une guitare qui fait littéralement des dégâts tranchants.
-
-
+#### ⚔️ PHASE 2 : LE COMBAT (Mode Tour par Tour)
+* **Adversaire :** **GROS BILL** (Chef des Bikers).
+* **Contexte :** Le patron refuse de lâcher l'argent. Gros Bill s'interpose.
+* **Mécanique :** Utiliser l'argent gagné au concert (imaginaire ou buffs) pour booster l'attaque.
+* **Victoire :** Johnny assomme Gros Bill, vide la caisse du bar et s'enfuit vers le festival.
 
 ---
 
-## 🛠️ Structure Technique (POO)
+### 🟡 ACTE II : LE FESTIVAL "WOOD-STOCK-OPTION"
+*Un festival corporatiste géré par des agents de sécurité zélés. Johnny a perdu son pass VIP.*
 
-* `Personnage` (Classe Mère) : Gère les PV, le nom, l'inventaire.
-* `Joueur` & `Ennemi` (Classes Filles) : Comportements spécifiques.
-* `Guitare` : Classe pour les armes avec différents modificateurs de dégâts.
-* `Jeu` : La boucle principale (Loop) qui gère les déplacements et les événements aléatoires.
+#### ⚔️ PHASE 1 : L'INFILTRATION (Mode Combat)
+* **Adversaire :** **CHEF DE LA SÉCURITÉ** & Ses agents.
+* **Contexte :** Johnny arrive au festival mais on lui refuse l'entrée ("Désolé papy, c'est complet"). Il doit forcer le passage pour récupérer sa guitare légendaire confisquée en loge.
+* **Enjeu :** Survivre aux matraques pour atteindre la scène principale.
+* **Récompense :** Récupération de la **Guitare "Excalibur"** (Bonus de dégâts et de multiplicateurs de score).
+
+#### 🛑 TRANSITION (Dialogue)
+> **Johnny (essuyant du sang) :** "Bon, maintenant que j'ai ma pelle, on va leur montrer ce que c'est que du vrai son."
+> **Public :** "C'est qui ce clochard sur scène ? ... Attends, il a une Gibson 59 ?!"
+
+#### 🎵 PHASE 2 : LE GRAND SHOW (Mode Rythme)
+* **Objectif :** Faire monter la Hype au maximum pour attirer l'attention des producteurs.
+* **Musique :** Un morceau plus rapide et technique (ex: *Smells Like Teen Spirit*).
+* **Difficulté :** Plus élevée. Les fausses notes font baisser la Hype drastiquement.
+* **Victoire :** Le public est en délire, Johnny est sacré Roi du Festival.
+
+---
+
+### 🔴 ACTE III : LE STADE (FINALE)
+*Le toit du monde. Ou le toit du stade, littéralement.*
+
+#### ⚔️ PHASE FINALE : BOSS ULTIME
+* **Adversaire :** **LE MANAGER CORROMPU**.
+* **Contexte :** Il essaie de s'enfuir en hélicoptère avec la caisse de la tournée.
+* **Mécanique Spéciale :** **"Overdrive"**. Mélange de combat et de QTE (Quick Time Events) rythmiques.
+* **Fin :** Johnny récupère le sac de billets, jette sa guitare dans les pales de l'hélico (explosion), et part boire un coup.
+
+---
+
+## 🕹️ LES MÉCANIQUES CLÉS
+
+### 1. MODE RYTHME (Le Gagne-Pain)
+* **Jauge de Hype :** Remplace la barre de vie.
+    * *Miss* = La foule s'énerve (baisse).
+    * *Perfect* = La foule exulte (monte + gain d'argent).
+* **Conséquence :** L'argent gagné ici sert à acheter des soins/buffs pour le combat suivant.
+
+### 2. MODE COMBAT (La Survie)
+* **Système :** Tour par tour classique (Attaque / Défense / Objet).
+* **Armes :** Différentes guitares (La Pelle, L'Électrique, La Double-Manche).
+* **Spécial :** **L'Ivresse**.
+    * Boire un coup = +Attaque mais -Précision.
+    * Trop boire = Coma éthylique (Game Over).
+
+### 3. LA PROGRESSION
+* **Argent ($) :** Gagné en concert, dépensé avant les combats.
+* **Matos :** Gagné après les combats, améliore le score en concert.

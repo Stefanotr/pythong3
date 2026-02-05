@@ -32,10 +32,23 @@ class TileModel:
             self.name = name
             self.is_solid = is_solid
             
-            # Load tile image
+            # Load tile image with alpha-support when possible
             try:
-                self.image = pygame.image.load(image)
-                Logger.debug("TileModel.__init__", "Tile image loaded", name=name, image=image)
+                surf = pygame.image.load(image)
+                try:
+                    self.image = surf.convert_alpha()
+                    Logger.debug("TileModel.__init__", "Tile image loaded with alpha", name=name, image=image)
+                except Exception:
+                    try:
+                        surf2 = surf.convert()
+                        col = surf2.get_at((0, 0))
+                        surf2.set_colorkey(col)
+                        self.image = surf2
+                        Logger.debug("TileModel.__init__", "Tile image loaded without alpha - colorkey set", name=name, image=image, colorkey=col)
+                    except Exception:
+                        # Fallback to original surface
+                        self.image = surf
+                        Logger.debug("TileModel.__init__", "Tile image loaded without conversion", name=name, image=image)
             except FileNotFoundError as e:
                 Logger.error("TileModel.__init__", e)
                 # Create a default surface if image not found
@@ -103,9 +116,24 @@ class TileModel:
         """
         try:
             if isinstance(image, str):
-                # Load from file path
-                self.image = pygame.image.load(image)
-                Logger.debug("TileModel.setImage", "Tile image loaded from file", path=image)
+                # Load from file path with alpha support when possible
+                try:
+                    surf = pygame.image.load(image)
+                    try:
+                        self.image = surf.convert_alpha()
+                        Logger.debug("TileModel.setImage", "Tile image loaded with alpha", path=image)
+                    except Exception:
+                        try:
+                            surf2 = surf.convert()
+                            col = surf2.get_at((0, 0))
+                            surf2.set_colorkey(col)
+                            self.image = surf2
+                            Logger.debug("TileModel.setImage", "Tile image loaded without alpha - colorkey set", path=image, colorkey=col)
+                        except Exception:
+                            self.image = surf
+                            Logger.debug("TileModel.setImage", "Tile image loaded without conversion", path=image)
+                except Exception as e:
+                    Logger.error("TileModel.setImage", e)
             elif isinstance(image, pygame.Surface):
                 # Use provided surface
                 self.image = image

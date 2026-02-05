@@ -9,12 +9,14 @@ import pygame
 from Utils.Logger import Logger
 from Controllers.ButtonController import ButtonController
 from Controllers.GameState import GameState
+from Controllers.GameSequenceController import GameSequenceController
 from Views.PageView import PageView
 from Views.ButtonView import ButtonView
 from Views.MapPageView import MapPageView
 from Views.Act1View import Act1View
 from Views.Act2View import Act2View
 from Views.RhythmPageView import RhythmPageView
+from Views.RhythmCombatPageView import RhythmCombatPageView
 
 
 # === WELCOME PAGE VIEW CLASS ===
@@ -83,6 +85,10 @@ class WelcomPageView(PageView):
             except Exception as e:
                 Logger.error("WelcomPageView.__init__", e)
                 raise
+            
+            # === STAGE SELECTION ===
+            self.selected_stage = 1  # Default to stage 1
+            Logger.debug("WelcomPageView.__init__", "Stage selector initialized", default_stage=self.selected_stage)
                 
         except Exception as e:
             Logger.error("WelcomPageView.__init__", e)
@@ -119,6 +125,18 @@ class WelcomPageView(PageView):
                     # Continue running after resize
                     continue
 
+                # Handle numeric keys 1-8 for stage selection
+                if event.type == pygame.KEYDOWN:
+                    if pygame.K_1 <= event.key <= pygame.K_8:
+                        stage_num = event.key - pygame.K_1 + 1
+                        self.selected_stage = stage_num
+                        Logger.debug(
+                            "WelcomPageView.handle_events",
+                            "Stage selected",
+                            stage=self.selected_stage
+                        )
+                        continue
+                
                 # Delegate clicks/inputs to button controllers
                 for button_controller in self.buttons_controllers:
                     action = button_controller.handleEvents(event)
@@ -126,9 +144,10 @@ class WelcomPageView(PageView):
                         Logger.debug(
                             "WelcomPageView.handle_events",
                             "Start game action received, starting game flow",
+                            starting_stage=self.selected_stage
                         )
                         try:
-                            result = self._startGameFlow()
+                            result = self._startGameFlow(self.selected_stage)
                             Logger.debug(
                                 "WelcomPageView.handle_events",
                                 "Returned from game flow, showing menu again",
@@ -171,13 +190,32 @@ class WelcomPageView(PageView):
     
     # === GAME TRANSITION ===
     
-    def _startGameFlow(self):
+    def _startGameFlow(self, starting_stage=1):
         """
-        Start the complete game flow: Map → Act1 → Map → Act2 → Map → Rhythm.
-        Manages all transitions between game states.
+        Start the complete game flow with 8 stages:
+        1. RhythmPageView
+        2. Map (Act 1)
+        3. Act1
+        4. Map (Act 2)
+        5. Act2
+        6. RhythmPageView
+        7. Map (Act 3)
+        8. RhythmCombatView
+        
+        Players can press keys 1-8 to jump to specific stages during gameplay.
+        
+        Args:
+            starting_stage: The stage to start from (1-8, default 1)
         """
         try:
-            Logger.debug("WelcomPageView._startGameFlow", "Starting game flow")
+            Logger.debug("WelcomPageView._startGameFlow", "Starting game flow with sequence controller")
+            
+            # Initialize sequence controller
+            sequence_controller = GameSequenceController()
+            
+            # Set to the starting stage selected by user
+            sequence_controller.set_stage(starting_stage)
+            Logger.debug("WelcomPageView._startGameFlow", "GameSequenceController created", starting_stage=starting_stage)
             
             # Save current menu size and attempt to switch to screen resolution for gameplay
             menu_size = None
@@ -218,12 +256,13 @@ class WelcomPageView(PageView):
                 from Models.PlayerModel import PlayerModel
                 from Models.BottleModel import BottleModel
                 from Models.GuitarModel import GuitarFactory
+                from Models.CaracterModel import CaracterModel
                 
-                player = PlayerModel("Johnny Fuzz", 60, 60)
+                player = PlayerModel("Lola Coma", 60, 60)
                 player.setHealth(100)
                 player.setDamage(10)
                 player.setAccuracy(0.85)
-                player.setDrunkenness(0)  # Start at 0, but will persist after this
+                player.setDrunkenness(0)
                 player.setComaRisk(10)
                 
                 # Equip with starting guitar
@@ -233,106 +272,142 @@ class WelcomPageView(PageView):
                 beer = BottleModel("Beer", 15, 3, 5)
                 player.setSelectedBottle(beer)
                 
-                Logger.debug("WelcomPageView._startGameFlow", "Player created and initialized")
+                # Create boss for rhythm combat
+                boss = CaracterModel("Le Manager Corrompu", 80, 80)
+                boss.setHealth(100)
+                boss.setDamage(10)
+                
+                sequence_controller.set_player(player)
+                Logger.debug("WelcomPageView._startGameFlow", "Player and boss created and initialized")
             except Exception as e:
                 Logger.error("WelcomPageView._startGameFlow", e)
                 raise
             
-            # Game flow: Map → Act1 → Map → Act2 → Map → Rhythm
-            current_act = 1
-            
+            # Main game loop - handle all 8 stages
             while True:
                 try:
-                    # === MAP PHASE ===
-                    try:
-                        map_view = MapPageView(screen, current_act, player)
-                        result = map_view.run()
-                        Logger.debug("WelcomPageView._startGameFlow", "Map completed", result=result, current_act=current_act)
-                        
-                        if result == GameState.QUIT.value:
-                            Logger.debug("WelcomPageView._startGameFlow", "Quit requested from map")
-                            return GameState.QUIT.value
-                        elif result == GameState.MAIN_MENU.value:
-                            Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from map")
-                            # Return to main menu (exit game flow)
-                            return
-                    except Exception as e:
-                        Logger.error("WelcomPageView._startGameFlow", e)
+                    current_stage = sequence_controller.get_current_stage()
+                    stage_name = sequence_controller.get_current_stage_name()
+                    Logger.debug("WelcomPageView._startGameFlow", "Displaying stage", 
+                               stage=current_stage, stage_name=stage_name)
+                    
+                    result = None
+                    
+                    # === STAGE 1: Rhythm Page (Act 1 Practice) ===
+                    if current_stage == 1:
+                        try:
+                            rhythm_view = RhythmPageView(screen, player, sequence_controller)
+                            result = rhythm_view.run()
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                    
+                    # === STAGE 2: Map (Before Act 1) ===
+                    elif current_stage == 2:
+                        try:
+                            map_view = MapPageView(screen, 1, player, sequence_controller)
+                            result = map_view.run()
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                    
+                    # === STAGE 3: Act 1 ===
+                    elif current_stage == 3:
+                        try:
+                            act1_view = Act1View(screen, player, sequence_controller)
+                            result = act1_view.run()
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                    
+                    # === STAGE 4: Map (Before Act 2) ===
+                    elif current_stage == 4:
+                        try:
+                            map_view = MapPageView(screen, 2, player, sequence_controller)
+                            result = map_view.run()
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                    
+                    # === STAGE 5: Act 2 ===
+                    elif current_stage == 5:
+                        try:
+                            act2_view = Act2View(screen, player, sequence_controller)
+                            result = act2_view.run()
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                    
+                    # === STAGE 6: Rhythm Page (Act 2 Practice) ===
+                    elif current_stage == 6:
+                        try:
+                            rhythm_view = RhythmPageView(screen, player, sequence_controller)
+                            result = rhythm_view.run()
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                    
+                    # === STAGE 7: Map (Final) ===
+                    elif current_stage == 7:
+                        try:
+                            map_view = MapPageView(screen, 3, player, sequence_controller)
+                            result = map_view.run()
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                    
+                    # === STAGE 8: Rhythm Combat (Boss Final) ===
+                    elif current_stage == 8:
+                        try:
+                            rhythm_combat_view = RhythmCombatPageView(screen, player, boss, sequence_controller)
+                            result = rhythm_combat_view.run()
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                    
+                    # === HANDLE RESULTS ===
+                    if result is None:
+                        # No result, something went wrong
+                        Logger.debug("WelcomPageView._startGameFlow", "No result from stage", stage=current_stage)
                         break
                     
-                    # === ACT 1 ===
-                    if result == GameState.ACT1.value:
-                        try:
-                            act1_view = Act1View(screen, player)
-                            act1_result = act1_view.run()
-                            Logger.debug("WelcomPageView._startGameFlow", "Act 1 completed", result=act1_result)
-                            
-                            if act1_result == GameState.MAIN_MENU.value:
-                                Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from Act 1")
-                                return
-                            
-                            if act1_result == GameState.GAME_OVER.value:
-                                Logger.debug("WelcomPageView._startGameFlow", "Game over")
-                                return
-                            elif act1_result == GameState.QUIT.value:
-                                Logger.debug("WelcomPageView._startGameFlow", "Quit requested")
-                                return GameState.QUIT.value
-                            elif act1_result == GameState.MAP.value:
-                                # Continue to next map phase
-                                current_act = 2
-                                continue
-                        except Exception as e:
-                            Logger.error("WelcomPageView._startGameFlow", e)
-                            break
+                    elif result == GameState.QUIT.value:
+                        Logger.debug("WelcomPageView._startGameFlow", "Quit requested")
+                        return GameState.QUIT.value
                     
-                    # === ACT 2 ===
-                    elif result == GameState.ACT2.value:
-                        try:
-                            act2_view = Act2View(screen, player)
-                            act2_result = act2_view.run()
-                            Logger.debug("WelcomPageView._startGameFlow", "Act 2 completed", result=act2_result)
-                            
-                            if act2_result == GameState.MAIN_MENU.value:
-                                Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from Act 2")
-                                return
-                            
-                            if act2_result == GameState.GAME_OVER.value:
-                                Logger.debug("WelcomPageView._startGameFlow", "Game over")
-                                return
-                            elif act2_result == GameState.QUIT.value:
-                                Logger.debug("WelcomPageView._startGameFlow", "Quit requested")
-                                return GameState.QUIT.value
-                            elif act2_result == GameState.MAP.value:
-                                # Continue to next map phase
-                                current_act = 3
-                                continue
-                        except Exception as e:
-                            Logger.error("WelcomPageView._startGameFlow", e)
-                            break
+                    elif result == GameState.MAIN_MENU.value:
+                        Logger.debug("WelcomPageView._startGameFlow", "Main menu requested")
+                        return
                     
-                    # === RHYTHM (FINAL) ===
-                    elif result == GameState.RHYTHM.value:
+                    elif result == GameState.GAME_OVER.value:
+                        Logger.debug("WelcomPageView._startGameFlow", "Game over")
+                        return
+                    
+                    elif result == GameState.COMPLETE.value:
+                        Logger.debug("WelcomPageView._startGameFlow", "Stage completed successfully, advancing to next stage")
+                        # Advance to next stage instead of returning
+                        if sequence_controller.advance_stage():
+                            Logger.debug("WelcomPageView._startGameFlow", "Advanced to next stage",
+                                       new_stage=sequence_controller.get_current_stage())
+                        else:
+                            Logger.debug("WelcomPageView._startGameFlow", "Already at final stage")
+                            break
+                        continue
+                    
+                    elif result.startswith("STAGE_"):
+                        # Stage jump requested via numeric key
                         try:
-                            rhythm_view = RhythmPageView(screen, player)
-                            rhythm_result = rhythm_view.run()
-                            Logger.debug("WelcomPageView._startGameFlow", "Rhythm completed", result=rhythm_result)
-                            
-                            if rhythm_result == GameState.MAIN_MENU.value:
-                                Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from Rhythm")
-                                return
-                            
-                            # Game complete
-                            if rhythm_result == GameState.COMPLETE.value:
-                                Logger.debug("WelcomPageView._startGameFlow", "Game completed successfully!")
-                                return
+                            stage_num = int(result.split("_")[1])
+                            Logger.debug("WelcomPageView._startGameFlow", "Stage jump via numeric key", target_stage=stage_num)
+                            # Set the sequence controller to the requested stage
+                            sequence_controller.set_stage(stage_num)
+                            # Continue to next iteration which will display the requested stage
+                            continue
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                             break
                     
                     else:
-                        # Unknown result, exit
-                        Logger.debug("WelcomPageView._startGameFlow", "Unknown result, exiting", result=result)
-                        break
+                        # Unknown result or normal completion of stage
+                        # Advance to next stage
+                        if sequence_controller.advance_stage():
+                            Logger.debug("WelcomPageView._startGameFlow", "Advanced to next stage",
+                                       new_stage=sequence_controller.get_current_stage())
+                        else:
+                            Logger.debug("WelcomPageView._startGameFlow", "Already at final stage")
+                            break
                         
                 except Exception as e:
                     Logger.error("WelcomPageView._startGameFlow", e)

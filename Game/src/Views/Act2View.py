@@ -15,6 +15,7 @@ from Models.GuitarModel import GuitarFactory
 from Models.CombatModel import CombatModel
 from Models.RhythmModel import RhythmModel
 from Controllers.CombatController import CombatController
+from Controllers.GameSequenceController import GameSequenceController
 from Controllers.RhythmController import RhythmController
 from Views.CombatView import CombatView
 from Views.RhythmView import RhythmView
@@ -33,16 +34,18 @@ class Act2View:
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen, player=None):
+    def __init__(self, screen, player=None, sequence_controller=None):
         """
         Initialize Act 2 view with screen and game entities.
         
         Args:
             screen: Pygame surface for rendering
             player: Optional PlayerModel instance to preserve state (if None, creates new)
+            sequence_controller: Optional GameSequenceController for stage navigation
         """
         try:
             self.screen = screen
+            self.sequence_controller = sequence_controller
             
             # Get screen dimensions
             try:
@@ -73,7 +76,7 @@ class Act2View:
                                drunkenness=self.johnny.getDrunkenness())
                 else:
                     # Create new player if none provided
-                    self.johnny = PlayerModel("Johnny Fuzz", 60, 60)
+                    self.johnny = PlayerModel("Lola Coma", 60, 60)
                     self.johnny.setHealth(100)
                     self.johnny.setDamage(10)
                     self.johnny.setAccuracy(0.85)
@@ -123,16 +126,19 @@ class Act2View:
             
             try:
                 # Create character views for visual display
-                self.player_view = CaracterView("Game/Assets/guitare.png")
-                self.boss_view = CaracterView("Game/Assets/boss.png")
+                # Johnny is Lola with action-based sprites
+                self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola")
+                # Security Chief (boss)
+                self.boss_view = CaracterView("Game/Assets/Agentdesecurité.png", base_name="agent")
                 
-                # Set static positions for display
-                self.johnny.setX(self.screen_width // 4)  # Left side
-                self.johnny.setY(self.screen_height // 2)
-                self.security_chief.setX(self.screen_width * 3 // 4)  # Right side
-                self.security_chief.setY(self.screen_height // 2)
+                # Set static positions for display - Lola right, Boss far right
+                self.johnny.setX(int(self.screen_width * 0.65))  # Right side (Lola)
+                self.johnny.setY(self.screen_height // 2)  # Middle height
+                self.security_chief.setX(int(self.screen_width * 0.85))  # Far right (Boss)
+                self.security_chief.setY(self.screen_height // 2)  # Middle height
                 
-                Logger.debug("Act2View.__init__", "Character views created for static display")
+                Logger.debug("Act2View.__init__", "Character views created for static display",
+                           player_base="lola", boss_base="agent")
             except Exception as e:
                 Logger.error("Act2View.__init__", e)
                 # Continue even if character views fail
@@ -186,24 +192,6 @@ class Act2View:
                             Logger.debug("Act2View.run", "QUIT event received")
                             return GameState.QUIT.value
                         
-                        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                            # Open pause menu (delegates its own event loop to PauseMenuView.run)
-                            try:
-                                pause_menu = PauseMenuView(self.screen)
-                                pause_result = pause_menu.run()
-
-                                if pause_result == GameState.QUIT.value:
-                                    Logger.debug("Act2View.run", "Quit requested from pause menu")
-                                    return GameState.QUIT.value
-                                elif pause_result == GameState.MAIN_MENU.value:
-                                    Logger.debug("Act2View.run", "Main menu requested from pause menu")
-                                    return GameState.MAIN_MENU.value
-
-                                # If CONTINUE or anything else, just resume the game loop
-                                Logger.debug("Act2View.run", "Resuming from pause menu")
-                            except Exception as e:
-                                Logger.error("Act2View.run", e)
-                        
                         elif event.type == pygame.VIDEORESIZE:
                             # Handle window resize
                             try:
@@ -236,46 +224,75 @@ class Act2View:
                             except Exception as e:
                                 Logger.error("Act2View.run", e)
                         
-                        # Intro screen events
-                        elif self.phase == "intro":
-                            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                        elif event.type == pygame.KEYDOWN:
+                            # === HANDLE ESCAPE KEY (GLOBAL) ===
+                            if event.key == pygame.K_ESCAPE:
+                                try:
+                                    pause_menu = PauseMenuView(self.screen)
+                                    pause_result = pause_menu.run()
+
+                                    if pause_result == GameState.QUIT.value:
+                                        Logger.debug("Act2View.run", "Quit requested from pause menu")
+                                        return GameState.QUIT.value
+                                    elif pause_result == GameState.MAIN_MENU.value:
+                                        Logger.debug("Act2View.run", "Main menu requested from pause menu")
+                                        return GameState.MAIN_MENU.value
+
+                                    Logger.debug("Act2View.run", "Resuming from pause menu")
+                                except Exception as e:
+                                    Logger.error("Act2View.run", e)
+                            
+                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
+                            elif self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
+                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
+                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                    Logger.debug("Act2View.run", "Navigation to stage requested", 
+                                               stage=stage_number, 
+                                               stage_name=self.sequence_controller.get_current_stage_name())
+                                    return f"STAGE_{stage_number}"
+                            
+                            # === INTRO SKIP (SPACE) ===
+                            elif self.phase == "intro" and event.key == pygame.K_SPACE:
                                 self.phase = "combat"
                                 self.show_intro = False
                                 Logger.debug("Act2View.run", "Intro skipped by user")
-                        
-                        # Combat events
-                        elif self.phase == "combat":
-                            if not self.combat_model.isCombatFinished():
+                            
+                            # === COMBAT PHASE (A, P, D, B) OR COMPLETION (SPACE) ===
+                            elif self.phase == "combat":
+                                Logger.debug("Act2View.run", "Combat key received", key=pygame.key.name(event.key))
+                                
+                                if not self.combat_model.isCombatFinished():
+                                    try:
+                                        self.combat_controller.handle_input(event)
+                                    except Exception as e:
+                                        Logger.error("Act2View.run", e)
+                                else:
+                                    # Combat finished
+                                    if event.key == pygame.K_SPACE:
+                                        if self.combat_model.getWinner() == "PLAYER":
+                                            # Transition to rhythm phase
+                                            self.initRhythmPhase()
+                                            Logger.debug("Act2View.run", "Combat won, transitioning to rhythm phase")
+                                        else:
+                                            # Player lost, exit
+                                            running = False
+                                            Logger.debug("Act2View.run", "Combat lost")
+                            
+                            # === RHYTHM PHASE (depends on RhythmController key handling) ===
+                            elif self.phase == "rhythm":
+                                Logger.debug("Act2View.run", "Rhythm key received", key=pygame.key.name(event.key))
                                 try:
-                                    self.combat_controller.handleInput(event)
+                                    if self.rhythm_controller:
+                                        self.rhythm_controller.handle_input(event)
+                                    
+                                    # Check for rhythm phase completion (SPACE to finish)
+                                    if event.key == pygame.K_SPACE:
+                                        if self.isRhythmComplete():
+                                            self.phase = "finished"
+                                            running = False
+                                            Logger.debug("Act2View.run", "Rhythm phase completed")
                                 except Exception as e:
                                     Logger.error("Act2View.run", e)
-                            else:
-                                # Combat finished, check result
-                                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                                    if self.combat_model.getWinner() == "PLAYER":
-                                        # Transition to rhythm phase
-                                        self.initRhythmPhase()
-                                        Logger.debug("Act2View.run", "Combat won, transitioning to rhythm phase")
-                                    else:
-                                        # Player lost, exit
-                                        running = False
-                                        Logger.debug("Act2View.run", "Combat lost")
-                        
-                        # Rhythm events
-                        elif self.phase == "rhythm":
-                            try:
-                                if self.rhythm_controller:
-                                    self.rhythm_controller.handleInput(event)
-                                
-                                # Check for rhythm phase completion (SPACE to finish)
-                                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                                    if self.isRhythmComplete():
-                                        self.phase = "finished"
-                                        running = False
-                                        Logger.debug("Act2View.run", "Rhythm phase completed")
-                            except Exception as e:
-                                Logger.error("Act2View.run", e)
                     
                     # === UPDATE ===
                     
@@ -321,6 +338,12 @@ class Act2View:
                             try:
                                 self.player_view.drawCaracter(self.screen, self.johnny)
                                 self.boss_view.drawCaracter(self.screen, self.security_chief)
+                            except Exception as e:
+                                Logger.error("Act2View.run", e)
+                            
+                            # Draw level display
+                            try:
+                                self._drawLevelDisplay()
                             except Exception as e:
                                 Logger.error("Act2View.run", e)
                         elif self.phase == "rhythm":
@@ -515,4 +538,36 @@ class Act2View:
                 
         except Exception as e:
             Logger.error("Act2View.drawIntro", e)
+    
+    def _drawLevelDisplay(self):
+        """
+        Draw the level and alcohol display in the bottom left corner (map style).
+        """
+        try:
+            font = pygame.font.Font(None, 36)
+            
+            # Draw Level
+            level = self.johnny.getLevel() if hasattr(self.johnny, 'getLevel') else 1
+            level_text = font.render(f"LEVEL {level}", True, (0, 255, 0))
+            
+            # Draw black rectangle background for level
+            text_x = 20
+            text_y = self.screen_height - 50
+            bg_rect = pygame.Rect(text_x - 5, text_y - 5, level_text.get_width() + 10, level_text.get_height() + 10)
+            pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
+            self.screen.blit(level_text, (text_x, text_y))
+            
+            # Draw Alcohol
+            alcohol = self.johnny.getDrunkenness() if hasattr(self.johnny, 'getDrunkenness') else 0
+            alcohol_text = font.render(f"Alcohol: {alcohol}%", True, (0, 255, 0))
+            
+            # Draw black rectangle background for alcohol
+            alcohol_x = 20
+            alcohol_y = self.screen_height - 90
+            bg_rect_alcohol = pygame.Rect(alcohol_x - 5, alcohol_y - 5, alcohol_text.get_width() + 10, alcohol_text.get_height() + 10)
+            pygame.draw.rect(self.screen, (0, 0, 0), bg_rect_alcohol)
+            self.screen.blit(alcohol_text, (alcohol_x, alcohol_y))
+            
+        except Exception as e:
+            Logger.error("Act2View._drawLevelDisplay", e)
 

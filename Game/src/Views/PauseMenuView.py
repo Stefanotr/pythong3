@@ -66,7 +66,7 @@ class PauseMenuView:
             # Main Menu button (should return to WelcomeView)
             try:
                 self.menu_button = ButtonView(
-                    image_path='Game/Assets/buttonPlay.png',  # Reuse play button image
+                    image_path='Game/Assets/buttonMainMenu.png',  # Reuse play button image
                     position=(self.screen_width // 2, button_y_start + button_spacing),
                 )
                 self.buttons.append(self.menu_button)
