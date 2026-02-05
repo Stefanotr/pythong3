@@ -1,7 +1,8 @@
 import pygame
 import random
 import math
-from Songs.SevenNationArmy import load_seven_nation_army
+
+# ❌ PLUS D'IMPORT DE CHANSON ICI (Le contrôleur attend qu'on lui donne la musique)
 
 class RhythmController:
     """
@@ -9,13 +10,15 @@ class RhythmController:
     🎯 NOUVEAU : Système de précision progressive !
     Plus tu es précis, plus tu gagnes de points.
     """
-    def __init__(self, rhythm_model, character_model, screen_height, view):
+    # 🆕 MODIFICATION : On ajoute 'song_data' dans les paramètres
+    def __init__(self, rhythm_model, character_model, screen_height, view, song_data):
         self.rhythm = rhythm_model
         self.character = character_model 
         self.view = view
         
         # --- 1. INITIALISATION DE LA MAP & AUDIO ---
-        self.current_song = load_seven_nation_army()
+        # On utilise la chanson reçue en paramètre
+        self.current_song = song_data
         self.rhythm.notes = self.current_song.get_notes()
         
         pygame.mixer.init()
@@ -162,7 +165,7 @@ class RhythmController:
                 # --- DÉTECTION MISS (Sortie écran) ---
                 if note["y"] > self.rhythm.hit_line_y + 100:
                     note["active"] = False
-                    self.trigger_miss()
+                    self.triggerMiss()
         
         # --- VÉRIFICATION FIN DE CHANSON ---
         self.checkSongFinished()
@@ -276,7 +279,7 @@ class RhythmController:
                 hype_gain = 5
                 feedback = "PERFECT! ⭐"
                 particle_color = (255, 255, 0)  # Jaune éclatant
-                self.view.createParticles(self.getLaneX(lane), self.rhythm.hit_line_y, particle_color)
+                self.view.create_particles(self.getLaneX(lane), self.rhythm.hit_line_y, particle_color)
                 
             elif best_distance <= excellent_window:
                 # ✨ EXCELLENT : ±100ms
@@ -287,7 +290,7 @@ class RhythmController:
                 hype_gain = 3
                 feedback = "EXCELLENT! ✨"
                 particle_color = (100, 255, 255)  # Cyan
-                self.view.createParticles(self.getLaneX(lane), self.rhythm.hit_line_y, particle_color)
+                self.view.create_particles(self.getLaneX(lane), self.rhythm.hit_line_y, particle_color)
                 
             elif best_distance <= good_window:
                 # 👍 GOOD : ±150ms
