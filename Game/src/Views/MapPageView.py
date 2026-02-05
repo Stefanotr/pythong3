@@ -6,7 +6,6 @@ Allows player navigation and transitions to different acts.
 """
 
 import pygame
-import os
 from Views.PageView import PageView
 from Views.MapView import MapView
 from Views.CaracterView import CaracterView
@@ -14,7 +13,6 @@ from Views.PauseMenuView import PauseMenuView
 from Views.ShopPageView import ShopPageView
 from Controllers.PlayerController import PlayerController
 from Controllers.ShopController import ShopController
-from Controllers.GameSequenceController import GameSequenceController
 from Models.ShopModel import ShopModel
 from Models.PlayerModel import PlayerModel
 from Models.MapModel import MapModel
@@ -35,7 +33,7 @@ class MapPageView(PageView):
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen, current_act=1, player=None, sequence_controller=None):
+    def __init__(self, screen, current_act=1, player=None):
         """
         Initialize the map page view.
         
@@ -43,30 +41,15 @@ class MapPageView(PageView):
             screen: Pygame display surface
             current_act: Current act number (1 = Act 1, 2 = Act 2, 3 = Rhythm)
             player: Optional PlayerModel instance to preserve state (if None, creates new)
-            sequence_controller: Optional GameSequenceController for stage navigation
         """
         try:
             # Get screen dimensions
-            screen_info = pygame.display.Info()
-            screen_width = screen_info.current_w
-            screen_height = screen_info.current_h
-            
-            # Set window to center
-            try:
-                os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
-            except:
-                pass
-            
-            # Create resizable window at full screen size
-            self.screen = pygame.display.set_mode(
-                (screen_width, screen_height),
-                pygame.RESIZABLE
-            )
+            screen_width = screen.get_width()
+            screen_height = screen.get_height()
             
             # Initialize PageView without background image to avoid visual artifacts on the map
             super().__init__("Map - Six-String Hangover", screen_width, screen_height, pygame.RESIZABLE, None)
-            
-            self.sequence_controller = sequence_controller
+            self.screen = screen
             Logger.debug("MapPageView.__init__", "Map view created with no background image to avoid visual bugs")
             self.current_act = current_act
             
@@ -116,11 +99,11 @@ class MapPageView(PageView):
                                drunkenness=self.johnny.getDrunkenness(),
                                position=(center_x, center_y))
                 else:
-                    # Create new player if none provided
+                    # Create new player with Lola Coma
                     self.johnny = PlayerModel("Lola Coma", center_x, center_y)
                     beer = BottleModel("Beer", 15, 3, 5)
                     self.johnny.setSelectedBottle(beer)
-                    Logger.debug("MapPageView.__init__", "New player created", 
+                    Logger.debug("MapPageView.__init__", "New player created - Lola Coma", 
                                name=self.johnny.getName(),
                                position=(center_x, center_y))
             except Exception as e:
@@ -130,9 +113,13 @@ class MapPageView(PageView):
             # === CONTROLLER INITIALIZATION ===
             
             try:
-                # Instantiate controller; shop collision rects will be assigned after shop geometry is computed below
-                self.controller = PlayerController(self.screen, self.johnny)
-                Logger.debug("MapPageView.__init__", "Player controller created (collisions assigned later)")
+                # Calculate map dimensions early for boundary checking
+                map_pixel_width = len(self.map.tiles[0]) * self.map.tile_size if self.map.tiles else screen_width
+                map_pixel_height = len(self.map.tiles) * self.map.tile_size if self.map.tiles else screen_height
+                
+                # Instantiate controller with map boundaries; shop collision rects will be assigned after shop geometry is computed below
+                self.controller = PlayerController(self.screen, self.johnny, None, map_pixel_width, map_pixel_height)
+                Logger.debug("MapPageView.__init__", "Player controller created with map boundaries", width=map_pixel_width, height=map_pixel_height)
             except Exception as e:
                 Logger.error("MapPageView.__init__", e)
                 raise
@@ -140,8 +127,12 @@ class MapPageView(PageView):
             # === VIEW INITIALIZATION ===
             
             try:
-                # Lola in map: small size (2 tiles = 64x64)
-                self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(64, 64))
+                # Create player view with Lola Coma and animation sprites
+                self.player_view = CaracterView(
+                    "Game/Assets/lola.png",
+                    scale=(95, 95),
+                    animation_sprites={}  # No special animations needed on map
+                )
                 self.map_view = MapView(self.map)
                 
                 Logger.debug("MapPageView.__init__", "Character and map views created")
@@ -203,21 +194,96 @@ class MapPageView(PageView):
                     self.chosen_building = (self.shop_tile_x, self.shop_tile_y, self.shop_tile_x + self.shop_tile_width - 1, self.shop_tile_y + self.shop_tile_height -1)
                     Logger.debug('MapPageView.__init__', 'Using shop object from TMX', shop=self.chosen_building, obj=shop_obj)
                 else:
-                    # === No explicit object -> use predefined shop positions ===
-                    SHOP_ROW = 16
-                    SHOP_COLUMNS = [0, 3, 6, 10, 17, 20, 23, 28, 32, 50, 55, 60, 71, 76, 81, 96, 101, 106]
-                    
-                    # Choose a random shop location from predefined positions
-                    chosen_col = random.choice(SHOP_COLUMNS)
-                    self.shop_tile_x = chosen_col
-                    self.shop_tile_y = SHOP_ROW
-                    self.shop_tile_width = 3  # 3x3 hitbox
-                    self.shop_tile_height = 3  # 3x3 hitbox
-                    
-                    self.chosen_building = (self.shop_tile_x, self.shop_tile_y, self.shop_tile_x, self.shop_tile_y)
-                    Logger.debug("MapPageView.__init__", "Shop placed at predefined position", 
-                               position=(self.shop_tile_x, self.shop_tile_y), 
-                               columns=SHOP_COLUMNS)
+                    # === No explicit object -> fall back to tile-component detection
+                    visited = [[False]*w for _ in range(h)]
+
+                    def neighbors(x, y):
+                        for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                            nx, ny = x+dx, y+dy
+                            if 0 <= nx < w and 0 <= ny < h:
+                                yield nx, ny
+
+                    components = []  # list of (area, minx,miny,maxx,maxy)
+                    for y in range(h):
+                        for x in range(w):
+                            if visited[y][x] or tiles[y][x] == 0:
+                                continue
+                            # BFS to find component
+                            stack = [(x,y)]
+                            visited[y][x] = True
+                            minx, miny, maxx, maxy = x, y, x, y
+                            area = 0
+                            while stack:
+                                cx, cy = stack.pop()
+                                area += 1
+                                minx = min(minx, cx)
+                                miny = min(miny, cy)
+                                maxx = max(maxx, cx)
+                                maxy = max(maxy, cy)
+                                for nx, ny in neighbors(cx, cy):
+                                    if not visited[ny][nx] and tiles[ny][nx] != 0:
+                                        visited[ny][nx] = True
+                                        stack.append((nx, ny))
+                            components.append((area, minx, miny, maxx, maxy))
+
+                    # Prefer the 'city' layer if available (buildings are there), else choose largest component
+                    search_tiles = None
+                    try:
+                        if hasattr(self.map, 'layers') and 'city' in self.map.layers:
+                            search_tiles = self.map.layers['city']
+                            Logger.debug("MapPageView.__init__", "Using 'city' layer to find buildings")
+                        else:
+                            search_tiles = tiles
+                    except Exception:
+                        search_tiles = tiles
+
+                    # Recompute components on selected layer
+                    visited = [[False]*w for _ in range(h)]
+                    components = []
+                    for y in range(h):
+                        for x in range(w):
+                            if visited[y][x] or search_tiles[y][x] == 0:
+                                continue
+                            # BFS to find component
+                            stack = [(x,y)]
+                            visited[y][x] = True
+                            minx, miny, maxx, maxy = x, y, x, y
+                            area = 0
+                            while stack:
+                                cx, cy = stack.pop()
+                                area += 1
+                                minx = min(minx, cx)
+                                miny = min(miny, cy)
+                                maxx = max(maxx, cx)
+                                maxy = max(maxy, cy)
+                                for nx, ny in neighbors(cx, cy):
+                                    if not visited[ny][nx] and search_tiles[ny][nx] != 0:
+                                        visited[ny][nx] = True
+                                        stack.append((nx, ny))
+                            components.append((area, minx, miny, maxx, maxy))
+
+                    if components:
+                        # Shop position is locked to specific tiles on row 16
+                        # Column options: 0, 3, 6, 10, 17, 20, 23, 28, 32, 50, 55, 60, 71, 76, 81, 96, 101, 106
+                        shop_columns = [0, 3, 6, 10, 17, 20, 23, 28, 32, 50, 55, 60, 71, 76, 81, 96, 101, 106]
+                        shop_row = 16
+                        
+                        # Choose a random column from the list
+                        self.shop_tile_x = random.choice(shop_columns)
+                        self.shop_tile_y = shop_row
+                        self.shop_tile_width = 3  # 3x3 shop area
+                        self.shop_tile_height = 3
+                        
+                        self.chosen_building = (self.shop_tile_x, self.shop_tile_y, self.shop_tile_x + 2, self.shop_tile_y + 2)
+                        Logger.debug("MapPageView.__init__", "Shop locked to row 18, random column chosen", shop_pos=(self.shop_tile_x, self.shop_tile_y))
+                    else:
+                        # Fallback to a small 3x3 area near the center
+                        center_x = max(0, (w // 2) - 1)
+                        center_y = max(0, (h // 2) - 1)
+                        self.shop_tile_x = center_x
+                        self.shop_tile_y = center_y
+                        self.shop_tile_width = 3
+                        self.shop_tile_height = 3
 
                 # Pixel dimensions
                 self.shop_width = self.shop_tile_width * self.map.tile_size
@@ -378,22 +444,6 @@ class MapPageView(PageView):
                                 Logger.error("MapPageView.run", e)
                         
                         elif event.type == pygame.KEYDOWN:
-                            # === HANDLE F11 FOR FULLSCREEN TOGGLE ===
-                            if event.key == pygame.K_F11:
-                                try:
-                                    self._toggle_fullscreen()
-                                except Exception as e:
-                                    Logger.error("MapPageView.run", e)
-                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
-                            if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
-                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
-                                if self.sequence_controller.handle_numeric_input(stage_number):
-                                    Logger.debug("MapPageView.run", "Navigation to stage requested", 
-                                               stage=stage_number, 
-                                               stage_name=self.sequence_controller.get_current_stage_name())
-                                    # Return a special code to indicate stage change
-                                    return f"STAGE_{stage_number}"
-                            
                             # Toggle debug overlay
                             if event.key == pygame.K_F1:
                                 try:
@@ -419,6 +469,17 @@ class MapPageView(PageView):
                                         Logger.debug("MapPageView.run", "Resuming from pause menu")
                                     else:
                                         Logger.debug("MapPageView.run", "Resuming from pause menu (default)")
+                                except Exception as e:
+                                    Logger.error("MapPageView.run", e)
+
+                            # Press SPACE to trigger transition to next act
+                            elif event.key == pygame.K_SPACE:
+                                try:
+                                    if self.transition_ready:
+                                        Logger.debug("MapPageView.run", "Transition triggered by SPACE", next_act=self.current_act)
+                                        transition_triggered = True
+                                        running = False
+                                        break
                                 except Exception as e:
                                     Logger.error("MapPageView.run", e)
 
@@ -505,7 +566,7 @@ class MapPageView(PageView):
                                                     Logger.debug("MapPageView.run", "Shop closed")
                                             
                                             shop_controller.update()
-                                            shop_view.draw(self.johnny)
+                                            shop_view.draw()
                                             pygame.display.flip()
                                             shop_clock.tick(60)
                                         
@@ -602,7 +663,7 @@ class MapPageView(PageView):
                         try:
                             self.map_view.draw(self.screen, (0, 0))
                             self._drawShopBuilding((0, 0))
-                            self.player_view.drawCaracter(self.screen, self.johnny, offset=(0, 0), is_map=True)
+                            self.player_view.drawCaracter(self.screen, self.johnny, offset=(0, 0))
                         except Exception as e:
                             Logger.error("MapPageView.render.draw", e)
 
@@ -617,14 +678,8 @@ class MapPageView(PageView):
                                     font = pygame.font.SysFont('Arial', 14, bold=True)
                                 except Exception:
                                     font = pygame.font.Font(None, 14)
-                                label = font.render('SHOP', True, (100, 255, 100))  # Green color
-                                # Draw black background behind label for readability
-                                lbl_x = shop_center[0] - label.get_width()//2
-                                lbl_y = shop_center[1] - self.shop_height//2 - label.get_height() - 4
-                                padding = 6
-                                bg_rect = pygame.Rect(lbl_x - padding//2, lbl_y - padding//2, label.get_width() + padding, label.get_height() + padding)
-                                pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
-                                self.screen.blit(label, (lbl_x, lbl_y))
+                                label = font.render('SHOP', True, (255, 255, 255))
+                                self.screen.blit(label, (shop_center[0] - label.get_width()//2, shop_center[1] - self.shop_height//2 - label.get_height() - 4))
                             except Exception:
                                 pass
                             Logger.debug("MapPageView.run", "Shop marker", shop_center=shop_center)
@@ -638,12 +693,6 @@ class MapPageView(PageView):
                         # Draw transition prompt
                         if self.show_transition_prompt:
                             self.drawTransitionPrompt()
-                        
-                        # Draw level display
-                        try:
-                            self._drawLevelDisplay()
-                        except Exception as e:
-                            Logger.error("MapPageView.run", e)
 
                         # Draw debug overlay if enabled
                         try:
@@ -757,11 +806,8 @@ class MapPageView(PageView):
                 act_y = prompt_y + 20
                 self.screen.blit(act_text, (act_x, act_y))
                 
-                instruction = "Press SPACE to continue"
-                inst_text = small_font.render(instruction, True, (200, 200, 200))
-                inst_x = prompt_x + (prompt_width - inst_text.get_width()) // 2
-                inst_y = prompt_y + 60
-                self.screen.blit(inst_text, (inst_x, inst_y))
+                # No instruction text - action happens via SPACE key or mouse click
+                # (instruction text removed for cleaner UI)
             except Exception as e:
                 Logger.error("MapPageView.drawTransitionPrompt", e)
                 
@@ -800,8 +846,8 @@ class MapPageView(PageView):
 
             # Draw text
             try:
-                title_surf = font.render("SHOP", True, (0, 0, 0))
-                instruction_surf = small_font.render("Press E to enter shop", True, (0, 0, 0))
+                title_surf = font.render("🛒 SHOP", True, (255, 215, 0))
+                instruction_surf = small_font.render("Press E to enter shop", True, (200, 200, 200))
                 
                 self.screen.blit(title_surf, (prompt_x + (prompt_width - title_surf.get_width()) // 2, prompt_y + 15))
                 self.screen.blit(instruction_surf, (prompt_x + (prompt_width - instruction_surf.get_width()) // 2, prompt_y + 50))
@@ -838,7 +884,7 @@ class MapPageView(PageView):
                         Logger.error("MapPageView._run_shop", e)
 
                 try:
-                    shop_view.draw(self.johnny)
+                    shop_view.draw()
                 except Exception as e:
                     Logger.error("MapPageView._run_shop.draw", e)
 
@@ -901,62 +947,9 @@ class MapPageView(PageView):
 
             except Exception as e:
                 Logger.error("MapPageView._drawShopDoor", e)
-        
+
+            # Marker drawing handled in main render loop; nothing additional here
+            return
         except Exception as e:
             Logger.error("MapPageView._drawShopBuilding", e)
-    
-    def _drawLevelDisplay(self):
-        """
-        Draw the level display in the bottom left corner.
-        """
-        try:
-            font = pygame.font.Font(None, 36)
-            level = self.johnny.getLevel() if hasattr(self.johnny, 'getLevel') else 1
-            level_text = font.render(f"LEVEL {level}", True, (0, 255, 0))
-            
-            # Draw black rectangle background
-            text_x = 20
-            text_y = self.screen.get_height() - 50
-            bg_rect = pygame.Rect(text_x - 5, text_y - 5, level_text.get_width() + 10, level_text.get_height() + 10)
-            pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
-            
-            self.screen.blit(level_text, (text_x, text_y))
-            
-            # Draw Alcohol level above the level display
-            try:
-                alcohol = self.johnny.getDrunkenness() if hasattr(self.johnny, 'getDrunkenness') else 0
-                alcohol_text = font.render(f"Alcohol: {alcohol}%", True, (0, 255, 0))
-                alcohol_x = text_x
-                alcohol_y = text_y - alcohol_text.get_height() - 10
-                bg_rect_alcohol = pygame.Rect(alcohol_x - 5, alcohol_y - 5, alcohol_text.get_width() + 10, alcohol_text.get_height() + 10)
-                pygame.draw.rect(self.screen, (0, 0, 0), bg_rect_alcohol)
-                self.screen.blit(alcohol_text, (alcohol_x, alcohol_y))
-            except Exception:
-                pass
-        except Exception as e:
-            Logger.error("MapPageView._drawLevelDisplay", e)
-    
-    def _toggle_fullscreen(self):
-        """Toggle between fullscreen and resizable window modes."""
-        try:
-            current_flags = self.screen.get_flags()
-            
-            if current_flags & pygame.FULLSCREEN:
-                # Currently fullscreen, switch to resizable
-                self.screen = pygame.display.set_mode(
-                    (self.screen_width, self.screen_height),
-                    pygame.RESIZABLE
-                )
-                Logger.debug("MapPageView._toggle_fullscreen", "Switched to RESIZABLE mode")
-            else:
-                # Currently resizable, switch to fullscreen
-                screen_info = pygame.display.Info()
-                self.screen = pygame.display.set_mode(
-                    (screen_info.current_w, screen_info.current_h),
-                    pygame.FULLSCREEN
-                )
-                self.screen_width = screen_info.current_w
-                self.screen_height = screen_info.current_h
-                Logger.debug("MapPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
-        except Exception as e:
-            Logger.error("MapPageView._toggle_fullscreen", e)
+            return

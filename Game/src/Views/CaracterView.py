@@ -2,7 +2,7 @@
 CaracterView Module
 
 Handles the visual representation of characters (player, enemies, bosses).
-Manages character sprite loading, positioning, and rendering with status information.
+Manages character sprite loading, positioning, rendering, and animations.
 """
 
 import pygame
@@ -15,164 +15,175 @@ from Models.PlayerModel import PlayerModel
 class CaracterView:
     """
     View class for rendering characters on the screen.
-    Handles sprite loading, character positioning, and rendering with status information.
-    Supports different images based on character action.
+    Handles sprite loading, character positioning, status display, and action animations.
     """
     
     # === INITIALIZATION ===
     
-    def __init__(self, image_path, base_name="", sprite_size=None):
+    def __init__(self, image_path, scale=(50, 50), animation_sprites=None, flip_vertical=False):
         """
         Initialize the character view with a sprite image.
         
         Args:
-            image_path: Path to the character sprite image file
-            base_name: Base name for action-based images (e.g., "lola" for lolaquiboit.png)
-            sprite_size: Tuple (width, height) for sprite size. Default is (200, 200) for combat, (64, 64) for map
+            image_path: Path to the character sprite image file (default sprite)
+            scale: Tuple (width, height) for sprite scaling. Default is (50, 50)
+            animation_sprites: Dict of {animation_state: image_path} for action-specific sprites
+            flip_vertical: Whether to flip the sprite vertically (for bosses facing left)
         """
         try:
+            self.scale = scale
             self.base_image_path = image_path
-            self.base_name = base_name  # For Lola: "lola", for enemies: "agent", "manager", etc.
-            self.sprite_size = sprite_size or (200, 200)  # Default size for combat
-            self.sprite = None
-            self.action_sprites = {}  # Cache for action-based sprites
+            self.animation_sprites = animation_sprites or {}  # Store animation sprite paths
+            self.flip_vertical = flip_vertical
             
-            # Load base sprite
-            self._loadSprite(image_path)
-            
-            # Initialize fonts for text rendering
+            # Load and scale character sprite
+            try:
+                original_image = pygame.image.load(image_path).convert_alpha()
+                if flip_vertical:
+                    original_image = pygame.transform.flip(original_image, True, False)  # Horizontal flip
+                self.sprite = pygame.transform.scale(original_image, scale)
+                self.original_sprite = self.sprite.copy()  # Keep original for animations
+                Logger.debug("CaracterView.__init__", "Character image loaded", image_path=image_path, scale=scale, flip_vertical=flip_vertical)
+            except FileNotFoundError as e:
+                Logger.error("CaracterView.__init__", e)
+                # Create a default magenta sprite if image not found
+                self.sprite = pygame.Surface(scale)
+                self.sprite.fill((255, 0, 255))
+                self.original_sprite = self.sprite.copy()
+                Logger.debug("CaracterView.__init__", "Using default character sprite")
+            except Exception as e:
+                Logger.error("CaracterView.__init__", e)
+                raise
+
+            # Initialize font for text rendering
             try:
                 self.font = pygame.font.SysFont(None, 36)
-                self.small_font = pygame.font.SysFont(None, 18)  # For map view
-                Logger.debug("CaracterView.__init__", "Fonts initialized")
+                Logger.debug("CaracterView.__init__", "Font initialized")
             except Exception as e:
                 Logger.error("CaracterView.__init__", e)
                 # Use default font if SysFont fails
                 self.font = pygame.font.Font(None, 36)
-                self.small_font = pygame.font.Font(None, 18)
+            
+            # === ANIMATION STATE ===
+            self.animation_state = None  # None, "attack", "dodge", "hit", "drink"
+            self.animation_timer = 0  # Frame counter for animation
+            self.animation_duration = 10  # Frames per animation
                 
         except Exception as e:
             Logger.error("CaracterView.__init__", e)
             raise
-
-    def _loadSprite(self, image_path):
-        """Load a sprite from the given path"""
-        try:
-            original_image = pygame.image.load(image_path).convert_alpha()
-            # Use sprite_size for scaling
-            self.sprite = pygame.transform.scale(original_image, self.sprite_size)
-            Logger.debug("CaracterView._loadSprite", "Character image loaded", image_path=image_path, size=self.sprite_size)
-        except FileNotFoundError as e:
-            Logger.error("CaracterView._loadSprite", f"Image not found: {image_path}")
-            # Create a default magenta sprite if image not found
-            self.sprite = pygame.Surface(self.sprite_size)
-            self.sprite.fill((255, 0, 255))
-            Logger.debug("CaracterView._loadSprite", "Using default character sprite")
-        except Exception as e:
-            Logger.error("CaracterView._loadSprite", e)
-
-    def resetToBaseSprite(self):
-        """Reset the character view to the base (idle) sprite and clear action cache."""
-        try:
-            # Clear cached action sprites so future updates start from base
-            self.action_sprites = {}
-            # Reload base image into `self.sprite`
-            self._loadSprite(self.base_image_path)
-            Logger.debug("CaracterView.resetToBaseSprite", "Sprite reset to base image", base=self.base_image_path)
-        except Exception as e:
-            Logger.error("CaracterView.resetToBaseSprite", e)
-
-    def _getActionImagePath(self, base_name, action):
+    
+    # === ANIMATION CONTROL ===
+    
+    def setAnimation(self, state):
         """
-        Get the image path for a specific action.
+        Set the character's animation state.
         
         Args:
-            base_name: Base character name (lola, agent, manager, motard)
-            action: Action type (idle, attacking, drinking, dodging)
-        
-        Returns:
-            Path to the action image, or None if not found
+            state: Animation state ("attack", "dodge", "hit", "drink", or None)
         """
-        action_map = {
-            # Lola
-            "lola": {
-                "idle": "Game/Assets/lola.png",
-                "drinking": "Game/Assets/lolaquiboit (1).png",
-                "attacking": "Game/Assets/lolaquilancesabasse (1).png",
-                "dodging": "Game/Assets/lolaquisebaisse (2).png"
-            },
-            # Agent de Sécurité
-            "agent": {
-                "idle": "Game/Assets/Agentdesecurité.png",
-                "attacking": "Game/Assets/agentdesecuritquitape (1).png",
-                "dodging": "Game/Assets/agentdesecuritequisebaisse (1).png"
-            },
-            # Manager Corrompu
-            "manager": {
-                "idle": "Game/Assets/ManagerCorrompu.png",
-                "attacking": "Game/Assets/managerquitape (1).png",
-                "dodging": "Game/Assets/managercorrompuquisebaisse (1).png"
-            },
-            # Motard
-            "motard": {
-                "idle": "Game/Assets/chefdesmotards.png",
-                "attacking": "Game/Assets/motardquidonnedescoupsdepieds (1).png",
-                "dodging": "Game/Assets/motardquisebaisse (1).png"
-            }
-        }
-        
-        if base_name in action_map and action in action_map[base_name]:
-            return action_map[base_name][action]
-        return None
-
-    def updateCharacterSprite(self, character):
-        """
-        Update the displayed sprite based on the character's current action.
-        
-        Args:
-            character: CaracterModel instance
-        """
-        if not self.base_name:
-            return  # No base name set, can't update actions
-        
-        action = character.getCurrentAction()
-        cache_key = f"{self.base_name}_{action}"
-        
-        # Check if we already have this sprite cached
-        if cache_key in self.action_sprites:
-            self.sprite = self.action_sprites[cache_key]
-            return
-        
-        # Load the action-specific image
-        action_path = self._getActionImagePath(self.base_name, action)
-        if action_path:
-            try:
-                original_image = pygame.image.load(action_path).convert_alpha()
-                sprite = pygame.transform.scale(original_image, self.sprite_size)
-                self.action_sprites[cache_key] = sprite  # Cache it
-                self.sprite = sprite
-                Logger.debug("CaracterView.updateCharacterSprite", 
-                           f"Sprite updated for action: {action}", base_name=self.base_name)
-            except Exception as e:
-                Logger.error("CaracterView.updateCharacterSprite", e)
-        else:
-            # Fallback to base sprite if action image not found
-            self.sprite = self._loadSpriteForPath(self.base_image_path)
-
-    def _loadSpriteForPath(self, path):
-        """Load and scale a sprite from path, return it without storing"""
         try:
-            original_image = pygame.image.load(path).convert_alpha()
-            return pygame.transform.scale(original_image, self.sprite_size)
+            self.animation_state = state
+            self.animation_timer = 0
+            Logger.debug("CaracterView.setAnimation", f"Animation state set to {state}")
         except Exception as e:
-            Logger.error("CaracterView._loadSpriteForPath", e)
-            sprite = pygame.Surface(self.sprite_size)
-            sprite.fill((255, 0, 255))
-            return sprite
+            Logger.error("CaracterView.setAnimation", e)
+    
+    def _loadAnimationSprite(self, state):
+        """Load sprite for a specific animation state."""
+        try:
+            if state in self.animation_sprites:
+                sprite_path = self.animation_sprites[state]
+                try:
+                    original_image = pygame.image.load(sprite_path).convert_alpha()
+                    if self.flip_vertical:
+                        original_image = pygame.transform.flip(original_image, True, False)  # Horizontal flip
+                    return pygame.transform.scale(original_image, self.scale)
+                except FileNotFoundError:
+                    # Silently fallback to original sprite if animation sprite not found
+                    Logger.debug("CaracterView._loadAnimationSprite", f"Animation sprite not found, using default", sprite_path=sprite_path)
+                    return self.original_sprite.copy()
+            return self.original_sprite.copy()
+        except Exception as e:
+            Logger.error("CaracterView._loadAnimationSprite", e)
+            return self.original_sprite.copy()
+    
+    def updateAnimation(self):
+        """Update animation timer and reset when complete."""
+        try:
+            if self.animation_state is not None:
+                self.animation_timer += 1
+                if self.animation_timer >= self.animation_duration:
+                    self.animation_state = None
+                    self.animation_timer = 0
+                    self.sprite = self.original_sprite.copy()
+        except Exception as e:
+            Logger.error("CaracterView.updateAnimation", e)
+    
+    def _applyAnimationEffect(self):
+        """Apply visual effects based on current animation state."""
+        try:
+            if self.animation_state is None:
+                self.sprite = self.original_sprite.copy()
+                return
+            
+            # Load animation-specific sprite if available
+            base_sprite = self._loadAnimationSprite(self.animation_state)
+            
+            # Calculate progress (0.0 to 1.0)
+            progress = self.animation_timer / self.animation_duration
+            
+            if self.animation_state == "attack":
+                # Attack: Enlarge and shift forward for 6 frames, then shrink back
+                if progress < 0.6:
+                    # Expand phase: grow up to 20% larger
+                    scale_factor = 1.0 + (0.2 * (progress / 0.6))
+                    new_size = (
+                        int(base_sprite.get_width() * scale_factor),
+                        int(base_sprite.get_height() * scale_factor)
+                    )
+                    self.sprite = pygame.transform.scale(base_sprite, new_size)
+                else:
+                    # Shrink back phase
+                    remaining_progress = (progress - 0.6) / 0.4
+                    scale_factor = 1.0 + (0.2 * (1.0 - remaining_progress))
+                    new_size = (
+                        int(base_sprite.get_width() * scale_factor),
+                        int(base_sprite.get_height() * scale_factor)
+                    )
+                    self.sprite = pygame.transform.scale(base_sprite, new_size)
+            
+            elif self.animation_state == "dodge":
+                # Dodge: Quick side movement and transparency
+                # Make sprite semi-transparent
+                self.sprite = base_sprite.copy()
+                self.sprite.set_alpha(200)
+            
+            elif self.animation_state == "hit":
+                # Hit: Shake + red tint
+                self.sprite = base_sprite.copy()
+                # Apply red color overlay
+                red_overlay = pygame.Surface(self.sprite.get_size())
+                red_overlay.fill((255, 100, 100))
+                red_overlay.set_alpha(100)
+                self.sprite.blit(red_overlay, (0, 0))
+            
+            elif self.animation_state == "drink":
+                # Drink: Use drinking sprite with subtle opacity change
+                self.sprite = base_sprite.copy()
+                # Subtle shimmer effect
+                shimmer = int(50 * abs(0.5 - progress))
+                shimmer_overlay = pygame.Surface(self.sprite.get_size())
+                shimmer_overlay.fill((200, 255, 200))
+                shimmer_overlay.set_alpha(shimmer)
+                self.sprite.blit(shimmer_overlay, (0, 0))
+        
+        except Exception as e:
+            Logger.error("CaracterView._apply_animation_effect", e)
 
     # === RENDERING ===
     
-    def drawCaracter(self, screen, caracter, offset=(0, 0), is_map=False):
+    def drawCaracter(self, screen, caracter, offset=(0, 0)):
         """
         Draw the character sprite and status information to the screen.
 
@@ -180,13 +191,11 @@ class CaracterView:
             screen: Pygame surface to draw on
             caracter: Character model instance (PlayerModel, BossModel, etc.)
             offset: Tuple (offset_x, offset_y) applied to world coordinates for screen rendering
-            is_map: Whether this is drawing on the map (affects text size and positioning)
         """
         try:
-            # Update sprite based on current action
-            if self.base_name:
-                self.updateCharacterSprite(caracter)
-                caracter.updateActionTimer()
+            # Update animation
+            self.updateAnimation()
+            self._applyAnimationEffect()
             
             # Get character position
             try:
@@ -207,27 +216,16 @@ class CaracterView:
             except Exception as e:
                 Logger.error("CaracterView.drawCaracter", e)
 
-            # Draw character name above sprite (smaller font for map)
-            if is_map:
+            # Draw player-specific information (alcohol level)
+            if isinstance(caracter, PlayerModel):
                 try:
-                    name = caracter.getName()
-                    name_surface = self.small_font.render(name, True, (255, 255, 255))
-                    name_x = draw_x + sprite_w // 2 - name_surface.get_width() // 2
-                    name_y = draw_y - name_surface.get_height() - 5
-                    screen.blit(name_surface, (name_x, name_y))
+                    alcohol = caracter.getDrunkenness()
+                    text_content = f"Alcohol: {alcohol}%"
+                    text_surface = self.font.render(text_content, True, (255, 255, 255))
+                    screen.blit(text_surface, (10, 10))
+                    Logger.debug("CaracterView.drawCaracter", "Player alcohol level displayed", alcohol=alcohol)
                 except Exception as e:
                     Logger.error("CaracterView.drawCaracter", e)
-            else:  # Only draw name below sprite in combat
-                try:
-                    name = caracter.getName()
-                    name_surface = self.font.render(name, True, (255, 255, 255))
-                    name_x = draw_x + sprite_w // 2 - name_surface.get_width() // 2
-                    name_y = draw_y + sprite_h + 10
-                    screen.blit(name_surface, (name_x, name_y))
-                except Exception as e:
-                    Logger.error("CaracterView.drawCaracter", e)
-
-
 
         except Exception as e:
             Logger.error("CaracterView.drawCaracter", e)

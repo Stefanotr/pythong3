@@ -1,35 +1,23 @@
 import pygame
 import math
 from Views.CaracterView import CaracterView
-from Views.InventoryView import InventoryView
 
 class RhythmCombatView:
     """
     Vue pour le MODE COMBAT RHYTHM
     Affiche le jeu de rythme + les HP du joueur et du boss
     """
-    def __init__(self, screen_width, screen_height, boss_max_health=3000, player_max_health=100):
+    def __init__(self, screen_width, screen_height):
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.boss_max_health = boss_max_health  # Store boss max health for health bar display
-        self.player_max_health = player_max_health  # Store player max health for health bar display
         
-        # === FIXED GAME AREA (doesn't scale with window resize) ===
-        self.game_width = 1920  # Fixed internal game width
-        self.game_height = 1080  # Fixed internal game height
-        
-        # Calculate offset to center the fixed game area on the actual screen
-        self.game_offset_x = (screen_width - self.game_width) // 2
-        self.game_offset_y = (screen_height - self.game_height) // 2
-        
-        # Background - scales to fill entire screen
+        # Background
         self.background_image = None
         self.overlay = None
         
         image_path = "Game/Assets/stage.png"
         try:
             loaded_img = pygame.image.load(image_path).convert()
-            # Background scales to actual screen size
             self.background_image = pygame.transform.scale(loaded_img, (screen_width, screen_height))
             self.overlay = pygame.Surface((screen_width, screen_height))
             self.overlay.fill((0, 0, 0))
@@ -37,21 +25,12 @@ class RhythmCombatView:
         except FileNotFoundError:
             pass
 
-        # Fonts - based on fixed game height
-        self.font = pygame.font.SysFont("Arial", int(self.game_height * 0.025), bold=True)
-        self.big_font = pygame.font.SysFont("Arial", int(self.game_height * 0.08), bold=True)
-        self.combo_font = pygame.font.SysFont("Arial", int(self.game_height * 0.05), bold=True)
-        self.title_font = pygame.font.SysFont("Arial", int(self.game_height * 0.035), bold=True)
-        self.huge_font = pygame.font.SysFont("Arial", int(self.game_height * 0.3), bold=True)
-        
-        # Character views for player and boss animations
-        # Use DIFFERENT sizes for Lola: smaller for map, larger for combat
-        # For RhythmCombat: use normal size (200x200) without deformation
-        self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(200, 200))
-        self.boss_view = None  # Will be set when boss is known
-        
-        # Inventory view for displaying bottles
-        self.inventory_view = InventoryView(screen_width, screen_height)
+        # Fonts
+        self.font = pygame.font.SysFont("Arial", int(screen_height * 0.025), bold=True)
+        self.big_font = pygame.font.SysFont("Arial", int(screen_height * 0.08), bold=True)
+        self.combo_font = pygame.font.SysFont("Arial", int(screen_height * 0.05), bold=True)
+        self.title_font = pygame.font.SysFont("Arial", int(screen_height * 0.035), bold=True)
+        self.huge_font = pygame.font.SysFont("Arial", int(screen_height * 0.3), bold=True)
         
         # Couleurs des lanes
         self.lane_colors = [
@@ -61,27 +40,27 @@ class RhythmCombatView:
             (255, 215, 0)     # Or (N)
         ]
         
-        # Positions des cordes - FIXED WIDTH (not scaled with window)
-        # Use 40% width like RhythmView for narrower, more focused gameplay
-        guitar_width = self.game_width * 0.4
-        guitar_start = (self.game_width - guitar_width) / 2
+        # Positions des cordes
+        guitar_width = screen_width * 0.4
+        guitar_start = (screen_width - guitar_width) / 2
         spacing = guitar_width / 5
         
         self.lane_x = [
-            self.game_offset_x + int(guitar_start + spacing),
-            self.game_offset_x + int(guitar_start + spacing * 2),
-            self.game_offset_x + int(guitar_start + spacing * 3),
-            self.game_offset_x + int(guitar_start + spacing * 4)
+            int(guitar_start + spacing),
+            int(guitar_start + spacing * 2),
+            int(guitar_start + spacing * 3),
+            int(guitar_start + spacing * 4)
         ]
         
-        self.guitar_start = self.game_offset_x + int(guitar_start)
+        self.guitar_start = int(guitar_start)
         self.guitar_width = int(guitar_width)
         
         # Particules
         self.particles = []
         self.time = 0
 
-    def create_particles(self, x, y, color):
+    def createParticles(self, x, y, color):
+        """Create particle effects at specified coordinates."""
         for _ in range(12):
             angle = pygame.math.Vector2(1, 0).rotate((_ * 30))
             self.particles.append({
@@ -90,7 +69,8 @@ class RhythmCombatView:
                 'life': 25, 'color': color
             })
 
-    def update_particles(self):
+    def updateParticles(self):
+        """Update particle positions and remove expired particles."""
         for particle in self.particles[:]:
             particle['x'] += particle['vx']
             particle['y'] += particle['vy']
@@ -98,6 +78,15 @@ class RhythmCombatView:
             particle['life'] -= 1
             if particle['life'] <= 0:
                 self.particles.remove(particle)
+    
+    # Backward compatible aliases
+    def create_particles(self, x, y, color):
+        """Legacy alias."""
+        return self.createParticles(x, y, color)
+    
+    def update_particles(self):
+        """Legacy alias."""
+        return self.updateParticles()
 
     def draw_health_bar(self, screen, x, y, width, height, current, maximum, label, is_player=True):
         """Barre de vie stylée"""
@@ -135,15 +124,42 @@ class RhythmCombatView:
         hp_text = self.font.render(f"{int(current)}/{int(maximum)}", True, (255, 255, 255))
         screen.blit(hp_text, (x + width//2 - hp_text.get_width()//2, y + height//2 - hp_text.get_height()//2))
 
-    def draw(self, screen, rhythm_model, player_model, boss_model, note_speed=0.5, countdown_val=0, inventory_model=None):
+    def draw(self, screen, rhythm_model, player_model, boss_model, note_speed=0.5, countdown_val=0):
         """
-        Dessine l'interface du combat rhythm avec inventaire
-        
-        Utilise un canvas fixe pour les éléments du jeu + background adaptatif
+        Draw the rhythm combat interface
         """
         self.time += 1
         
-        # --- FOND (adaptatif à la taille réelle de l'écran) ---
+        # Initialize character views if not already done
+        if boss_model is not None and not hasattr(self, '_boss_view'):
+            try:
+                self._boss_view = CaracterView(
+                    "Game/Assets/ManagerCorrompu.png",
+                    scale=(150, 150),
+                    animation_sprites={
+                        "attack": "Game/Assets/managerquitape.png",
+                        "dodge": "Game/Assets/ManagerCorrompu.png",
+                        "hit": "Game/Assets/ManagerCorrompu.png"
+                    }
+                )
+            except:
+                self._boss_view = None
+        
+        if player_model is not None and not hasattr(self, '_player_view'):
+            try:
+                self._player_view = CaracterView(
+                    "Game/Assets/lola.png",
+                    scale=(150, 150),
+                    animation_sprites={
+                        "attack": "Game/Assets/lolaquilancesabasse.png",
+                        "dodge": "Game/Assets/lola_se_baisse.png",
+                        "drink": "Game/Assets/lolaquiboit (1).png"
+                    }
+                )
+            except:
+                self._player_view = None
+        
+        # --- FOND ---
         if self.background_image:
             screen.blit(self.background_image, (0, 0))
             screen.blit(self.overlay, (0, 0))
@@ -152,8 +168,27 @@ class RhythmCombatView:
                 shade = int(20 + y * 0.02)
                 pygame.draw.line(screen, (shade, shade // 2, shade // 3), (0, y), (self.screen_width, y))
         
-        # --- MANCHE DE GUITARE (dimensions fixes) ---
-        guitar_rect = pygame.Rect(self.guitar_start - 15, self.game_offset_y, self.guitar_width + 30, self.game_height)
+        # --- DISPLAY BOSS & PLAYER ---
+        if boss_model is not None and hasattr(self, '_boss_view') and self._boss_view is not None:
+            try:
+                # Set boss position (right side, top area)
+                boss_model.setX(int(self.screen_width * 0.8))
+                boss_model.setY(int(self.screen_height * 0.25))
+                self._boss_view.drawCaracter(screen, boss_model)
+            except:
+                pass
+        
+        if player_model is not None and hasattr(self, '_player_view') and self._player_view is not None:
+            try:
+                # Set player position (left side, top area)
+                player_model.setX(int(self.screen_width * 0.2))
+                player_model.setY(int(self.screen_height * 0.25))
+                self._player_view.drawCaracter(screen, player_model)
+            except:
+                pass
+        
+        # --- MANCHE DE GUITARE ---
+        guitar_rect = pygame.Rect(self.guitar_start - 15, 0, self.guitar_width + 30, self.screen_height)
         guitar_surf = pygame.Surface((guitar_rect.width, guitar_rect.height), pygame.SRCALPHA)
         
         for i in range(guitar_rect.width):
@@ -174,7 +209,7 @@ class RhythmCombatView:
             color = self.lane_colors[i]
             
             # Corde
-            pygame.draw.line(screen, (color[0]//3, color[1]//3, color[2]//3), (x, self.game_offset_y), (x, self.game_offset_y + self.game_height), 2)
+            pygame.draw.line(screen, (color[0]//3, color[1]//3, color[2]//3), (x, 0), (x, self.screen_height), 2)
             
             # Cible
             pygame.draw.circle(screen, (0, 0, 0), (x, hit_line_y), 32)
@@ -212,9 +247,9 @@ class RhythmCombatView:
                 surf = pygame.Surface((size*2, size*2), pygame.SRCALPHA)
                 pygame.draw.circle(surf, (*particle['color'], 200), (size, size), size)
                 screen.blit(surf, (particle['x']-size, particle['y']-size))
-        self.update_particles()
+        self.updateParticles()
         
-        # --- HUD COMBAT (reste relatif à l'écran réel) ---
+        # --- HUD COMBAT ---
         hud_h = int(self.screen_height * 0.15)
         hud_bg = pygame.Surface((self.screen_width, hud_h), pygame.SRCALPHA)
         hud_bg.fill((10, 10, 20, 220))
@@ -222,7 +257,7 @@ class RhythmCombatView:
         pygame.draw.line(screen, (255, 50, 50), (0, hud_h), (self.screen_width, hud_h), 3)
         
         # Titre du combat
-        combat_title = self.title_font.render("COMBAT RHYTHM", True, (255, 215, 0))
+        combat_title = self.title_font.render("⚔️ COMBAT RHYTHM ⚔️", True, (255, 215, 0))
         screen.blit(combat_title, (self.screen_width//2 - combat_title.get_width()//2, 10))
         
         # HP JOUEUR (Gauche)
@@ -234,34 +269,23 @@ class RhythmCombatView:
             player_hp_width,
             int(hud_h * 0.3),
             player_model.getHealth(),
-            self.player_max_health,
-            f"{player_model.getName()}",
+            100,
+            f"🎸 {player_model.getName()}",
             is_player=True
         )
         
         # HP BOSS (Droite)
         boss_hp_width = int(self.screen_width * 0.3)
         boss_hp_x = self.screen_width - boss_hp_width - 20
-        
-        # Debug: Log health values before drawing
-        boss_current_health = boss_model.getHealth()
-        if boss_current_health != getattr(self, '_last_displayed_boss_health', None):
-            from Utils.Logger import Logger
-            Logger.debug("RhythmCombatView.draw", "Boss health display",
-                        current_health=boss_current_health,
-                        max_health=self.boss_max_health,
-                        boss_name=boss_model.getName())
-            self._last_displayed_boss_health = boss_current_health
-        
         self.draw_health_bar(
             screen,
             boss_hp_x,
             int(hud_h * 0.5),
             boss_hp_width,
             int(hud_h * 0.3),
-            boss_current_health,
-            self.boss_max_health,  # Use actual max health from initialization
-            f"{boss_model.getName()}",
+            boss_model.getHealth(),
+            100,  # Max HP du boss
+            f"👹 {boss_model.getName()}",
             is_player=False
         )
         
@@ -269,7 +293,7 @@ class RhythmCombatView:
         if rhythm_model.feedback and rhythm_model.feedback_timer > 0:
             fb_col = (255, 255, 255)
             
-            if "MISS" in rhythm_model.feedback:
+            if "MISS" in rhythm_model.feedback or "💀" in rhythm_model.feedback: 
                 fb_col = (255, 0, 0)
             elif "PERFECT" in rhythm_model.feedback: 
                 fb_col = (255, 255, 0)
@@ -313,49 +337,6 @@ class RhythmCombatView:
             
             screen.blit(shadow, (txt_x + 2, txt_y + 2))
             screen.blit(txt, (txt_x, txt_y))
-        
-        # --- CHARACTER ANIMATIONS (Joueur à gauche, Boss à droite) ---
-        try:
-            # Player on the left (Lola) - centered vertically at middle of screen
-            player_x = 150
-            player_y = self.screen_height // 2  # Middle of screen
-            self.player_view.drawCaracter(screen, player_model, offset=(player_x, player_y), is_map=False)
-            
-            # Boss on the right - same vertical height
-            if self.boss_view is None and boss_model:
-                # Use ManagerCorrompu.png for the boss (assuming it's the manager boss)
-                boss_asset = "Game/Assets/ManagerCorrompu.png"
-                boss_base_name = "manager"
-                self.boss_view = CaracterView(boss_asset, base_name=boss_base_name, sprite_size=(200, 200))
-            
-            if self.boss_view:
-                boss_x = self.screen_width - 150
-                boss_y = self.screen_height // 2  # Same vertical position as player
-                self.boss_view.drawCaracter(screen, boss_model, offset=(boss_x, boss_y), is_map=False)
-        except Exception as e:
-            pass
-        
-        # --- LEVEL AND ALCOHOL (en bas) ---
-        try:
-            # Level en bas à gauche
-            level = player_model.getLevel() if hasattr(player_model, 'getLevel') else 1
-            level_text = self.font.render(f"LEVEL {level}", True, (100, 255, 100))
-            screen.blit(level_text, (20, self.screen_height - 50))
-            
-            # Alcool en bas à droite
-            alcohol = player_model.getDrunkenness() if hasattr(player_model, 'getDrunkenness') else 0
-            alcohol_color = (255, 100, 100) if alcohol > 60 else (100, 255, 100)
-            alcohol_text = self.font.render(f"ALCOHOL: {alcohol}%", True, alcohol_color)
-            screen.blit(alcohol_text, (self.screen_width - alcohol_text.get_width() - 20, self.screen_height - 50))
-        except Exception as e:
-            pass
-        
-        # --- INVENTORY DISPLAY (au-dessus de l'alcool) ---
-        if inventory_model:
-            try:
-                self.inventory_view.draw_inventory_display(screen, inventory_model, self.screen_width // 2, self.screen_height - 200)
-            except Exception as e:
-                pass
 
         # --- COMPTE À REBOURS ---
         if countdown_val > 0:
@@ -365,7 +346,7 @@ class RhythmCombatView:
             
             col = (100, 255, 100) if countdown_val > 3 else ((255, 200, 0) if countdown_val > 1 else (255, 50, 50))
             
-            ready = self.title_font.render("PRÊT POUR LE COMBAT ?", True, (255, 255, 255))
+            ready = self.title_font.render("⚔️ PRÊT POUR LE COMBAT ? ⚔️", True, (255, 255, 255))
             screen.blit(ready, (self.screen_width//2 - ready.get_width()//2, self.screen_height//2 - 150))
             
             nb = self.huge_font.render(str(countdown_val), True, col)

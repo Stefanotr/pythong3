@@ -12,11 +12,11 @@ class BaseController:
     Base controller providing a unified interface for input handling.
 
     Subclasses can override:
-      - handle_events(self, events): frame-based processing of a list of events
-      - handle_input(self, event): reaction to a single input event
+      - handleEvents(self, events): frame-based processing of a list of events
+      - handleInput(self, event): reaction to a single input event
     """
 
-    def handle_events(self, events):
+    def handleEvents(self, events):
         """
         Handle a batch of events for this frame.
 
@@ -24,16 +24,16 @@ class BaseController:
             events: iterable of pygame events
         """
         try:
-            # Default implementation: delegate to handle_input for each event
+            # Default implementation: delegate to handleInput for each event
             for event in events:
                 try:
-                    self.handle_input(event)
+                    self.handleInput(event)
                 except Exception as e:
-                    Logger.error("BaseController.handle_events", e)
+                    Logger.error("BaseController.handleEvents", e)
         except Exception as e:
-            Logger.error("BaseController.handle_events", e)
+            Logger.error("BaseController.handleEvents", e)
 
-    def handle_input(self, event):
+    def handleInput(self, event):
         """
         Handle a single input event.
 
@@ -41,5 +41,14 @@ class BaseController:
         """
         # Default: no-op
         return None
+
+    # Backward compatible aliases
+    def handle_events(self, events):
+        """Legacy alias."""
+        return self.handleEvents(events)
+    
+    def handle_input(self, event):
+        """Legacy alias."""
+        return self.handleInput(event)
 
 

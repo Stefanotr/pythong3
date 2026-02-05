@@ -29,15 +29,19 @@ class MapModel:
             tile_size: Size of each tile in pixels
         """
         try:
+            import os
             self.tile_kinds = tile_kinds
             self.tile_size = tile_size
-            Logger.debug("MapModel.__init__", "Loading map", map_file=map_file, tile_size=tile_size)
+            
+            # Convert to absolute path for proper file resolution
+            map_file_abs = os.path.abspath(map_file)
+            Logger.debug("MapModel.__init__", "Loading map", map_file=map_file_abs, tile_size=tile_size)
             
             # Load map data from file
             try:
-                with open(map_file, "r") as file:
+                with open(map_file_abs, "r") as file:
                     data = file.read()
-                Logger.debug("MapModel.__init__", "Map file read successfully", map_file=map_file)
+                Logger.debug("MapModel.__init__", "Map file read successfully", map_file=map_file_abs)
             except FileNotFoundError as e:
                 Logger.error("MapModel.__init__", e)
                 self.tiles = []
@@ -55,7 +59,8 @@ class MapModel:
                     import os
                     import xml.etree.ElementTree as ET
 
-                    tmx_path = map_file
+                    # Use the absolute path calculated above
+                    tmx_path = map_file_abs
                     tmx_dir = os.path.dirname(tmx_path)
 
                     root = ET.fromstring(data)
@@ -153,6 +158,8 @@ class MapModel:
                                 image_elem = tsx_root.find('image')
                                 if image_elem is not None:
                                     img_src = image_elem.attrib.get('source')
+                                    # Normalize path separators (convert forward slashes to OS-appropriate separators)
+                                    img_src = img_src.replace('/', os.sep)
                                     # Resolve image path relative to tsx
                                     img_path = os.path.join(os.path.dirname(tsx_path), img_src)
                                     if not os.path.exists(img_path):

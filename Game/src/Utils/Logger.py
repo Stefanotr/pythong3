@@ -75,5 +75,33 @@ class Logger:
         with open(file_path, "a", encoding="utf-8") as file:
             file.write(log_entry)
 
+    @staticmethod
+    def warning(function_name, message, **values):
+        """
+        Log de warning with key values
+        """
+        if not Logger.ENABLED:
+            return
 
-    
+        os.makedirs(Logger.LOG_DIR, exist_ok=True)
+
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        file_path = os.path.join(Logger.LOG_DIR, f"debug_{date_str}.txt")
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        values_str = ", ".join(f"{k}={v}" for k, v in values.items())
+
+        log_entry = (
+            f"[{timestamp}] ⚠️  "
+            f"{function_name} | "
+            f"{message}"
+        )
+
+        if values_str:
+            log_entry += f" | {values_str}"
+
+        log_entry += "\n"
+
+        with open(file_path, "a", encoding="utf-8") as file:
+            file.write(log_entry)

@@ -5,7 +5,7 @@ from Songs.SevenNationArmy import load_seven_nation_army
 
 class RhythmCombatController:
     """
-    # MODE COMBAT RHYTHM - BOSS FINAL
+    🎸⚔️ MODE COMBAT RHYTHM - BOSS FINAL
     
     Combine le jeu de rythme avec le combat :
     - Bonnes notes → Dégâts au BOSS
@@ -17,9 +17,6 @@ class RhythmCombatController:
         self.player = player_model
         self.boss = boss_model
         self.view = view
-        
-        # Store boss max health for healing calculations
-        self.boss_max_health = getattr(self.boss, '_rhythm_combat_max_health', self.boss.getHealth())
         
         # --- 1. INITIALISATION DE LA MAP & AUDIO ---
         if song_loader is None:
@@ -91,48 +88,39 @@ class RhythmCombatController:
             pygame.K_n: "LANE4"
         }
         
-        # --- STATS DE COMBAT ---
+        # --- ⚔️ STATS DE COMBAT ---
         self.total_notes = len([n for n in self.rhythm.notes if n.get("active", True)])
         self.notes_hit = 0
         self.notes_missed = 0
         
-        print(f"MODE COMBAT RHYTHM")
+        print(f"🎸⚔️ MODE COMBAT RHYTHM")
         print(f"Boss: {self.boss.getName()} (HP: {self.boss.getHealth()})")
         print(f"Player: {self.player.getName()} (HP: {self.player.getHealth()})")
         print(f"Total notes: {self.total_notes}")
 
-    def play_random_fail(self):
-        """Joue un couac"""
+    def playRandomFail(self):
+        """Play a random failure sound (SFX for missed notes)."""
         if self.fail_sounds:
             sound = random.choice(self.fail_sounds)
             sound.play()
     
-    def play_random_hit(self):
-        """Joue un son de coup"""
+    def playRandomHit(self):
+        """Play a random hit sound (SFX for successful hits)."""
         if self.hit_sounds:
             sound = random.choice(self.hit_sounds)
             sound.play()
 
-    def start_music(self):
-        """Lance la musique"""
+    def startMusic(self):
+        """Start playing backing and guitar tracks after countdown."""
         self.start_time = pygame.time.get_ticks()
         self.track_backing.play()
         self.guitar_channel.play(self.track_guitar)
         self.is_playing = True
-        print("Musique lancée - LE COMBAT COMMENCE !")
+        print("🎵 Musique lancée - LE COMBAT COMMENCE !")
 
     def update(self):
         """Boucle principale"""
         if self.game_over:
-            return
-        
-        # === CHECK PLAYER DEATH AT START ===
-        if self.player.getHealth() <= 0:
-            self.game_over = True
-            self.victory = False
-            print(f"GAME OVER : {self.player.getName()} est K.O. !")
-            self.guitar_channel.stop()
-            self.track_backing.stop()
             return
 
         # --- 1. COMPTE À REBOURS ---
@@ -153,13 +141,13 @@ class RhythmCombatController:
             
             if remaining <= 0:
                 self.waiting_to_start = False
-                self.start_music()
+                self.startMusic()
             
             return
 
         # --- 2. JEU NORMAL ---
         if not self.is_playing:
-            self.start_music()
+            self.startMusic()
 
         current_time = pygame.time.get_ticks() - self.start_time
 
@@ -180,68 +168,64 @@ class RhythmCombatController:
                 # MISS (sortie écran)
                 if note["y"] > self.rhythm.hit_line_y + 100:
                     note["active"] = False
-                    self.trigger_miss()
+                    self.triggerMiss()
         
         # --- FIN DE LA CHANSON ---
         if not notes_remaining and self.is_playing:
-            self.end_combat()
+            self.endCombat()
 
-    def trigger_miss(self):
-        """
-        MISS : Le joueur prend des dégâts ET le boss récupère de la vie
-        """
+    def triggerMiss(self):
+        """Handle a missed note - player takes damage and boss heals."""
         current_real_time = pygame.time.get_ticks()
         
         # Protection Audio
         if current_real_time - self.last_hit_time > 200:
             self.guitar_channel.set_volume(0)
-            self.play_random_fail()
+            self.playRandomFail()
 
         # Stats
         self.notes_missed += 1
         
         # Feedback
-        self.rhythm.feedback = "MISS!"
+        self.rhythm.feedback = "MISS! 💀"
         self.rhythm.feedback_timer = 30
         self.rhythm.combo = 0
         
-        # --- DÉGÂTS AU JOUEUR ---
+        # --- ⚔️ DÉGÂTS AU JOUEUR ---
         damage_to_player = 10  # Le boss contre-attaque !
         current_hp = self.player.getHealth()
         self.player.setHealth(max(0, current_hp - damage_to_player))
         
-        # --- ANIMATION D'ATTAQUE DU BOSS ---
-        self.boss.setCurrentAction("attacking", 30)
+        print(f"💀 MISS → {self.player.getName()} prend {damage_to_player} dégâts ! (HP: {self.player.getHealth()})")
         
-        print(f"MISS → {self.player.getName()} prend {damage_to_player} dégâts ! (HP: {self.player.getHealth()})")
-        
-        # --- LE BOSS RÉCUPÈRE DE LA VIE ---
+        # --- 🩹 LE BOSS RÉCUPÈRE DE LA VIE ---
         boss_heal = 5
         boss_hp = self.boss.getHealth()
-        self.boss.setHealth(min(self.boss_max_health, boss_hp + boss_heal))
+        max_boss_hp = 100  # À ajuster selon ton boss
+        self.boss.setHealth(min(max_boss_hp, boss_hp + boss_heal))
         
-        print(f"Le boss récupère {boss_heal} HP ! (HP: {self.boss.getHealth()})")
+        print(f"🩹 Le boss récupère {boss_heal} HP ! (HP: {self.boss.getHealth()})")
         
         # GAME OVER si le joueur meurt
         if self.player.getHealth() <= 0:
             self.game_over = True
             self.victory = False
-            print(f"GAME OVER : {self.player.getName()} est K.O. !")
+            print(f"💀 GAME OVER : {self.player.getName()} est K.O. !")
             self.guitar_channel.stop()
             self.track_backing.stop()
 
-    def handle_input(self, event):
-        """Gère les inputs"""
+    def handleInput(self, event):
+        """Handle player input events (lane key presses)."""
         if self.waiting_to_start or self.game_over:
             return
 
         if event.type == pygame.KEYDOWN:
             if event.key in self.key_map:
                 lane = self.key_map[event.key]
-                self.check_hit(lane)
+                self.checkHit(lane)
 
-    def check_hit(self, lane):
-        """Détecte les hits avec système de précision"""
+    def checkHit(self, lane):
+        """Check for note hits in specified lane and apply damage to boss."""
         current_time = pygame.time.get_ticks() - self.start_time
         
         # Zones de précision
@@ -272,40 +256,40 @@ class RhythmCombatController:
             self.guitar_channel.set_volume(1.0)
             self.last_hit_time = pygame.time.get_ticks()
             
-            # --- CALCUL DES DÉGÂTS AU BOSS ---
+            # --- ⚔️ CALCUL DES DÉGÂTS AU BOSS ---
             base_damage = 0
             
             if best_distance <= perfect_window:
                 base_damage = 15  # GROS dégâts
-                feedback = "PERFECT!"
+                feedback = "PERFECT! ⭐"
                 particle_color = (255, 255, 0)
-                self.view.create_particles(self.get_lane_x(lane), self.rhythm.hit_line_y, particle_color)
+                self.view.createParticles(self.getLaneX(lane), self.rhythm.hit_line_y, particle_color)
                 
             elif best_distance <= excellent_window:
                 base_damage = 12  # Bons dégâts
-                feedback = "EXCELLENT!"
+                feedback = "EXCELLENT! ✨"
                 particle_color = (100, 255, 255)
-                self.view.create_particles(self.get_lane_x(lane), self.rhythm.hit_line_y, particle_color)
+                self.view.createParticles(self.getLaneX(lane), self.rhythm.hit_line_y, particle_color)
                 
             elif best_distance <= good_window:
                 base_damage = 8  # Dégâts normaux
-                feedback = "GOOD"
+                feedback = "GOOD 👍"
                 
             elif best_distance <= ok_window:
                 base_damage = 5  # Petits dégâts
-                feedback = "OK"
+                feedback = "OK 😐"
                 
             else:
                 base_damage = 2  # Dégâts minimes
-                feedback = "LATE!" if (best_note["time"] - current_time) < 0 else "EARLY!"
+                feedback = "LATE! 💩" if (best_note["time"] - current_time) < 0 else "EARLY! 💩"
             
             # Appliquer les dégâts au boss
-            self.deal_damage_to_boss(base_damage, feedback)
+            self.dealDamageToBoss(base_damage, feedback)
             
         else:
             # Taper dans le vide = petit malus
             self.rhythm.combo = 0
-            self.play_random_fail()
+            self.playRandomFail()
             
             # Petit dégât au joueur (moins que MISS)
             damage = 3
@@ -316,76 +300,50 @@ class RhythmCombatController:
                 self.game_over = True
                 self.victory = False
 
-    def deal_damage_to_boss(self, damage, feedback):
-        """Inflige des dégâts au boss"""
+    def dealDamageToBoss(self, damage, feedback):
+        """Apply damage to boss with combo multiplier."""
         # Combo bonus
         self.rhythm.combo += 1
         combo_multiplier = 1 + (self.rhythm.combo // 5) * 0.2  # +20% tous les 5 combos
+        
         final_damage = int(damage * combo_multiplier)
-
-        # --- DRUNKENNESS ONLY AFFECTS DAMAGE OUTPUT, NOT HIT/MISS ---
-        try:
-            drunkenness = self.player.getDrunkenness()
-        except Exception:
-            drunkenness = 0
-        
-        # At high drunkenness: slight damage reduction (harder to aim well)
-        # But if very drunk (50%+), the hits that DO connect are more powerful (aggression)
-        drunkenness_damage_penalty = int((drunkenness / 100) * 20)  # -0 to -20% damage from poor aim
-        final_damage = max(1, final_damage - drunkenness_damage_penalty)
-        
-        # Very drunk hits (50%+) get a small bonus (reckless aggression)
-        if drunkenness >= 50:
-            final_damage = int(final_damage * 1.2)
-
-        # === RHYTHM COMBAT DAMAGE REDUCTION ===
-        # Divide damage by 2 for rhythm combat balance
-        final_damage = final_damage // 2  # Integer division to cut damage in half
-        
-        # --- ANIMATION D'ATTAQUE DU JOUEUR ---
-        self.player.setCurrentAction("attacking", 30)
         
         # Appliquer dégâts
         boss_hp = self.boss.getHealth()
-        new_boss_hp = max(0, boss_hp - final_damage)
-        self.boss.setHealth(new_boss_hp)
+        self.boss.setHealth(max(0, boss_hp - final_damage))
         
-        # Debug logging
-        from Utils.Logger import Logger
-        Logger.debug("RhythmCombatController.deal_damage_to_boss", 
-                    f"Boss health: {boss_hp} -> {new_boss_hp} ({feedback})", 
-                    damage=final_damage)
-        
-        # Set feedback (just the rating, combo will be displayed below)
-        self.rhythm.feedback = feedback
+        # Feedback
+        self.rhythm.feedback = f"{feedback} → {final_damage} DMG!"
         self.rhythm.feedback_timer = 20
         
         # Son
-        self.play_random_hit()
+        self.playRandomHit()
+        
+        print(f"⚔️ {feedback} → {final_damage} dégâts au boss ! (HP: {self.boss.getHealth()}) [Combo x{self.rhythm.combo}]")
         
         # Vérifier si boss vaincu
         if self.boss.getHealth() <= 0:
             self.victory = True
             self.game_over = True
-            print(f"VICTOIRE ! {self.boss.getName()} est vaincu !")
+            print(f"🏆 VICTOIRE ! {self.boss.getName()} est vaincu !")
             self.guitar_channel.stop()
             self.track_backing.stop()
 
-    def end_combat(self):
-        """Fin de la chanson - Déterminer victoire/défaite"""
+    def endCombat(self):
+        """End rhythm combat - determine victory/defeat based on boss HP."""
         self.game_over = True
         
         if self.boss.getHealth() > 0:
             # Le boss a survécu = Défaite
             self.victory = False
-            print(f"DÉFAITE : {self.boss.getName()} a survécu avec {self.boss.getHealth()} HP !")
+            print(f"💀 DÉFAITE : {self.boss.getName()} a survécu avec {self.boss.getHealth()} HP !")
         else:
             # Boss vaincu = Victoire
             self.victory = True
-            print(f"VICTOIRE : {self.boss.getName()} vaincu !")
+            print(f"🏆 VICTOIRE : {self.boss.getName()} vaincu !")
         
         # Stats finales
-        print(f"STATS FINALES :")
+        print(f"📊 STATS FINALES :")
         print(f"   Notes touchées : {self.notes_hit}/{self.total_notes}")
         print(f"   Notes ratées : {self.notes_missed}")
         print(f"   Combo max : {self.rhythm.combo}")
@@ -395,7 +353,44 @@ class RhythmCombatController:
         self.guitar_channel.stop()
         self.track_backing.stop()
 
-    def get_lane_x(self, lane):
-        """Retourne la position X d'une lane"""
+    def getLaneX(self, lane):
+        """Return the X position of a lane for particle effects."""
         idx = self.rhythm.lanes.index(lane)
         return self.view.lane_x[idx]
+
+    # Backward compatible alias for old function names
+    def handle_input(self, event):
+        """Legacy alias."""
+        return self.handleInput(event)
+    
+    def play_random_fail(self):
+        """Legacy alias."""
+        return self.playRandomFail()
+    
+    def play_random_hit(self):
+        """Legacy alias."""
+        return self.playRandomHit()
+    
+    def start_music(self):
+        """Legacy alias."""
+        return self.startMusic()
+    
+    def trigger_miss(self):
+        """Legacy alias."""
+        return self.triggerMiss()
+    
+    def check_hit(self, lane):
+        """Legacy alias."""
+        return self.checkHit(lane)
+    
+    def deal_damage_to_boss(self, damage, feedback):
+        """Legacy alias."""
+        return self.dealDamageToBoss(damage, feedback)
+    
+    def end_combat(self):
+        """Legacy alias."""
+        return self.endCombat()
+    
+    def get_lane_x(self, lane):
+        """Legacy alias."""
+        return self.getLaneX(lane)

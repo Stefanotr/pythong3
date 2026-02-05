@@ -40,7 +40,7 @@ class PauseMenuController(BaseController):
             Logger.error("PauseMenuController.__init__", e)
             raise
 
-    def handle_events(self, events):
+    def handleEvents(self, events):
         """
         Handle a batch of events and return a high-level action if any.
 
@@ -48,30 +48,30 @@ class PauseMenuController(BaseController):
             events: iterable of pygame events
 
         Returns:
-            str | None: \"continue\", \"main_menu\", \"quit\" or None
+            str | None: "continue", "main_menu", "quit" or None
         """
         try:
             result = None
             for event in events:
-                action = self.handle_input(event)
+                action = self.handleInput(event)
                 if action is not None:
                     result = action
             return result
         except Exception as e:
-            Logger.error("PauseMenuController.handle_events", e)
+            Logger.error("PauseMenuController.handleEvents", e)
             return None
 
-    def handle_input(self, event):
+    def handleInput(self, event):
         """
         Handle a single input event.
 
         Returns:
-            str | None: \"continue\", \"main_menu\", \"quit\" or None
+            str | None: "continue", "main_menu", "quit" or None
         """
         try:
             # Window close
             if event.type == pygame.QUIT:
-                Logger.debug("PauseMenuController.handle_input", "QUIT event received")
+                Logger.debug("PauseMenuController.handleInput", "QUIT event received")
                 return GameState.QUIT.value
                 # ESC to continue
                 if event.key == pygame.K_ESCAPE:
@@ -83,14 +83,14 @@ class PauseMenuController(BaseController):
                     if event.key == pygame.K_UP:
                         self.selected_index = (self.selected_index - 1) % len(self.button_controllers)
                         Logger.debug(
-                            "PauseMenuController.handle_input",
+                            "PauseMenuController.handleInput",
                             "Selection moved up",
                             index=self.selected_index,
                         )
                     elif event.key == pygame.K_DOWN:
                         self.selected_index = (self.selected_index + 1) % len(self.button_controllers)
                         Logger.debug(
-                            "PauseMenuController.handle_input",
+                            "PauseMenuController.handleInput",
                             "Selection moved down",
                             index=self.selected_index,
                         )
@@ -101,7 +101,7 @@ class PauseMenuController(BaseController):
                         button_controller = self.button_controllers[self.selected_index]
                         action = button_controller.action
                         Logger.debug(
-                            "PauseMenuController.handle_input",
+                            "PauseMenuController.handleInput",
                             "Keyboard selection made",
                             action=action,
                         )
@@ -115,18 +115,18 @@ class PauseMenuController(BaseController):
                         if button_controller.isClicked(mouse_pos):
                             action = button_controller.action
                             Logger.debug(
-                                "PauseMenuController.handle_input",
+                                "PauseMenuController.handleInput",
                                 "Mouse click on button",
                                 action=action,
                             )
                             return self._map_button_action(action)
                     except Exception as e:
-                        Logger.error("PauseMenuController.handle_input", e)
+                        Logger.error("PauseMenuController.handleInput", e)
                         continue
 
             return None
         except Exception as e:
-            Logger.error("PauseMenuController.handle_input", e)
+            Logger.error("PauseMenuController.handleInput", e)
             return None
 
     def _map_button_action(self, action):
@@ -140,5 +140,14 @@ class PauseMenuController(BaseController):
         if action == "quit_game":
             return GameState.QUIT.value
         return None
+
+    # Backward compatible aliases
+    def handle_events(self, events):
+        """Legacy alias."""
+        return self.handleEvents(events)
+    
+    def handle_input(self, event):
+        """Legacy alias."""
+        return self.handleInput(event)
 
 

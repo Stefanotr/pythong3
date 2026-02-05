@@ -83,7 +83,7 @@ class ButtonController(BaseController):
     
     # === EVENT HANDLING ===
 
-    def handle_input(self, event):
+    def handleInput(self, event):
         """
         Handle all menu events, including button clicks.
         
@@ -98,20 +98,25 @@ class ButtonController(BaseController):
                 mouse_pos = pygame.mouse.get_pos()
 
                 if self.isClicked(mouse_pos):
-                    Logger.debug("ButtonController.handle_input", "Button clicked, handling action")
+                    Logger.debug("ButtonController.handleInput", "Button clicked, handling action")
                     return self.handleClick()
 
             return None
         except Exception as e:
-            Logger.error("ButtonController.handle_input", e)
+            Logger.error("ButtonController.handleInput", e)
             return None
+
+    # Backward compatible alias
+    def handle_input(self, event):
+        """Legacy alias keeping existing calls working."""
+        return self.handleInput(event)
 
     # Backwards compatible alias
     def handleEvents(self, event):
         """
         Legacy alias used by existing views.
         """
-        return self.handle_input(event)
+        return self.handleInput(event)
 
     # === GAME STATE ACTIONS ===
     

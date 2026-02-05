@@ -6,7 +6,7 @@ from Songs.SevenNationArmy import load_seven_nation_army
 class RhythmController:
     """
     Contrôleur principal du MODE CONCERT (Acte 1 & 2).
-    NOUVEAU : Système de précision progressive !
+    🎯 NOUVEAU : Système de précision progressive !
     Plus tu es précis, plus tu gagnes de points.
     """
     def __init__(self, rhythm_model, character_model, screen_height, view):
@@ -52,6 +52,17 @@ class RhythmController:
         self.is_playing = False
         self.game_over = False
         
+        # --- 🎵 FIN DE CHANSON & ÉCRAN DE FIN ---
+        self.song_finished = False  # True quand la musique est terminée
+        self.finish_time = 0  # Quand la musique s'est terminée
+        self.finish_delay = 5000  # 5 secondes avant auto-continue
+        self.continue_pressed = False  # True si le joueur a cliqué sur "Continuer"
+        
+        # --- 🔒 PAUSE ---
+        self.is_paused = False
+        self.pause_time = 0  # Temps quand on a mis en pause
+        self.pause_music_position = 0  # Position de la musique quand en pause
+        
         # --- 🛡️ PROTECTION AUDIO ---
         self.last_hit_time = -1000 
         
@@ -64,15 +75,19 @@ class RhythmController:
             pygame.K_b: "LANE3",
             pygame.K_n: "LANE4"
         }
+        
+        # Initialize 'y' key for all notes to avoid KeyError
+        for note in self.rhythm.notes:
+            note["y"] = self.rhythm.hit_line_y
 
-    def play_random_fail(self):
-        """Joue un 'COUAC' aléatoire."""
+    def playRandomFail(self):
+        """Play a random failure sound (SFX for missed notes)."""
         if self.fail_sounds:
             sound = random.choice(self.fail_sounds)
             sound.play()
 
-    def start_music(self):
-        """Lance vraiment la musique après le décompte"""
+    def startMusic(self):
+        """Start playing the backing and guitar tracks after countdown."""
         self.start_time = pygame.time.get_ticks()
         self.track_backing.play()
         self.guitar_channel.play(self.track_guitar)
@@ -82,6 +97,25 @@ class RhythmController:
         """Boucle principale"""
         if self.game_over:
             return 
+        
+        # Gérer la pause avec décompte
+        if self.is_paused:
+            now = pygame.time.get_ticks()
+            elapsed = now - self.countdown_start_tick
+            remaining = self.countdown_duration - elapsed
+            
+            self.current_countdown_val = math.ceil(remaining / 1000)
+            
+            if remaining <= 0:
+                # Fin du décompte, reprendre la musique
+                self.is_paused = False
+                self.waiting_to_start = False
+                # Unpause et recalculer le start_time
+                pygame.mixer.unpause()
+                pause_duration = pygame.time.get_ticks() - self.pause_time
+                self.start_time += pause_duration  # Décaler start_time de la durée de la pause
+                print("▶️ Reprise!")
+            return
 
         # --- 1. GESTION DU COMPTE À REBOURS ---
         if self.waiting_to_start:
@@ -92,9 +126,8 @@ class RhythmController:
             # Calcul du chiffre à afficher (5, 4, 3...)
             self.current_countdown_val = math.ceil(remaining / 1000)
             
-            # NOUVEAU : Les notes descendent PENDANT le compte à rebours
-            # On simule un temps négatif pour qu'elles arrivent pile quand la musique démarre
-            fake_time = -remaining  # Ex: remaining=3000ms → fake_time=-3000ms
+            # 🎵 Les notes descendent PENDANT le compte à rebours
+            fake_time = -remaining
             
             for note in self.rhythm.notes:
                 if note["active"]:
@@ -103,13 +136,13 @@ class RhythmController:
             
             if remaining <= 0:
                 self.waiting_to_start = False
-                self.start_music() # GO !
+                self.startMusic()
             
-            return  # On ne fait que ça pendant le décompte
+            return
 
         # --- 2. JEU NORMAL ---
         if not self.is_playing:
-            self.start_music()
+            self.startMusic()
 
         current_time = pygame.time.get_ticks() - self.start_time
 
@@ -130,15 +163,27 @@ class RhythmController:
                 if note["y"] > self.rhythm.hit_line_y + 100:
                     note["active"] = False
                     self.trigger_miss()
+        
+        # --- VÉRIFICATION FIN DE CHANSON ---
+        self.checkSongFinished()
+        
+        # Auto-continue quand le timeout de 5 secondes est écoulé
+        if self.song_finished and not self.continue_pressed:
+            if self.get_auto_continue_remaining() <= 0:
+                self.continue_pressed = True
+        
+        # Si continuer a été pressé, on arrête le jeu
+        if self.continue_pressed:
+            self.game_over = True
 
-    def trigger_miss(self):
-        """PUNITION SÉVÈRE : Le public te déteste"""
+    def triggerMiss(self):
+        """Handle a missed note - apply penalties to score, combo, and crowd satisfaction."""
         current_real_time = pygame.time.get_ticks()
         
         # Protection Audio
         if current_real_time - self.last_hit_time > 200:
             self.guitar_channel.set_volume(0) 
-            self.play_random_fail()
+            self.playRandomFail()
 
         # Pénalités
         self.rhythm.feedback = "MISS!"
@@ -152,24 +197,43 @@ class RhythmController:
         # GAME OVER
         if self.rhythm.crowd_satisfaction <= 0:
             self.game_over = True
-            print("GAME OVER : Le public vous a dégagé !")
+            print("💀 GAME OVER : Le public vous a dégagé !")
             self.guitar_channel.stop()
             self.track_backing.stop()
 
-    def handle_input(self, event):
-        # On bloque les touches pendant le décompte
-        if self.waiting_to_start or self.game_over:
+    def handleInput(self, event):
+        # Gestion de la pause (ESC) - disponible même si le jeu a commencé
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            if not self.waiting_to_start and self.is_playing and not self.game_over and not self.song_finished:
+                self.togglePause()
+            return
+        
+        # Gestion du bouton "Continuer" sur l'écran de fin (SPACE ou clic)
+        if self.song_finished and not self.continue_pressed:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.continue_pressed = True
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.continue_pressed = True
+            return
+        
+        # On bloque les touches pendant le décompte, la pause, et après fin
+        if self.waiting_to_start or self.game_over or self.is_paused or self.song_finished:
             return
 
         if event.type == pygame.KEYDOWN:
             if event.key in self.key_map:
                 lane = self.key_map[event.key]
-                self.check_hit(lane)
+                self.checkHit(lane)
 
-    def check_hit(self, lane):
+    # Backward compatible alias
+    def handle_input(self, event):
+        """Legacy alias keeping existing calls working."""
+        return self.handleInput(event)
+
+    def checkHit(self, lane):
         current_time = pygame.time.get_ticks() - self.start_time
         
-        # --- SYSTÈME DE PRÉCISION PROGRESSIVE ---
+        # --- 🎯 SYSTÈME DE PRÉCISION PROGRESSIVE ---
         # Plus tu es proche du centre, plus tu gagnes !
         # On définit plusieurs zones de tolérance :
         
@@ -201,75 +265,75 @@ class RhythmController:
             self.guitar_channel.set_volume(1.0)
             self.last_hit_time = pygame.time.get_ticks()
             
-            # --- CALCUL DES POINTS SELON LA PRÉCISION ---
+            # --- 🎯 CALCUL DES POINTS SELON LA PRÉCISION ---
             # Plus on est proche de 0ms, plus on gagne !
             
             if best_distance <= perfect_window:
-                # PERFECT : ±50ms
+                # 🌟 PERFECT : ±50ms
                 # Points : 300 (base élevée)
                 # Hype : +5 (grosse récompense)
                 points = 300
                 hype_gain = 5
-                feedback = "PERFECT!"
+                feedback = "PERFECT! ⭐"
                 particle_color = (255, 255, 0)  # Jaune éclatant
-                self.view.create_particles(self.get_lane_x(lane), self.rhythm.hit_line_y, particle_color)
+                self.view.createParticles(self.getLaneX(lane), self.rhythm.hit_line_y, particle_color)
                 
             elif best_distance <= excellent_window:
-                # EXCELLENT : ±100ms
+                # ✨ EXCELLENT : ±100ms
                 # Points : 150-300 - on perd des points progressivement
                 # Formule : 300 - (distance * 1.5)
                 # Ex: à 50ms → 300-75=225, à 100ms → 300-150=150
                 points = max(150, int(300 - best_distance * 1.5))
                 hype_gain = 3
-                feedback = "EXCELLENT!"
+                feedback = "EXCELLENT! ✨"
                 particle_color = (100, 255, 255)  # Cyan
-                self.view.create_particles(self.get_lane_x(lane), self.rhythm.hit_line_y, particle_color)
+                self.view.createParticles(self.getLaneX(lane), self.rhythm.hit_line_y, particle_color)
                 
             elif best_distance <= good_window:
-                # GOOD : ±150ms
+                # 👍 GOOD : ±150ms
                 # Points : 80-150 selon précision
                 # Formule : 200 - distance
                 # Ex: à 100ms → 200-100=100, à 150ms → 200-150=50
                 points = max(80, int(200 - best_distance))
                 hype_gain = 2
-                feedback = "GOOD"
+                feedback = "GOOD 👍"
                 particle_color = (50, 255, 50)  # Vert
                 
             elif best_distance <= ok_window:
-                # OK : ±200ms
+                # 😐 OK : ±200ms
                 # Points : 30-80 selon précision
                 # Formule : 120 - (distance * 0.5)
                 # Ex: à 150ms → 120-75=45, à 200ms → 120-100=20
                 points = max(30, int(120 - best_distance * 0.5))
                 hype_gain = 1
-                feedback = "OK"
+                feedback = "OK 😐"
                 particle_color = (255, 200, 100)  # Orange pâle
                 
             else:
-                # LATE/EARLY : ±250ms (dernière chance)
+                # 💩 LATE/EARLY : ±250ms (dernière chance)
                 # Points : 5-30 (très peu)
                 # Hype : 0 (aucun gain)
                 # On garde le combo mais c'est la honte
                 points = max(5, int(40 - best_distance * 0.1))
                 hype_gain = 0
-                feedback = "LATE!" if (best_note["time"] - current_time) < 0 else "EARLY!"
+                feedback = "LATE! 💩" if (best_note["time"] - current_time) < 0 else "EARLY! 💩"
                 particle_color = (150, 150, 150)  # Gris
             
             # Appliquer les gains
-            self.register_hit(points, feedback, hype_gain)
+            self.registerHit(points, feedback, hype_gain)
             
         else:
-            # --- MISS TOTAL ---
+            # --- ❌ MISS TOTAL ---
             # Aucune note dans la fenêtre = GROSSE PUNITION
-            self.rhythm.feedback = "MISS!"
+            self.rhythm.feedback = "MISS! ❌"
             self.rhythm.feedback_timer = 30
             self.rhythm.score = max(0, self.rhythm.score - 20)  # Perte de points
             self.rhythm.combo = 0  # Reset combo
             self.rhythm.crowd_satisfaction = max(0, self.rhythm.crowd_satisfaction - 5)  # Perte de hype
-            self.play_random_fail()
+            self.playRandomFail()
 
-    def register_hit(self, points, text, hype_gain):
-        """Applique les gains avec multiplicateur de combo"""
+    def registerHit(self, points, text, hype_gain):
+        """Apply hit rewards with combo multiplier to score and crowd satisfaction."""
         self.rhythm.feedback = text
         self.rhythm.feedback_timer = 20
         self.rhythm.combo += 1
@@ -286,11 +350,64 @@ class RhythmController:
         
         # Debug pour voir l'effet de la précision
         if self.rhythm.combo % 10 == 0:  # Affiche tous les 10 combos
-            print(f"Combo x{self.rhythm.combo} | Score: {self.rhythm.score} | Hype: {self.rhythm.crowd_satisfaction}%")
+            print(f"🎯 Combo x{self.rhythm.combo} | Score: {self.rhythm.score} | Hype: {self.rhythm.crowd_satisfaction}%")
+    def togglePause(self):
+        """Toggle pause state and pause/resume audio tracks."""
+        if self.is_paused:
+            # Reprendre
+            self.resume_pause()
+        else:
+            # Mettre en pause
+            self.is_paused = True
+            self.pause_time = pygame.time.get_ticks()
+            # Pause les deux pistes audio
+            pygame.mixer.pause()
+            print("⏸️ PAUSE")
 
+    def resume_pause(self):
+        """Reprendre après une pause - avec décompte de 5s"""
+        self.is_paused = False
+        # Redémarrer le décompte
+        self.waiting_to_start = True
+        self.countdown_duration = 5000
+        self.countdown_start_tick = pygame.time.get_ticks()
+        self.current_countdown_val = 5
+        # Pause toujours la musique (on va l'unpause après le décompte)
+        pygame.mixer.pause()
+        print("⏱️ Décompte avant reprise: 5s")
+
+    def checkSongFinished(self):
+        """Check if the song has finished by comparing current time with last note end time."""
+        if self.is_playing and not self.song_finished:
+            current_time = pygame.time.get_ticks() - self.start_time
+            
+            # Calculate song duration from the last note's end time
+            if self.rhythm.notes:
+                # Find the note that ends latest (time + duration)
+                last_note_end = max(note["time"] + note["duration"] for note in self.rhythm.notes)
+                # Add a small buffer to ensure the note fully completes
+                song_duration = last_note_end + 500  # 500ms buffer
+            else:
+                # Fallback to old hardcoded duration if no notes
+                song_duration = 13000
+            
+            if current_time >= song_duration:
+                self.song_finished = True
+                self.finish_time = pygame.time.get_ticks()
+                pygame.mixer.stop()
+                print("🎵 Chanson terminée!")
+    
+    def get_auto_continue_remaining(self):
+        """Retourner le temps restant avant auto-continue (en secondes)"""
+        if not self.song_finished:
+            return 0
+        elapsed = pygame.time.get_ticks() - self.finish_time
+        remaining_ms = self.finish_delay - elapsed
+        remaining_s = max(0, remaining_ms // 1000)
+        return remaining_s
     def end_concert(self):
         """
-        # ECONOMIE RADINE : Calcul du gain final
+        💰 ÉCONOMIE RADINE : Calcul du gain final
         """
         # On divise le score par 250 pour être radin
         raw_cash = int(self.rhythm.score / 250)
@@ -301,16 +418,49 @@ class RhythmController:
         # Petit bonus si public en feu
         if self.rhythm.crowd_satisfaction > 90:
             cash += 20
-            print("Bonus : +20$")
+            print("🌟 Bonus Star : +20$")
             
         self.rhythm.cash_earned = cash
-        print(f"FIN DU CONCERT - Gains : {cash}$ (Plafonné)")
-        print(f"Stats finales:")
+        print(f"💰 FIN DU CONCERT - Gains : {cash}$ (Plafonné)")
+        print(f"📊 Stats finales:")
         print(f"   Score: {self.rhythm.score}")
         print(f"   Max Combo: {self.rhythm.max_combo}")
         print(f"   Hype finale: {self.rhythm.crowd_satisfaction}%")
         return cash
 
+    # Backward compatible aliases for old function names
+    def play_random_fail(self):
+        """Legacy alias."""
+        return self.playRandomFail()
+    
+    def start_music(self):
+        """Legacy alias."""
+        return self.startMusic()
+    
+    def trigger_miss(self):
+        """Legacy alias."""
+        return self.triggerMiss()
+    
+    def check_hit(self, lane):
+        """Legacy alias."""
+        return self.checkHit(lane)
+    
+    def register_hit(self, points, text, hype_gain):
+        """Legacy alias."""
+        return self.registerHit(points, text, hype_gain)
+    
+    def toggle_pause(self):
+        """Legacy alias."""
+        return self.togglePause()
+    
+    def check_song_finished(self):
+        """Legacy alias."""
+        return self.checkSongFinished()
+    
     def get_lane_x(self, lane):
+        """Legacy alias."""
+        return self.getLaneX(lane)
+
+    def getLaneX(self, lane):
         idx = self.rhythm.lanes.index(lane)
         return self.view.lane_x[idx]

@@ -1,5 +1,6 @@
 import pygame
 import math
+from Views.CaracterView import CaracterView
 
 class RhythmView:
     def __init__(self, screen_width, screen_height):
@@ -63,7 +64,8 @@ class RhythmView:
         self.particles = []
         self.time = 0
 
-    def create_particles(self, x, y, color):
+    def createParticles(self, x, y, color):
+        """Create particle effects at specified coordinates."""
         for _ in range(12):
             angle = pygame.math.Vector2(1, 0).rotate((_ * 30))
             self.particles.append({
@@ -72,7 +74,8 @@ class RhythmView:
                 'life': 25, 'color': color
             })
 
-    def update_particles(self):
+    def updateParticles(self):
+        """Update particle positions and remove expired particles."""
         for particle in self.particles[:]:
             particle['x'] += particle['vx']
             particle['y'] += particle['vy']
@@ -80,6 +83,15 @@ class RhythmView:
             particle['life'] -= 1
             if particle['life'] <= 0:
                 self.particles.remove(particle)
+    
+    # Backward compatible aliases
+    def create_particles(self, x, y, color):
+        """Legacy alias."""
+        return self.createParticles(x, y, color)
+    
+    def update_particles(self):
+        """Legacy alias."""
+        return self.updateParticles()
 
     def clamp(self, value, min_val=0, max_val=255):
         return max(min_val, min(int(value), max_val))
@@ -153,8 +165,21 @@ class RhythmView:
         good_surf.fill((50, 255, 50, 8))  # Vert très pâle
         screen.blit(good_surf, good_rect)
 
-    def draw(self, screen, rhythm_model, character_model, note_speed=0.5, countdown_val=0):
+    def draw(self, screen, rhythm_model, character_model, note_speed=0.5, countdown_val=0, boss_model=None, player_model=None, rhythm_controller=None):
         self.time += 1
+        
+        # Initialize character views if boss/player provided
+        if boss_model is not None and not hasattr(self, '_boss_view'):
+            try:
+                self._boss_view = CaracterView("Game/Assets/ManagerCorrompu.png")
+            except:
+                self._boss_view = None
+        
+        if player_model is not None and not hasattr(self, '_player_view'):
+            try:
+                self._player_view = CaracterView("Game/Assets/lolaquiboit (1).png")
+            except:
+                self._player_view = None
         
         # --- A. FOND ---
         if self.background_image:
@@ -234,7 +259,35 @@ class RhythmView:
                 surf = pygame.Surface((size*2, size*2), pygame.SRCALPHA)
                 pygame.draw.circle(surf, (*particle['color'], 200), (size, size), size)
                 screen.blit(surf, (particle['x']-size, particle['y']-size))
-        self.update_particles()
+        self.updateParticles()
+        
+        # --- E.5. DISPLAY BOSS & PLAYER (if provided) ---
+        if boss_model is not None and hasattr(self, '_boss_view') and self._boss_view is not None:
+            try:
+                # Set boss position (right side, top area)
+                boss_model.setX(int(self.screen_width * 0.8))
+                boss_model.setY(int(self.screen_height * 0.25))
+                self._boss_view.drawCaracter(screen, boss_model)
+            except:
+                pass
+        
+        if player_model is not None and hasattr(self, '_player_view') and self._player_view is not None:
+            try:
+                # Set player position (left side, top area)
+                player_model.setX(int(self.screen_width * 0.2))
+                player_model.setY(int(self.screen_height * 0.25))
+                self._player_view.drawCaracter(screen, player_model)
+            except:
+                pass
+        
+        # --- E.7 AFFICHAGE DU NIVEAU (bottom-left) ---
+        if player_model is not None:
+            try:
+                level = player_model.getLevel()
+                level_txt = self.title_font.render(f"Level {level}", True, (100, 255, 100))
+                screen.blit(level_txt, (20, self.screen_height - 40))
+            except:
+                pass
         
         # --- F. HUD ---
         hud_h = int(self.screen_height * 0.12)
@@ -346,3 +399,59 @@ class RhythmView:
             
             screen.blit(nb_shadow, (nb_x + 5, nb_y + 5))
             screen.blit(nb, (nb_x, nb_y))
+        
+        # --- H. ÉCRAN DE PAUSE ---
+        if rhythm_controller is not None and rhythm_controller.is_paused:
+            self.draw_pause_screen(screen)
+        
+        # --- I. ÉCRAN DE FIN ---
+        if rhythm_controller is not None and rhythm_controller.song_finished:
+            self.draw_finish_screen(screen, rhythm_model, rhythm_controller)
+    
+    def draw_pause_screen(self, screen):
+        """Affiche l'écran de pause"""
+        over = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
+        over.fill((0, 0, 0, 180))
+        screen.blit(over, (0, 0))
+        
+        # Texte PAUSE
+        pause_txt = self.huge_font.render("PAUSE", True, (255, 100, 100))
+        screen.blit(pause_txt, (self.screen_width//2 - pause_txt.get_width()//2, self.screen_height//2 - 200))
+        
+        # Instruction
+        instr = self.title_font.render("ESC = Quitter | Décompte: 5s avant reprise", True, (200, 200, 200))
+        screen.blit(instr, (self.screen_width//2 - instr.get_width()//2, self.screen_height//2 + 100))
+    
+    def draw_finish_screen(self, screen, rhythm_model, rhythm_controller):
+        """Affiche l'écran de fin avec bouton continuer ou auto-continue"""
+        over = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
+        over.fill((0, 0, 0, 150))
+        screen.blit(over, (0, 0))
+        
+        # Texte FIN
+        fin_txt = self.score_font.render("🎵 Chanson Terminée! 🎵", True, (255, 215, 0))
+        screen.blit(fin_txt, (self.screen_width//2 - fin_txt.get_width()//2, self.screen_height//2 - 200))
+        
+        # Score final
+        score_final = self.big_font.render(f"Score: {rhythm_model.score:,}", True, (100, 255, 100))
+        screen.blit(score_final, (self.screen_width//2 - score_final.get_width()//2, self.screen_height//2 - 80))
+        
+        # Hype final
+        hype_final = self.big_font.render(f"Hype: {int(rhythm_model.crowd_satisfaction)}%", True, (0, 255, 255))
+        screen.blit(hype_final, (self.screen_width//2 - hype_final.get_width()//2, self.screen_height//2))
+        
+        # Bouton Continuer ou auto-continue
+        remaining = rhythm_controller.get_auto_continue_remaining()
+        
+        if remaining > 0:
+            # Auto-continue dans X secondes
+            auto_txt = self.title_font.render(f"Continuation automatique dans {remaining}s", True, (100, 255, 100))
+            screen.blit(auto_txt, (self.screen_width//2 - auto_txt.get_width()//2, self.screen_height//2 + 100))
+            
+            # Ou SPACE pour continuer
+            skip_txt = self.font.render("Appuyez sur SPACE pour continuer maintenant", True, (150, 150, 150))
+            screen.blit(skip_txt, (self.screen_width//2 - skip_txt.get_width()//2, self.screen_height//2 + 150))
+        else:
+            # Continuation immédiate (déjà 5s écoulées)
+            auto_txt = self.title_font.render("Continuation en cours...", True, (100, 255, 100))
+            screen.blit(auto_txt, (self.screen_width//2 - auto_txt.get_width()//2, self.screen_height//2 + 100))

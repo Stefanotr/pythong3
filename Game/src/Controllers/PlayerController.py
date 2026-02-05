@@ -20,7 +20,7 @@ class PlayerController(BaseController):
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen, player, collision_rects=None):
+    def __init__(self, screen, player, collision_rects=None, map_width=None, map_height=None):
         """
         Initialize the player controller.
         
@@ -28,6 +28,8 @@ class PlayerController(BaseController):
             screen: Pygame surface for rendering
             player: PlayerModel instance to control
             collision_rects: optional list of pygame.Rect in world coordinates to collide against
+            map_width: optional map width in pixels to enforce boundary limits
+            map_height: optional map height in pixels to enforce boundary limits
         """
         try:
             self.player = player
@@ -41,14 +43,19 @@ class PlayerController(BaseController):
             self.SPEED = 6  # reduced speed for better control
             self.screen_width = screen_width
             self.screen_height = screen_height
-            Logger.debug("PlayerController.__init__", "Player controller initialized", player_name=player.getName(), collisions=len(self.collision_rects))
+            
+            # Map boundaries to prevent player from leaving map
+            self.map_width = map_width
+            self.map_height = map_height
+            
+            Logger.debug("PlayerController.__init__", "Player controller initialized", player_name=player.getName(), collisions=len(self.collision_rects), map_bounds=(map_width, map_height))
         except Exception as e:
             Logger.error("PlayerController.__init__", e)
             raise
 
     # === INPUT HANDLING (EVENT-BASED) ===
 
-    def handle_input(self, event):
+    def handleInput(self, event):
         """
         Handle keyboard input events for player movement and actions.
         
@@ -72,20 +79,20 @@ class PlayerController(BaseController):
                             drunkenness=self.player.getDrunkenness(),
                         )
                     else:
-                        Logger.debug("PlayerController.handle_input", "No bottle selected")
+                        Logger.debug("PlayerController.handleInput", "No bottle selected")
                 except Exception as e:
-                    Logger.error("PlayerController.handle_input", e)
+                    Logger.error("PlayerController.handleInput", e)
         except Exception as e:
-            Logger.error("PlayerController.handle_input", e)
+            Logger.error("PlayerController.handleInput", e)
 
-    # Backwards compatible alias
-    def handleInput(self, event):
+    # Backward compatible alias
+    def handle_input(self, event):
         """Legacy alias keeping existing calls working."""
-        return self.handle_input(event)
+        return self.handleInput(event)
 
     # === INPUT HANDLING (FRAME-BASED) ===
 
-    def handle_events(self, events):
+    def handleEvents(self, events):
         """
         Handle continuous input each frame (movement while keys are held).
 
@@ -115,17 +122,24 @@ class PlayerController(BaseController):
                 current_x = self.player.getX()
                 current_y = self.player.getY()
             except Exception as e:
-                Logger.error("PlayerController.handle_events", e)
+                Logger.error("PlayerController.handleEvents", e)
                 return
 
             new_x = current_x + dx
             new_y = current_y + dy
 
-            # Simple boundary checks (no hard map limits for now)
-            if new_x < 0:
-                new_x = 0
-            if new_y < 0:
-                new_y = 0
+            # Boundary checks to keep player within map
+            half = self.PLAYER_SIZE // 2
+            if new_x < half:
+                new_x = half
+            if new_y < half:
+                new_y = half
+            
+            # Apply map boundaries if provided
+            if self.map_width is not None and new_x + half > self.map_width:
+                new_x = self.map_width - half
+            if self.map_height is not None and new_y + half > self.map_height:
+                new_y = self.map_height - half
 
             # Prepare player rectangle for collision checks (player coords are center)
             half = self.PLAYER_SIZE // 2
@@ -160,12 +174,17 @@ class PlayerController(BaseController):
                 self.player.setX(resolved_x)
                 self.player.setY(resolved_y)
                 Logger.debug(
-                    "PlayerController.handle_events",
+                    "PlayerController.handleEvents",
                     "Player moved",
                     x=self.player.getX(),
                     y=self.player.getY(),
                 )
             except Exception as e:
-                Logger.error("PlayerController.handle_events", e)
+                Logger.error("PlayerController.handleEvents", e)
         except Exception as e:
-            Logger.error("PlayerController.handle_events", e)
+            Logger.error("PlayerController.handleEvents", e)
+
+    # Backward compatible alias
+    def handle_events(self, events):
+        """Legacy alias keeping existing calls working."""
+        return self.handleEvents(events)

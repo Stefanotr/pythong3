@@ -9,14 +9,16 @@ import pygame
 from Utils.Logger import Logger
 from Controllers.ButtonController import ButtonController
 from Controllers.GameState import GameState
-from Controllers.GameSequenceController import GameSequenceController
 from Views.PageView import PageView
 from Views.ButtonView import ButtonView
 from Views.MapPageView import MapPageView
 from Views.Act1View import Act1View
 from Views.Act2View import Act2View
-from Views.RhythmPageView import RhythmPageView
-from Views.RhythmCombatPageView import RhythmCombatPageView
+from Views.RhythmView import RhythmView
+from Views.RhythmCombatView import RhythmCombatView
+from Models.RhythmModel import RhythmModel
+from Controllers.RhythmController import RhythmController
+from Controllers.RhythmCombatController import RhythmCombatController
 
 
 # === WELCOME PAGE VIEW CLASS ===
@@ -56,16 +58,11 @@ class WelcomPageView(PageView):
             self.buttons = []
             self.buttons_controllers = []
             
-            # Play button (center-right, slightly larger)
+            # Play button (center-top)
             try:
-                # Compute dynamic position: center-right of window
-                play_size = (260, 100)  # slightly larger
-                play_x = int(self.width * 0.75)
-                play_y = int(self.height * 0.45)
                 self.play_button = ButtonView(
                     image_path='Game/Assets/buttonPlay.png',
-                    position=(play_x, play_y),
-                    size=play_size,
+                    position=(400, 500),
                 )
                 self.buttons.append(self.play_button)
                 
@@ -76,16 +73,11 @@ class WelcomPageView(PageView):
                 Logger.error("WelcomPageView.__init__", e)
                 raise
             
-            # Quit button (just below Play)
+            # Quit button (bottom)
             try:
-                quit_size = (220, 80)
-                quit_x = int(self.width * 0.75)
-                # place below play button with small gap
-                quit_y = play_y + play_size[1] // 2 + 20 + quit_size[1] // 2
                 self.quit_button = ButtonView(
                     image_path='Game/Assets/buttonQuit.png',
-                    position=(quit_x, quit_y),
-                    size=quit_size,
+                    position=(400, 700),
                 )
                 self.buttons.append(self.quit_button)
                 
@@ -95,10 +87,6 @@ class WelcomPageView(PageView):
             except Exception as e:
                 Logger.error("WelcomPageView.__init__", e)
                 raise
-            
-            # === STAGE SELECTION ===
-            self.selected_stage = 1  # Default to stage 1
-            Logger.debug("WelcomPageView.__init__", "Stage selector initialized", default_stage=self.selected_stage)
                 
         except Exception as e:
             Logger.error("WelcomPageView.__init__", e)
@@ -108,6 +96,7 @@ class WelcomPageView(PageView):
     def handle_events(self, events):
         """
         Handle events for the welcome page.
+        DEBUG: Keys 1-7 jump to specific game stages for testing.
 
         Returns:
             bool: True to keep running, False to exit the menu.
@@ -135,18 +124,27 @@ class WelcomPageView(PageView):
                     # Continue running after resize
                     continue
 
-                # Handle numeric keys 1-8 for stage selection
+                # DEBUG: Number keys 1-8 to jump to game stages for testing
                 if event.type == pygame.KEYDOWN:
                     if pygame.K_1 <= event.key <= pygame.K_8:
                         stage_num = event.key - pygame.K_1 + 1
-                        self.selected_stage = stage_num
-                        Logger.debug(
-                            "WelcomPageView.handle_events",
-                            "Stage selected",
-                            stage=self.selected_stage
-                        )
+                        Logger.debug("WelcomPageView.handle_events", f"DEBUG: Jump to stage {stage_num} requested via keyboard")
+                        # Stage mapping:
+                        # 1: Rhythm Final, 2: Map Act1, 3: Act1, 4: Map Act2, 5: Act2, 6: Rhythm Classic, 7: Map Act3, 8: Rhythm Combat
+                        try:
+                            result = self._startGameFlow(debug_stage=stage_num)
+                            Logger.debug(
+                                "WelcomPageView.handle_events",
+                                "Returned from game flow, showing menu again",
+                                result=result,
+                            )
+                            if result == GameState.QUIT.value:
+                                Logger.debug("WelcomPageView.handle_events", "Quit requested during game flow, exiting menu")
+                                return False
+                        except Exception as e:
+                            Logger.error("WelcomPageView.handle_events", e)
                         continue
-                
+
                 # Delegate clicks/inputs to button controllers
                 for button_controller in self.buttons_controllers:
                     action = button_controller.handleEvents(event)
@@ -154,10 +152,9 @@ class WelcomPageView(PageView):
                         Logger.debug(
                             "WelcomPageView.handle_events",
                             "Start game action received, starting game flow",
-                            starting_stage=self.selected_stage
                         )
                         try:
-                            result = self._startGameFlow(self.selected_stage)
+                            result = self._startGameFlow()
                             Logger.debug(
                                 "WelcomPageView.handle_events",
                                 "Returned from game flow, showing menu again",
@@ -200,32 +197,24 @@ class WelcomPageView(PageView):
     
     # === GAME TRANSITION ===
     
-    def _startGameFlow(self, starting_stage=1):
+    def _startGameFlow(self, debug_stage=None):
         """
-        Start the complete game flow with 8 stages:
-        1. RhythmPageView
-        2. Map (Act 1)
-        3. Act1
-        4. Map (Act 2)
-        5. Act2
-        6. RhythmPageView
-        7. Map (Act 3)
-        8. RhythmCombatView
-        
-        Players can press keys 1-8 to jump to specific stages during gameplay.
+        Start the complete game flow: Rhythm Final → Map → Act1 → Map → Act2 → Rhythm Classic → Map → Act3 → Rhythm Combat.
+        Manages all transitions between game states.
         
         Args:
-            starting_stage: The stage to start from (1-8, default 1)
+            debug_stage: (DEBUG) Optional stage to jump to (1-8) for testing.
+                        1: Rhythm Final
+                        2: Map (Act 1)
+                        3: Act 1
+                        4: Map (Act 2)
+                        5: Act 2
+                        6: Rhythm Classic
+                        7: Map (Act 3)
+                        8: Rhythm Combat (final boss)
         """
         try:
-            Logger.debug("WelcomPageView._startGameFlow", "Starting game flow with sequence controller")
-            
-            # Initialize sequence controller
-            sequence_controller = GameSequenceController()
-            
-            # Set to the starting stage selected by user
-            sequence_controller.set_stage(starting_stage)
-            Logger.debug("WelcomPageView._startGameFlow", "GameSequenceController created", starting_stage=starting_stage)
+            Logger.debug("WelcomPageView._startGameFlow", "Starting game flow", debug_stage=debug_stage)
             
             # Save current menu size and attempt to switch to screen resolution for gameplay
             menu_size = None
@@ -266,13 +255,12 @@ class WelcomPageView(PageView):
                 from Models.PlayerModel import PlayerModel
                 from Models.BottleModel import BottleModel
                 from Models.GuitarModel import GuitarFactory
-                from Models.CaracterModel import CaracterModel
                 
-                player = PlayerModel("Lola Coma", 60, 60)
+                player = PlayerModel("Johnny Fuzz", 60, 60)
                 player.setHealth(100)
                 player.setDamage(10)
                 player.setAccuracy(0.85)
-                player.setDrunkenness(0)
+                player.setDrunkenness(0)  # Start at 0, but will persist after this
                 player.setComaRisk(10)
                 
                 # Equip with starting guitar
@@ -282,161 +270,411 @@ class WelcomPageView(PageView):
                 beer = BottleModel("Beer", 15, 3, 5)
                 player.setSelectedBottle(beer)
                 
-                # Create boss for rhythm combat
-                boss = CaracterModel("Le Manager Corrompu", 80, 80)
-                boss.setHealth(100)
-                boss.setDamage(10)
-                
-                sequence_controller.set_player(player)
-                sequence_controller.set_boss(boss)
-                Logger.debug("WelcomPageView._startGameFlow", "Player and boss created and initialized")
+                Logger.debug("WelcomPageView._startGameFlow", "Player created and initialized")
             except Exception as e:
                 Logger.error("WelcomPageView._startGameFlow", e)
                 raise
             
-            # Main game loop - handle all 8 stages
+            # If debug_stage is set, skip to that stage
+            if debug_stage:
+                Logger.debug("WelcomPageView._startGameFlow", f"DEBUG: Jumping to stage {debug_stage}")
+                # Stage mapping:
+                # 1: Rhythm Final (uses RhythmModel like test_rhythm_final)
+                # 2: Map Act 1 (current_act = 1)
+                # 3: Act 1 (skip map, go straight to act)
+                # 4: Map Act 2 (current_act = 2)  
+                # 5: Act 2 (skip map, go straight to act)
+                # 6: Rhythm Classic (uses RhythmModel, same as Rhythm Final but called "Classique")
+                # 7: Map Act 3 (current_act = 3)
+                # 8: Rhythm Combat (final boss - directly launch)
+                
+                if debug_stage == 8:
+                    # Direct jump to Rhythm Combat - skip everything else
+                    skip_rhythm_final = True
+                    skip_to_rhythm_combat = True
+                elif debug_stage == 7:
+                    current_act = 3
+                    skip_map_act3 = False  # Run Map Act 3 normally
+                elif debug_stage == 6:
+                    # Rhythm Classic - will be run before Map Act 3
+                    skip_to_rhythm_classic = True
+                elif debug_stage == 5:
+                    # Go straight to Act2
+                    current_act = 2
+                elif debug_stage == 4:
+                    # Map Act 2
+                    current_act = 2
+                elif debug_stage == 3:
+                    # Go straight to Act1
+                    pass
+                elif debug_stage == 2:
+                    # Map Act 1 (normal start after Rhythm Final)
+                    skip_rhythm_final = True
+                elif debug_stage == 1:
+                    # Rhythm Final (normal start)
+                    pass
+            
+            # Game flow: Rhythm Final → Map → Act1 → Map → Act2 → Rhythm Classic → Map → Act3 → Rhythm Combat
+            current_act = 1
+            current_stage = 1  # Track which stage we're on for proper flow
+            skip_rhythm_final = False
+            skip_to_rhythm_classic = False
+            skip_map_act3 = False
+            skip_to_rhythm_combat = False
+            
+            # === STAGE 8: RHYTHM COMBAT (Direct Jump) ===
+            if skip_to_rhythm_combat:
+                try:
+                    Logger.debug("WelcomPageView._startGameFlow", "Starting RHYTHM COMBAT (Direct)")
+                    
+                    # === CRÉATION DES COMBATTANTS ===
+                    # Johnny (Joueur)
+                    from Models.CaracterModel import CaracterModel
+                    boss = CaracterModel("Le Manager Corrompu", x=0, y=0, type="BOSS")
+                    boss.setHealth(100)
+                    boss.setDamage(10)
+                    
+                    # Modèle Rythme
+                    rhythm_combat_model = RhythmModel()
+                    
+                    # Vue spéciale combat
+                    rhythm_combat_view = RhythmCombatView(screen.get_width(), screen.get_height())
+                    
+                    # Contrôleur de combat rhythm
+                    rhythm_combat_controller = RhythmCombatController(
+                        rhythm_combat_model, 
+                        player, 
+                        boss, 
+                        screen.get_height(), 
+                        rhythm_combat_view
+                    )
+                    print("✅ Contrôleur Combat Rhythm chargé.")
+                    print("🎸⚔️ Mode : BOSS COMBAT")
+                    print("📜 Règles :")
+                    print("   - Bonnes notes → Dégâts au BOSS")
+                    print("   - MISS → Dégâts au JOUEUR + Boss récupère HP")
+                    print("   - Victoire si Boss K.O.")
+                    print("   - Défaite si Joueur K.O. OU Boss survit")
+
+                    # Boucle de Jeu
+                    clock = pygame.time.Clock()
+                    running = True
+                    
+                    print("--- DÉBUT DU COMBAT ---")
+
+                    while running:
+                        # Gestion des événements
+                        for event in pygame.event.get():
+                            if event.type == pygame.QUIT:
+                                Logger.debug("WelcomPageView._startGameFlow", "QUIT from Rhythm Combat")
+                                return GameState.QUIT.value
+                            
+                            rhythm_combat_controller.handle_input(event)
+
+                        # Mise à jour
+                        rhythm_combat_controller.update()
+
+                        # Vérification Game Over
+                        if rhythm_combat_controller.game_over:
+                            print("\n=== FIN DU COMBAT ===")
+                            if rhythm_combat_controller.victory:
+                                print("🏆 VICTOIRE !")
+                            else:
+                                print("💀 DÉFAITE !")
+                            
+                            Logger.debug("WelcomPageView._startGameFlow", "Rhythm Combat finished", victory=rhythm_combat_controller.victory)
+                            
+                            # Attendre 3 secondes avant de continuer
+                            pygame.time.wait(3000)
+                            running = False
+
+                        # Dessin
+                        screen.fill((0, 0, 0))
+                        
+                        # Calcul du countdown
+                        current_countdown = rhythm_combat_controller.current_countdown_val if rhythm_combat_controller.waiting_to_start else 0
+                        
+                        # Dessiner la vue de combat
+                        rhythm_combat_view.draw(
+                            screen, 
+                            rhythm_combat_model, 
+                            player,
+                            boss,
+                            rhythm_combat_controller.note_speed, 
+                            countdown_val=current_countdown
+                        )
+                        
+                        pygame.display.flip()
+                        clock.tick(60)
+
+                    # Game complete
+                    if rhythm_combat_controller.victory:
+                        Logger.debug("WelcomPageView._startGameFlow", "Game completed successfully - VICTORY!")
+                        return
+                    else:
+                        Logger.debug("WelcomPageView._startGameFlow", "Game completed - DEFEAT")
+                        return
+                except Exception as e:
+                    Logger.error("WelcomPageView._startGameFlow", e)
+                    raise
+            
+            # === STAGE 1: RHYTHM FINAL ===
+            if not skip_rhythm_final:
+                try:
+                    Logger.debug("WelcomPageView._startGameFlow", "Starting RHYTHM FINAL")
+                    rhythm_final_model = RhythmModel()
+                    rhythm_final_view = RhythmView(screen.get_width(), screen.get_height())
+                    rhythm_final_controller = RhythmController(
+                        rhythm_final_model,
+                        player,
+                        screen.get_height(),
+                        rhythm_final_view
+                    )
+                    
+                    # Run rhythm final loop
+                    clock = pygame.time.Clock()
+                    running = True
+                    while running:
+                        for event in pygame.event.get():
+                            if event.type == pygame.QUIT:
+                                Logger.debug("WelcomPageView._startGameFlow", "QUIT from Rhythm Final")
+                                return GameState.QUIT.value
+                            rhythm_final_controller.handleInput(event)
+                        
+                        rhythm_final_controller.update()
+                        
+                        # Continue after song finished or auto-continue timeout
+                        if rhythm_final_controller.continue_pressed or (rhythm_final_controller.game_over and not rhythm_final_controller.song_finished):
+                            Logger.debug("WelcomPageView._startGameFlow", "Rhythm Final completed")
+                            running = False
+                        
+                        screen.fill((0, 0, 0))
+                        current_countdown = rhythm_final_controller.current_countdown_val if rhythm_final_controller.waiting_to_start else 0
+                        rhythm_final_view.draw(
+                            screen,
+                            rhythm_final_model,
+                            player,
+                            rhythm_final_controller.note_speed,
+                            countdown_val=current_countdown,
+                            boss_model=None,
+                            player_model=player,
+                            rhythm_controller=rhythm_final_controller
+                        )
+                        pygame.display.flip()
+                        clock.tick(60)
+                    
+                    if not rhythm_final_controller.game_over:
+                        rhythm_final_controller.end_concert()
+                    
+                    Logger.debug("WelcomPageView._startGameFlow", "Rhythm Final completed successfully")
+                except Exception as e:
+                    Logger.error("WelcomPageView._startGameFlow", e)
+                    raise
+            
             while True:
                 try:
-                    current_stage = sequence_controller.get_current_stage()
-                    stage_name = sequence_controller.get_current_stage_name()
-                    Logger.debug("WelcomPageView._startGameFlow", "Displaying stage", 
-                               stage=current_stage, stage_name=stage_name)
-                    
-                    result = None
-                    
-                    # === STAGE 1: Rhythm Page (Act 1 Practice) ===
-                    if current_stage == 1:
+                    # === RHYTHM CLASSIC (between Act 2 and Act 3) ===
+                    if skip_to_rhythm_classic:
                         try:
-                            # Views handle their own dimensioning (RESIZABLE)
-                            rhythm_view = RhythmPageView(screen, player, sequence_controller)
-                            result = rhythm_view.run()
+                            Logger.debug("WelcomPageView._startGameFlow", "Starting RHYTHM CLASSIC")
+                            rhythm_classic_model = RhythmModel()
+                            rhythm_classic_view = RhythmView(screen.get_width(), screen.get_height())
+                            rhythm_classic_controller = RhythmController(
+                                rhythm_classic_model,
+                                player,
+                                screen.get_height(),
+                                rhythm_classic_view
+                            )
                             
+                            # Run rhythm classic loop
+                            clock = pygame.time.Clock()
+                            running = True
+                            while running:
+                                for event in pygame.event.get():
+                                    if event.type == pygame.QUIT:
+                                        Logger.debug("WelcomPageView._startGameFlow", "QUIT from Rhythm Classic")
+                                        return GameState.QUIT.value
+                                    rhythm_classic_controller.handleInput(event)
+                                
+                                rhythm_classic_controller.update()
+                                
+                                # Continue after song finished or auto-continue timeout
+                                if rhythm_classic_controller.continue_pressed or (rhythm_classic_controller.game_over and not rhythm_classic_controller.song_finished):
+                                    Logger.debug("WelcomPageView._startGameFlow", "Rhythm Classic completed")
+                                    running = False
+                                
+                                screen.fill((0, 0, 0))
+                                current_countdown = rhythm_classic_controller.current_countdown_val if rhythm_classic_controller.waiting_to_start else 0
+                                rhythm_classic_view.draw(
+                                    screen,
+                                    rhythm_classic_model,
+                                    player,
+                                    rhythm_classic_controller.note_speed,
+                                    countdown_val=current_countdown,
+                                    boss_model=None,
+                                    player_model=player,
+                                    rhythm_controller=rhythm_classic_controller
+                                )
+                                pygame.display.flip()
+                                clock.tick(60)
+                            
+                            if not rhythm_classic_controller.game_over:
+                                rhythm_classic_controller.end_concert()
+                            
+                            Logger.debug("WelcomPageView._startGameFlow", "Rhythm Classic completed successfully")
+                            skip_to_rhythm_classic = False  # Reset flag
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
+                            raise
                     
-                    # === STAGE 2: Map (Before Act 1) ===
-                    elif current_stage == 2:
+                    # === MAP PHASE ===
+                    # Skip map if debug_stage is 3 (go directly to Act1) or 5 (go directly to Act2)
+                    if debug_stage not in [3, 5]:
                         try:
-                            # Views handle their own dimensioning (RESIZABLE)
-                            map_view = MapPageView(screen, 1, player, sequence_controller)
+                            map_view = MapPageView(screen, current_act, player)
                             result = map_view.run()
+                            Logger.debug("WelcomPageView._startGameFlow", "Map completed", result=result, current_act=current_act)
                             
+                            if result == GameState.QUIT.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Quit requested from map")
+                                return GameState.QUIT.value
+                            elif result == GameState.MAIN_MENU.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from map")
+                                # Return to main menu (exit game flow)
+                                return
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
-                    
-                    # === STAGE 3: Act 1 ===
-                    elif current_stage == 3:
-                        try:
-                            # Views handle their own dimensioning (RESIZABLE)
-                            act1_view = Act1View(screen, player, sequence_controller)
-                            result = act1_view.run()
-                            
-                        except Exception as e:
-                            Logger.error("WelcomPageView._startGameFlow", e)
-                    
-                    # === STAGE 4: Map (Before Act 2) ===
-                    elif current_stage == 4:
-                        try:
-                            # Views handle their own dimensioning (RESIZABLE)
-                            map_view = MapPageView(screen, 2, player, sequence_controller)
-                            result = map_view.run()
-                            
-                        except Exception as e:
-                            Logger.error("WelcomPageView._startGameFlow", e)
-                    
-                    # === STAGE 5: Act 2 ===
-                    elif current_stage == 5:
-                        try:
-                            # Views handle their own dimensioning (RESIZABLE)
-                            act2_view = Act2View(screen, player, sequence_controller)
-                            result = act2_view.run()
-                            
-                        except Exception as e:
-                            Logger.error("WelcomPageView._startGameFlow", e)
-                    
-                    # === STAGE 6: Rhythm Page (Act 2 Practice) ===
-                    elif current_stage == 6:
-                        try:
-                            # Views handle their own dimensioning (RESIZABLE)
-                            rhythm_view = RhythmPageView(screen, player, sequence_controller)
-                            result = rhythm_view.run()
-                            
-                            
-                        except Exception as e:
-                            Logger.error("WelcomPageView._startGameFlow", e)
-                    
-                    # === STAGE 7: Map (Final) ===
-                    elif current_stage == 7:
-                        try:
-                            # Views handle their own dimensioning (RESIZABLE)
-                            map_view = MapPageView(screen, 3, player, sequence_controller)
-                            result = map_view.run()
-                           
-                           
-                        except Exception as e:
-                            Logger.error("WelcomPageView._startGameFlow", e)
-                    
-                    # === STAGE 8: Rhythm Combat (Boss Final) ===
-                    elif current_stage == 8:
-                        try:
-                            # Views handle their own dimensioning (RESIZABLE)
-                            rhythm_combat_view = RhythmCombatPageView(screen, player, boss, sequence_controller)
-                            result = rhythm_combat_view.run()
-                            
-                        except Exception as e:
-                            Logger.error("WelcomPageView._startGameFlow", e)
-                    
-                    # === HANDLE RESULTS ===
-                    if result is None:
-                        # No result, something went wrong
-                        Logger.debug("WelcomPageView._startGameFlow", "No result from stage", stage=current_stage)
-                        break
-                    
-                    elif result == GameState.QUIT.value:
-                        Logger.debug("WelcomPageView._startGameFlow", "Quit requested")
-                        return GameState.QUIT.value
-                    
-                    elif result == GameState.MAIN_MENU.value:
-                        Logger.debug("WelcomPageView._startGameFlow", "Main menu requested")
-                        return
-                    
-                    elif result == GameState.GAME_OVER.value:
-                        Logger.debug("WelcomPageView._startGameFlow", "Game over")
-                        return
-                    
-                    elif result == GameState.COMPLETE.value:
-                        Logger.debug("WelcomPageView._startGameFlow", "Stage completed successfully, advancing to next stage")
-                        # Advance to next stage instead of returning
-                        if sequence_controller.advance_stage():
-                            Logger.debug("WelcomPageView._startGameFlow", "Advanced to next stage",
-                                       new_stage=sequence_controller.get_current_stage())
-                        else:
-                            Logger.debug("WelcomPageView._startGameFlow", "Already at final stage")
                             break
-                        continue
+                    else:
+                        # Skip map - directly to act
+                        if current_act == 1:
+                            result = GameState.ACT1.value
+                        elif current_act == 2:
+                            result = GameState.ACT2.value
+                        elif current_act == 3:
+                            result = GameState.RHYTHM.value
+                        Logger.debug("WelcomPageView._startGameFlow", "DEBUG: Skipping map phase, jumping directly to act", current_act=current_act, result=result)
+                        debug_stage = None  # Reset after jumping
+                        skip_map_act3 = False  # Reset flag
                     
-                    elif result.startswith("STAGE_"):
-                        # Stage jump requested via numeric key
+                    # === ACT 1 ===
+                    if result == GameState.ACT1.value:
                         try:
-                            stage_num = int(result.split("_")[1])
-                            Logger.debug("WelcomPageView._startGameFlow", "Stage jump via numeric key", target_stage=stage_num)
-                            # Set the sequence controller to the requested stage
-                            sequence_controller.set_stage(stage_num)
-                            # Continue to next iteration which will display the requested stage
-                            continue
+                            act1_view = Act1View(screen, player)
+                            act1_result = act1_view.run()
+                            Logger.debug("WelcomPageView._startGameFlow", "Act 1 completed", result=act1_result)
+                            
+                            if act1_result == GameState.MAIN_MENU.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from Act 1")
+                                return
+                            
+                            if act1_result == GameState.GAME_OVER.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Game over")
+                                return
+                            elif act1_result == GameState.QUIT.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Quit requested")
+                                return GameState.QUIT.value
+                            elif act1_result == GameState.MAP.value:
+                                # Continue to next map phase
+                                current_act = 2
+                                continue
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                            break
+                    
+                    # === ACT 2 ===
+                    elif result == GameState.ACT2.value:
+                        try:
+                            act2_view = Act2View(screen, player)
+                            act2_result = act2_view.run()
+                            Logger.debug("WelcomPageView._startGameFlow", "Act 2 completed", result=act2_result)
+                            
+                            if act2_result == GameState.MAIN_MENU.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Main menu requested from Act 2")
+                                return
+                            
+                            if act2_result == GameState.GAME_OVER.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Game over")
+                                return
+                            elif act2_result == GameState.QUIT.value:
+                                Logger.debug("WelcomPageView._startGameFlow", "Quit requested")
+                                return GameState.QUIT.value
+                            elif act2_result == GameState.MAP.value:
+                                # Continue to Rhythm Classic before final map
+                                current_act = 3
+                                skip_to_rhythm_classic = True
+                                continue
+                        except Exception as e:
+                            Logger.error("WelcomPageView._startGameFlow", e)
+                            break
+                    
+                    # === RHYTHM COMBAT (Act 3 - Final Boss) ===
+                    elif result == GameState.RHYTHM.value:
+                        try:
+                            # Create boss for final combat
+                            from Models.CaracterModel import CaracterModel
+                            boss = CaracterModel("Le Manager Corrompu", x=0, y=0, type="BOSS")
+                            boss.setHealth(100)
+                            boss.setDamage(10)
+                            
+                            # Create rhythm model for combat
+                            rhythm_combat_model = RhythmModel()
+                            
+                            # Create rhythm combat view and controller
+                            rhythm_combat_view = RhythmCombatView(screen.get_width(), screen.get_height())
+                            rhythm_combat_controller = RhythmCombatController(
+                                rhythm_combat_model,
+                                player,
+                                boss,
+                                screen.get_height(),
+                                rhythm_combat_view
+                            )
+                            
+                            # Run rhythm combat loop
+                            clock = pygame.time.Clock()
+                            running = True
+                            while running:
+                                for event in pygame.event.get():
+                                    if event.type == pygame.QUIT:
+                                        Logger.debug("WelcomPageView._startGameFlow", "QUIT from Rhythm Combat")
+                                        return GameState.QUIT.value
+                                    rhythm_combat_controller.handleInput(event)
+                                
+                                rhythm_combat_controller.update()
+                                
+                                # Check if combat is finished
+                                if rhythm_combat_controller.game_over:
+                                    Logger.debug("WelcomPageView._startGameFlow", "Rhythm Combat finished", victory=rhythm_combat_controller.victory)
+                                    running = False
+                                
+                                screen.fill((0, 0, 0))
+                                current_countdown = rhythm_combat_controller.current_countdown_val if rhythm_combat_controller.waiting_to_start else 0
+                                rhythm_combat_view.draw(
+                                    screen,
+                                    rhythm_combat_model,
+                                    player,
+                                    boss,
+                                    rhythm_combat_controller.note_speed,
+                                    countdown_val=current_countdown
+                                )
+                                pygame.display.flip()
+                                clock.tick(60)
+                            
+                            # Game complete
+                            if rhythm_combat_controller.victory:
+                                Logger.debug("WelcomPageView._startGameFlow", "Game completed successfully - VICTORY!")
+                                return
+                            else:
+                                Logger.debug("WelcomPageView._startGameFlow", "Game completed - DEFEAT")
+                                return
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                             break
                     
                     else:
-                        # Unknown result or normal completion of stage
-                        # Advance to next stage
-                        if sequence_controller.advance_stage():
-                            Logger.debug("WelcomPageView._startGameFlow", "Advanced to next stage",
-                                       new_stage=sequence_controller.get_current_stage())
-                        else:
-                            Logger.debug("WelcomPageView._startGameFlow", "Already at final stage")
-                            break
+                        # Unknown result, exit
+                        Logger.debug("WelcomPageView._startGameFlow", "Unknown result, exiting", result=result)
+                        break
                         
                 except Exception as e:
                     Logger.error("WelcomPageView._startGameFlow", e)

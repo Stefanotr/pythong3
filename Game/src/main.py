@@ -28,7 +28,7 @@ def main():
                 "Menu",
                 800,
                 800,
-                pygame.RESIZABLE,
+                0,  # Non-resizable (0 flags)
                 "Game/Assets/welcomePage.png"
             )
             Logger.debug("main.main", "Welcome page created, starting run loop")
