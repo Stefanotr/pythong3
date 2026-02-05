@@ -45,15 +45,22 @@ class RhythmCombatPageView:
                 raise ValueError("Boss instance is required for rhythm combat")
             
             # === BOSS HEALTH MANAGEMENT ===
-            # Ensure boss has 3000 HP once and only once per battle
+            # Scale boss health based on player level, but only once
             if not hasattr(self.boss, '_rhythm_combat_max_health'):
-                # First time in rhythm combat - set and lock max health
-                Logger.debug("RhythmCombatPageView.__init__", f"Setting boss health to 3000 (current: {self.boss.getHealth()})")
-                self.boss.setHealth(3000)
-                Logger.debug("RhythmCombatPageView.__init__", f"Boss health set, verification: {self.boss.getHealth()}")
-                self.boss._rhythm_combat_max_health = 3000
-                Logger.debug("RhythmCombatPageView.__init__", "Boss initialized with 3000 HP for rhythm combat",
-                           boss_name=self.boss.getName(), confirmed_health=self.boss.getHealth())
+                # First time in rhythm combat - scale health based on player level
+                try:
+                    player_level = self.player.getLevel() if self.player else 0
+                    base_health = 3000
+                    # Add HP progression: +50 HP per level (more aggressive for final boss)
+                    scaled_health = int(base_health + (player_level * 50))
+                    self.boss.setHealth(scaled_health)
+                    self.boss._rhythm_combat_max_health = scaled_health
+                    Logger.debug("RhythmCombatPageView.__init__", "Boss initialized for rhythm combat",
+                               boss_name=self.boss.getName(), level=player_level, health=scaled_health)
+                except Exception as e:
+                    Logger.error("RhythmCombatPageView.__init__", f"Error scaling boss health: {e}")
+                    self.boss.setHealth(3000)
+                    self.boss._rhythm_combat_max_health = 3000
             else:
                 Logger.debug("RhythmCombatPageView.__init__", "Boss already initialized, current health",
                            boss_name=self.boss.getName(), current_health=self.boss.getHealth())
@@ -243,12 +250,24 @@ class RhythmCombatPageView:
                     # Calculate and apply victory rewards
                     self.controller.end_combat()
                     
-                    # Increment player level
+                    # Increment player level and apply stat progression
                     if self.player:
                         current_level = self.player.getLevel()
-                        self.player.setLevel(current_level + 1)
-                        Logger.debug("RhythmCombatPageView.run", "Player level incremented", 
-                                   old_level=current_level, new_level=current_level + 1)
+                        new_level = current_level + 1
+                        self.player.setLevel(new_level)
+                        
+                        # Apply progression: +1 damage and +25 HP per level
+                        current_damage = self.player.getDamage()
+                        new_damage = current_damage + 1
+                        self.player.setDamage(new_damage)
+                        
+                        current_health = self.player.getHealth()
+                        new_health = current_health + 25
+                        self.player.setHealth(new_health)
+                        
+                        Logger.debug("RhythmCombatPageView.run", "Player level incremented and stats increased", 
+                                   old_level=current_level, new_level=new_level,
+                                   new_damage=new_damage, new_health=new_health)
                         
                         # Check if this is the last stage (stage 8 - RHYTHM_COMBAT)
                         is_last_stage = (self.sequence_controller and 

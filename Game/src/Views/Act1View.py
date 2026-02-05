@@ -9,6 +9,7 @@ Supports optional rhythm phase for Act 2.
 import pygame
 import os
 from Models.CaracterModel import CaracterModel
+from Models.BossModel import BossModel
 from Models.PlayerModel import PlayerModel
 from Models.BottleModel import BottleModel
 from Models.GuitarModel import GuitarFactory
@@ -125,26 +126,52 @@ class ActView:
                 if self.sequence_controller:
                     self.boss = self.sequence_controller.get_boss()
                 
-                # If no boss yet (shouldn't happen), create one
+                # If no boss yet (shouldn't happen), create one based on act_num
                 if not self.boss:
-                    boss_name = act_config.get('boss_name', 'Boss')
-                    boss_health = act_config.get('boss_health', 150)
-                    boss_damage = act_config.get('boss_damage', 12)
-                    boss_accuracy = act_config.get('boss_accuracy', 0.75)
+                    act_num = act_config.get('act_num', 1)
                     
-                    self.boss = CaracterModel(boss_name, 80, 80)
-                    self.boss.setHealth(boss_health)
-                    self.boss.setDamage(boss_damage)
-                    self.boss.setAccuracy(boss_accuracy)
+                    if act_num == 1:
+                        # Act 1: Gros Bill
+                        gros_bill = BossModel("Gros Bill", 80, 80)
+                        gros_bill.setHealth(100)
+                        gros_bill.setDamage(12)
+                        gros_bill.setAccuracy(0.75)
+                        self.boss = gros_bill
+                    elif act_num == 2:
+                        # Act 2: Chef de la Sécurité
+                        chef_securite = BossModel("Chef de la Sécurité", 80, 80)
+                        chef_securite.setHealth(500)
+                        chef_securite.setDamage(14)
+                        chef_securite.setAccuracy(0.80)
+                        self.boss = chef_securite
+                    else:
+                        # Fallback
+                        boss_name = act_config.get('boss_name', 'Boss')
+                        boss_health = act_config.get('boss_health', 150)
+                        boss_damage = act_config.get('boss_damage', 12)
+                        boss_accuracy = act_config.get('boss_accuracy', 0.75)
+                        self.boss = BossModel(boss_name, 80, 80)
+                        self.boss.setHealth(boss_health)
+                        self.boss.setDamage(boss_damage)
+                        self.boss.setAccuracy(boss_accuracy)
                     
                     if self.sequence_controller:
                         self.sequence_controller.set_boss(self.boss)
                 
                 # Update boss stats based on player level (scale difficulty)
-                player_level = self.johnny.getLevel() if self.johnny else 1
-                if player_level > 1:
+                try:
+                    player_level = self.johnny.getLevel() if self.johnny else 0
                     current_health = self.boss.getHealth()
-                    self.boss.setHealth(int(current_health * player_level))
+                    # Add HP progression: +25 HP per level
+                    scaled_health = int(current_health + (player_level * 25))
+                    self.boss.setHealth(scaled_health)
+                    
+                    # Also scale damage: +2 damage per level
+                    current_damage = self.boss.getDamage()
+                    scaled_damage = int(current_damage + (player_level * 2))
+                    self.boss.setDamage(scaled_damage)
+                except Exception as e:
+                    Logger.error("ActView.__init__", "Error scaling boss stats", error=str(e))
                 
                 Logger.debug("ActView.__init__", f"Boss: {self.boss.getName()}",
                            health=self.boss.getHealth(), damage=self.boss.getDamage())
@@ -219,7 +246,7 @@ class ActView:
             'boss_name': "Gros Bill",
             'boss_asset': "Game/Assets/chefdesmotards.png",
             'boss_base': "motard",
-            'boss_health': 150,
+            'boss_health': 100,
             'boss_damage': 12,
             'boss_accuracy': 0.75,
             'guitar_factory_method': 'createLaPelle',
@@ -245,7 +272,7 @@ class ActView:
             'boss_name': "Chef de la Sécurité",
             'boss_asset': "Game/Assets/Agentdesecurité.png",
             'boss_base': "agent",
-            'boss_health': 130,
+            'boss_health': 500,
             'boss_damage': 14,
             'boss_accuracy': 0.80,
             'guitar_factory_method': 'createGuitareGonflable',
@@ -496,6 +523,8 @@ class ActView:
             try:
                 if self.combat_model.getWinner() == "PLAYER":
                     Logger.debug("ActView.run", f"Act {self.act_config.get('act_num')} completed - VICTORY")
+                    # Player stats are only increased after defeating the final boss (Manager Corrompu)
+                    # Not after individual acts
                     return "NEXT"  # Proceed to next stage
                 else:
                     Logger.debug("ActView.run", f"Act {self.act_config.get('act_num')} completed - DEFEAT")

@@ -30,10 +30,11 @@ def main():
     johnny.setHealth(100)
     johnny.setDamage(10)  # Pas utilisé ici, c'est le rythme qui compte
     
-    # Boss Final
-    boss = CaracterModel("Le Manager Corrompu", x=0, y=0, type="BOSS")
-    boss.setHealth(100)  # Ajuste selon la difficulté voulue
-    boss.setDamage(10)   # Utilisé pour les MISS
+    # Boss Final - Manager Corrompu
+    from Models.BossModel import BossModel
+    manager_corrompu = BossModel("Manager Corrompu", x=0, y=0)
+    manager_corrompu.setHealth(3000)
+    manager_corrompu.setDamage(15)
     
     # Modèle Rythme
     rhythm_model = RhythmModel()
@@ -46,7 +47,7 @@ def main():
         controller = RhythmCombatController(
             rhythm_model, 
             johnny, 
-            boss, 
+            manager_corrompu, 
             screen_height, 
             combat_view
         )
@@ -103,7 +104,7 @@ def main():
             screen, 
             rhythm_model, 
             johnny,
-            boss,
+            manager_corrompu,
             controller.note_speed, 
             countdown_val=current_countdown
         )
