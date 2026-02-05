@@ -306,64 +306,82 @@ class WelcomPageView(PageView):
                     # === STAGE 1: Rhythm Page (Act 1 Practice) ===
                     if current_stage == 1:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             rhythm_view = RhythmPageView(screen, player, sequence_controller)
                             result = rhythm_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 2: Map (Before Act 1) ===
                     elif current_stage == 2:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             map_view = MapPageView(screen, 1, player, sequence_controller)
                             result = map_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 3: Act 1 ===
                     elif current_stage == 3:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             act1_view = Act1View(screen, player, sequence_controller)
                             result = act1_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 4: Map (Before Act 2) ===
                     elif current_stage == 4:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             map_view = MapPageView(screen, 2, player, sequence_controller)
                             result = map_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 5: Act 2 ===
                     elif current_stage == 5:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             act2_view = Act2View(screen, player, sequence_controller)
                             result = act2_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 6: Rhythm Page (Act 2 Practice) ===
                     elif current_stage == 6:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             rhythm_view = RhythmPageView(screen, player, sequence_controller)
                             result = rhythm_view.run()
+                            
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 7: Map (Final) ===
                     elif current_stage == 7:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             map_view = MapPageView(screen, 3, player, sequence_controller)
                             result = map_view.run()
+                           
+                           
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 8: Rhythm Combat (Boss Final) ===
                     elif current_stage == 8:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             rhythm_combat_view = RhythmCombatPageView(screen, player, boss, sequence_controller)
                             result = rhythm_combat_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
