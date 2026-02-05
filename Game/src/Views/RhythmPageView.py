@@ -14,28 +14,31 @@ from Controllers.RhythmController import RhythmController
 from Views.RhythmView import RhythmView
 from Views.PauseMenuView import PauseMenuView
 from Utils.Logger import Logger
+from Controllers.GameSequenceController import GameSequenceController
 
 
 # === RHYTHM PAGE VIEW CLASS ===
 
 class RhythmPageView:
     """
-    View class for the final rhythm sequence.
+    View class for the classic rhythm sequence.
     Wraps existing rhythm classes in a game loop structure.
     """
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen, player=None):
+    def __init__(self, screen, player=None, sequence_controller=None):
         """
         Initialize the rhythm page view.
         
         Args:
             screen: Pygame surface for rendering
             player: Optional PlayerModel instance to preserve state (if None, creates new)
+            sequence_controller: Optional GameSequenceController for stage navigation
         """
         try:
             self.screen = screen
+            self.sequence_controller = sequence_controller
             
             # Get screen dimensions
             try:
@@ -88,17 +91,16 @@ class RhythmPageView:
                 rhythm_boss = CaracterModel("Final Boss", 80, 80)
                 rhythm_boss.setDamage(10)  # Stronger boss for final sequence
                 
-                # Create rhythm controller with boss
+                # Create rhythm controller
                 self.rhythm_controller = RhythmController(
                     self.rhythm_model, 
                     self.johnny, 
                     self.screen_height, 
-                    self.rhythm_view,
-                    rhythm_boss  # Pass boss for attack simulation
+                    self.rhythm_view
                 )
                 
                 Logger.debug("RhythmPageView.__init__", "Rhythm system initialized", 
-                           total_notes=len(self.rhythm_model.getNotes()))
+                           total_notes=len(self.rhythm_model.notes))
             except Exception as e:
                 Logger.error("RhythmPageView.__init__", e)
                 raise
@@ -137,9 +139,36 @@ class RhythmPageView:
                             Logger.debug("RhythmPageView.run", "QUIT event received")
                             return GameState.QUIT.value
                         
-                        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                            # Open pause menu (only if countdown is finished)
-                            if not self.countdown_active:
+                        elif event.type == pygame.KEYDOWN:
+                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
+                            if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
+                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
+                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                    Logger.debug("RhythmPageView.run", "Navigation to stage requested", 
+                                               stage=stage_number, 
+                                               stage_name=self.sequence_controller.get_current_stage_name())
+                                    # Return a special code to indicate stage change
+                                    return f"STAGE_{stage_number}"
+                            
+                            # === HANDLE ESCAPE KEY ===
+                            elif event.key == pygame.K_ESCAPE:
+                                # Open pause menu (only if countdown is finished)
+                                if not self.countdown_active:
+                                    try:
+                                        pause_menu = PauseMenuView(self.screen)
+                                        pause_result = pause_menu.run()
+
+                                        if pause_result == GameState.QUIT.value:
+                                            Logger.debug("RhythmPageView.run", "Quit requested from pause menu")
+                                            return GameState.QUIT.value
+                                        elif pause_result == GameState.MAIN_MENU.value:
+                                            Logger.debug("RhythmPageView.run", "Main menu requested from pause menu")
+                                            return GameState.MAIN_MENU.value
+
+                                        # If CONTINUE or anything else, just resume the game loop
+                                        Logger.debug("RhythmPageView.run", "Resuming from pause menu")
+                                    except Exception as e:
+                                        Logger.error("RhythmPageView.run", e)
                                 try:
                                     pause_menu = PauseMenuView(self.screen)
                                     pause_result = pause_menu.run()

@@ -13,6 +13,7 @@ from Models.BottleModel import BottleModel
 from Models.GuitarModel import GuitarFactory
 from Models.CombatModel import CombatModel
 from Controllers.CombatController import CombatController
+from Controllers.GameSequenceController import GameSequenceController
 from Views.CombatView import CombatView
 from Views.PauseMenuView import PauseMenuView
 from Views.CaracterView import CaracterView
@@ -30,16 +31,18 @@ class Act1View:
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen, player=None):
+    def __init__(self, screen, player=None, sequence_controller=None):
         """
         Initialize Act 1 view with screen and game entities.
         
         Args:
             screen: Pygame surface for rendering
             player: Optional PlayerModel instance to preserve state (if None, creates new)
+            sequence_controller: Optional GameSequenceController for stage navigation
         """
         try:
             self.screen = screen
+            self.sequence_controller = sequence_controller
             
             # Get screen dimensions
             try:
@@ -174,23 +177,35 @@ class Act1View:
                             Logger.debug("Act1View.run", "QUIT event received")
                             return GameState.QUIT.value
                         
-                        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                            # Open pause menu (delegates its own event loop to PauseMenuView.run)
-                            try:
-                                pause_menu = PauseMenuView(self.screen)
-                                pause_result = pause_menu.run()
+                        elif event.type == pygame.KEYDOWN:
+                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
+                            if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
+                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
+                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                    Logger.debug("Act1View.run", "Navigation to stage requested", 
+                                               stage=stage_number, 
+                                               stage_name=self.sequence_controller.get_current_stage_name())
+                                    # Return a special code to indicate stage change
+                                    return f"STAGE_{stage_number}"
+                            
+                            # === HANDLE ESCAPE KEY ===
+                            if event.key == pygame.K_ESCAPE:
+                                # Open pause menu (delegates its own event loop to PauseMenuView.run)
+                                try:
+                                    pause_menu = PauseMenuView(self.screen)
+                                    pause_result = pause_menu.run()
 
-                                if pause_result == GameState.QUIT.value:
-                                    Logger.debug("Act1View.run", "Quit requested from pause menu")
-                                    return GameState.QUIT.value
-                                elif pause_result == GameState.MAIN_MENU.value:
-                                    Logger.debug("Act1View.run", "Main menu requested from pause menu")
-                                    return GameState.MAIN_MENU.value
+                                    if pause_result == GameState.QUIT.value:
+                                        Logger.debug("Act1View.run", "Quit requested from pause menu")
+                                        return GameState.QUIT.value
+                                    elif pause_result == GameState.MAIN_MENU.value:
+                                        Logger.debug("Act1View.run", "Main menu requested from pause menu")
+                                        return GameState.MAIN_MENU.value
 
-                                # If "continue" or anything else, just resume the game loop
-                                Logger.debug("Act1View.run", "Resuming from pause menu")
-                            except Exception as e:
-                                Logger.error("Act1View.run", e)
+                                    # If "continue" or anything else, just resume the game loop
+                                    Logger.debug("Act1View.run", "Resuming from pause menu")
+                                except Exception as e:
+                                    Logger.error("Act1View.run", e)
                         
                         elif event.type == pygame.VIDEORESIZE:
                             # Handle window resize

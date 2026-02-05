@@ -13,6 +13,7 @@ from Views.PauseMenuView import PauseMenuView
 from Views.ShopPageView import ShopPageView
 from Controllers.PlayerController import PlayerController
 from Controllers.ShopController import ShopController
+from Controllers.GameSequenceController import GameSequenceController
 from Models.ShopModel import ShopModel
 from Models.PlayerModel import PlayerModel
 from Models.MapModel import MapModel
@@ -33,7 +34,7 @@ class MapPageView(PageView):
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen, current_act=1, player=None):
+    def __init__(self, screen, current_act=1, player=None, sequence_controller=None):
         """
         Initialize the map page view.
         
@@ -41,6 +42,7 @@ class MapPageView(PageView):
             screen: Pygame display surface
             current_act: Current act number (1 = Act 1, 2 = Act 2, 3 = Rhythm)
             player: Optional PlayerModel instance to preserve state (if None, creates new)
+            sequence_controller: Optional GameSequenceController for stage navigation
         """
         try:
             # Get screen dimensions
@@ -50,6 +52,7 @@ class MapPageView(PageView):
             # Initialize PageView without background image to avoid visual artifacts on the map
             super().__init__("Map - Six-String Hangover", screen_width, screen_height, pygame.RESIZABLE, None)
             self.screen = screen
+            self.sequence_controller = sequence_controller
             Logger.debug("MapPageView.__init__", "Map view created with no background image to avoid visual bugs")
             self.current_act = current_act
             
@@ -440,6 +443,16 @@ class MapPageView(PageView):
                                 Logger.error("MapPageView.run", e)
                         
                         elif event.type == pygame.KEYDOWN:
+                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
+                            if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
+                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
+                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                    Logger.debug("MapPageView.run", "Navigation to stage requested", 
+                                               stage=stage_number, 
+                                               stage_name=self.sequence_controller.get_current_stage_name())
+                                    # Return a special code to indicate stage change
+                                    return f"STAGE_{stage_number}"
+                            
                             # Toggle debug overlay
                             if event.key == pygame.K_F1:
                                 try:
