@@ -352,11 +352,21 @@ class ActView:
                                 self.show_intro = False
                                 Logger.debug("ActView.run", "Intro skipped by user")
                             
-                            # === COMBAT PHASE (A, P, D, B) OR COMPLETION (SPACE) ===
+                            # === COMBAT PHASE (A, P, D, B) OR INVENTORY NAVIGATION (LEFT/RIGHT/UP/DOWN) OR COMPLETION (SPACE) ===
                             elif self.phase == "combat":
                                 Logger.debug("ActView.run", "Combat key received", key=pygame.key.name(event.key))
                                 
-                                if not self.combat_model.isCombatFinished():
+                                # === INVENTORY NAVIGATION (LEFT/RIGHT/UP/DOWN) ===
+                                if event.key == pygame.K_LEFT or event.key == pygame.K_UP:
+                                    if hasattr(self.johnny, 'inventory') and self.johnny.inventory:
+                                        self.johnny.inventory.select_previous()
+                                        Logger.debug("ActView.run", "Inventory previous selected")
+                                elif event.key == pygame.K_RIGHT or event.key == pygame.K_DOWN:
+                                    if hasattr(self.johnny, 'inventory') and self.johnny.inventory:
+                                        self.johnny.inventory.select_next()
+                                        Logger.debug("ActView.run", "Inventory next selected")
+                                
+                                elif not self.combat_model.isCombatFinished():
                                     try:
                                         self.combat_controller.handle_input(event)
                                     except Exception as e:
@@ -688,9 +698,11 @@ class ActView:
     def _draw_level_display(self):
         """
         Draw the level and alcohol display in the bottom left corner (map style).
+        Note: Inventory is now drawn by CombatView when in combat phase.
         """
         try:
             import pygame
+            
             font = pygame.font.Font(None, 36)
             
             # Draw Level

@@ -8,6 +8,7 @@ Manages rendering of combat UI, health bars, status effects, and combat log.
 import pygame
 import math
 from Utils.Logger import Logger
+from Views.InventoryView import InventoryView
 
 
 # === COMBAT VIEW CLASS ===
@@ -65,6 +66,15 @@ class CombatView:
             self.time = 0
             self.shake_offset = 0
             self.flash_alpha = 0
+            
+            # === INVENTORY VIEW ===
+            
+            try:
+                self.inventory_view = InventoryView(screen_width, screen_height)
+                Logger.debug("CombatView.__init__", "Inventory view initialized")
+            except Exception as e:
+                Logger.error("CombatView.__init__", e)
+                self.inventory_view = None
             
             Logger.debug("CombatView.__init__", "Combat view initialization completed")
             
@@ -137,6 +147,23 @@ class CombatView:
                     self.flash_alpha -= 10
             except Exception as e:
                 Logger.error("CombatView.draw", e)
+            
+            # Draw inventory (if player has one) - above alcohol position on left
+            try:
+                # Get player from combat_model
+                player = None
+                if hasattr(combat_model, 'getPlayer'):
+                    player = combat_model.getPlayer()
+                elif hasattr(combat_model, '_player'):
+                    player = combat_model._player
+                
+                if player and hasattr(player, 'inventory') and self.inventory_view:
+                    # Position: left side, above where alcohol would be displayed
+                    inv_x = 20 + 100  # Left side, centered in box
+                    inv_y = self.screen_height - 280  # Much higher above alcohol display
+                    self.inventory_view.draw_inventory_display(screen, player.inventory, inv_x, inv_y)
+            except Exception as e:
+                Logger.error("CombatView.draw - inventory", e)
                 
         except Exception as e:
             Logger.error("CombatView.draw", e)

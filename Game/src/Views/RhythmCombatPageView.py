@@ -153,15 +153,6 @@ class RhythmCombatPageView:
                                 except Exception as e:
                                     Logger.error("RhythmCombatPageView.run", e)
                             
-                            # === HANDLE INVENTORY NAVIGATION (LEFT/RIGHT) ===
-                            elif event.key == pygame.K_LEFT or event.key == pygame.K_UP:
-                                if self.player and hasattr(self.player, 'inventory'):
-                                    self.player.inventory.select_previous()
-                            
-                            elif event.key == pygame.K_RIGHT or event.key == pygame.K_DOWN:
-                                if self.player and hasattr(self.player, 'inventory'):
-                                    self.player.inventory.select_next()
-                            
                             # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
                             elif self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
                                 stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
@@ -223,9 +214,6 @@ class RhythmCombatPageView:
                         # Get note speed if available
                         note_speed = getattr(self.controller, 'note_speed', 0.5)
                         
-                        # Get inventory if available
-                        inventory = getattr(self.player, 'inventory', None)
-                        
                         # Draw the combat view
                         if self.combat_view and self.rhythm_model:
                             self.combat_view.draw(
@@ -234,8 +222,7 @@ class RhythmCombatPageView:
                                 self.player,
                                 self.boss,
                                 note_speed,
-                                countdown_val,
-                                inventory
+                                countdown_val
                             )
                         
                         pygame.display.flip()

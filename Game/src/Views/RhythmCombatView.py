@@ -1,7 +1,6 @@
 import pygame
 import math
 from Views.CaracterView import CaracterView
-from Views.InventoryView import InventoryView
 
 class RhythmCombatView:
     """
@@ -49,9 +48,6 @@ class RhythmCombatView:
         # For RhythmCombat: use normal size (200x200) without deformation
         self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(200, 200))
         self.boss_view = None  # Will be set when boss is known
-        
-        # Inventory view for displaying bottles
-        self.inventory_view = InventoryView(screen_width, screen_height)
         
         # Couleurs des lanes
         self.lane_colors = [
@@ -135,7 +131,7 @@ class RhythmCombatView:
         hp_text = self.font.render(f"{int(current)}/{int(maximum)}", True, (255, 255, 255))
         screen.blit(hp_text, (x + width//2 - hp_text.get_width()//2, y + height//2 - hp_text.get_height()//2))
 
-    def draw(self, screen, rhythm_model, player_model, boss_model, note_speed=0.5, countdown_val=0, inventory_model=None):
+    def draw(self, screen, rhythm_model, player_model, boss_model, note_speed=0.5, countdown_val=0):
         """
         Dessine l'interface du combat rhythm avec inventaire
         
@@ -349,13 +345,6 @@ class RhythmCombatView:
             screen.blit(alcohol_text, (self.screen_width - alcohol_text.get_width() - 20, self.screen_height - 50))
         except Exception as e:
             pass
-        
-        # --- INVENTORY DISPLAY (au-dessus de l'alcool) ---
-        if inventory_model:
-            try:
-                self.inventory_view.draw_inventory_display(screen, inventory_model, self.screen_width // 2, self.screen_height - 200)
-            except Exception as e:
-                pass
 
         # --- COMPTE À REBOURS ---
         if countdown_val > 0:

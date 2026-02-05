@@ -31,11 +31,11 @@ class ShopModel:
             # Available shop items
             self.available_items = [
                 {
-                    "name": "Health Potion",
-                    "type": "consumable",
-                    "price": 20,
-                    "description": "Restores 50 HP",
-                    "effect": "heal_50"
+                    "name": "Rum",
+                    "type": "bottle",
+                    "price": 25,
+                    "description": "Strong rum: restores 50 HP, increases drunkenness (+50%)",
+                    "effect": "bottle_rum"
                 },
                 {
                     "name": "Beer",
@@ -265,24 +265,30 @@ class ShopModel:
             
             # Apply item effect
             try:
-                if item["type"] == "consumable":
-                    if item["effect"] == "heal_50":
+                if item["type"] == "bottle":
+                    from Models.BottleModel import BottleModel
+                    if item["effect"] == "bottle_rum":
+                        bottle = BottleModel("Rum", 50, 0, 0)
+                        # Restore 50 HP when buying rum
                         current_hp = self.player.getHealth()
                         self.player.setHealth(min(100, current_hp + 50))
-                        self.setPurchaseMessage(f"Purchased {item['name']}! Restored 50 HP.")
-                        Logger.debug("ShopModel.purchaseItem", "Health potion purchased", 
-                                   new_hp=self.player.getHealth())
-                
-                elif item["type"] == "bottle":
-                    from Models.BottleModel import BottleModel
-                    if item["effect"] == "bottle_beer":
+                        # Add to player inventory
+                        if hasattr(self.player, 'inventory'):
+                            self.player.inventory.add_item(bottle)
+                        self.setPurchaseMessage(f"Purchased {item['name']}! Restored 50 HP, bottle added to inventory.")
+                        Logger.debug("ShopModel.purchaseItem", "Rum purchased", new_hp=self.player.getHealth())
+                    elif item["effect"] == "bottle_beer":
                         bottle = BottleModel("Beer", 15, 3, 5)
-                        self.player.setSelectedBottle(bottle)
+                        # Add to player inventory instead of just selecting
+                        if hasattr(self.player, 'inventory'):
+                            self.player.inventory.add_item(bottle)
                         self.setPurchaseMessage(f"Purchased {item['name']}! Bottle added to inventory.")
                         Logger.debug("ShopModel.purchaseItem", "Beer purchased")
                     elif item["effect"] == "bottle_whiskey":
                         bottle = BottleModel("Whiskey", 25, 5, 10)
-                        self.player.setSelectedBottle(bottle)
+                        # Add to player inventory instead of just selecting
+                        if hasattr(self.player, 'inventory'):
+                            self.player.inventory.add_item(bottle)
                         self.setPurchaseMessage(f"Purchased {item['name']}! Bottle added to inventory.")
                         Logger.debug("ShopModel.purchaseItem", "Whiskey purchased")
                 
