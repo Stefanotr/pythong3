@@ -78,7 +78,7 @@ class Act2View:
                     # Create new player if none provided
                     self.johnny = PlayerModel("Lola Coma", 60, 60)
                     self.johnny.setHealth(100)
-                    self.johnny.setDamage(10)
+                    self.johnny.setDamage(8)
                     self.johnny.setAccuracy(0.85)
                     self.johnny.setDrunkenness(0)
                     self.johnny.setComaRisk(10)
@@ -99,8 +99,8 @@ class Act2View:
             
             try:
                 self.security_chief = CaracterModel("Chef de la Sécurité", 80, 80)
-                self.security_chief.setHealth(90)
-                self.security_chief.setDamage(9)
+                self.security_chief.setHealth(130)
+                self.security_chief.setDamage(14)
                 self.security_chief.setAccuracy(0.80)  # 80% accuracy
                 
                 Logger.debug("Act2View.__init__", 
@@ -131,23 +131,35 @@ class Act2View:
                 # Security Chief (boss)
                 self.boss_view = CaracterView("Game/Assets/Agentdesecurité.png", base_name="agent")
                 
-                # Set static positions for display - Lola right, Boss far right
-                self.johnny.setX(int(self.screen_width * 0.65))  # Right side (Lola)
-                self.johnny.setY(self.screen_height // 2)  # Middle height
-                self.security_chief.setX(int(self.screen_width * 0.85))  # Far right (Boss)
-                self.security_chief.setY(self.screen_height // 2)  # Middle height
+                # Center characters near the middle of the screen, facing each other
+                center_x = self.screen_width // 2
+                offset = int(self.screen_width * 0.15)
+
+                self.johnny.setX(center_x - offset)
+                self.johnny.setY(self.screen_height // 2)
+
+                self.security_chief.setX(center_x + offset)
+                self.security_chief.setY(self.screen_height // 2)
                 
                 Logger.debug("Act2View.__init__", "Character views created for static display",
                            player_base="lola", boss_base="agent")
             except Exception as e:
                 Logger.error("Act2View.__init__", e)
                 # Continue even if character views fail
+
+            # Ensure characters are positioned relative to the current screen size
+            try:
+                self._position_characters()
+            except Exception as e:
+                Logger.error("Act2View.__init__", e)
             
             # === ACT STATE ===
             
             self.phase = "intro"  # "intro", "combat", "rhythm", "finished"
             self.act_finished = False
             self.victory = False
+            # Track whether we've reset sprites when combat starts
+            self._combat_started = False
             
             # === INTRO ===
             
@@ -218,6 +230,11 @@ class Act2View:
                                             self.rhythm_controller.view = self.rhythm_view
                                             Logger.debug("Act2View.run", "Window resized, views updated", 
                                                width=new_width, height=new_height)
+                                        # Reposition characters after resize so they stay centered
+                                        try:
+                                            self._position_characters()
+                                        except Exception as e:
+                                            Logger.error("Act2View.run", e)
                                 except Exception as e:
                                     Logger.error("Act2View.run", e)
                                     
@@ -327,6 +344,30 @@ class Act2View:
                         except Exception as e:
                             Logger.error("Act2View.run", e)
                     
+                    # If we've just transitioned into combat, reset sprites once
+                    if self.phase == "combat" and not getattr(self, '_combat_started', False):
+                        try:
+                            try:
+                                # Reset model actions to idle so combat shows base sprites
+                                self.johnny.setCurrentAction('idle', duration=0)
+                            except Exception:
+                                pass
+                            try:
+                                self.security_chief.setCurrentAction('idle', duration=0)
+                            except Exception:
+                                pass
+                            try:
+                                self.player_view.resetToBaseSprite()
+                            except Exception:
+                                pass
+                            try:
+                                self.boss_view.resetToBaseSprite()
+                            except Exception:
+                                pass
+                        except Exception as e:
+                            Logger.error("Act2View.run", e)
+                        self._combat_started = True
+
                     # === RENDERING ===
                     
                     try:
@@ -475,7 +516,7 @@ class Act2View:
             
             # Title
             try:
-                title_text = "🎸 ACTE II : WOOD-STOCK-OPTION 🎪"
+                title_text = "ACTE II : WOOD-STOCK-OPTION"
                 title_surf = title_font.render(title_text, True, (255, 215, 0))
                 title_shadow = title_font.render(title_text, True, (100, 80, 0))
                 

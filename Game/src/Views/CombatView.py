@@ -37,10 +37,11 @@ class CombatView:
             # === FONTS INITIALIZATION ===
             
             try:
-                self.title_font = pygame.font.SysFont("Arial", int(screen_height * 0.05), bold=True)
-                self.font = pygame.font.SysFont("Arial", int(screen_height * 0.025), bold=True)
-                self.small_font = pygame.font.SysFont("Arial", int(screen_height * 0.02))
-                self.log_font = pygame.font.SysFont("Courier New", int(screen_height * 0.018))
+                # Slightly smaller fonts for better fit
+                self.title_font = pygame.font.SysFont("Arial", max(20, int(screen_height * 0.04)), bold=True)
+                self.font = pygame.font.SysFont("Arial", max(14, int(screen_height * 0.02)), bold=True)
+                self.small_font = pygame.font.SysFont("Arial", max(14, int(screen_height * 0.018)))
+                self.log_font = pygame.font.SysFont("Courier New", max(13, int(screen_height * 0.016)))
                 Logger.debug("CombatView.__init__", "Fonts initialized")
             except Exception as e:
                 Logger.error("CombatView.__init__", e)
@@ -165,7 +166,7 @@ class CombatView:
     
     def drawTitle(self, screen, combat_model):
         """Draw the combat title"""
-        title_text = "⚔️ COMBAT ⚔️"
+        title_text = "COMBAT"
         title_surf = self.title_font.render(title_text, True, self.gold_color)
         title_shadow = self.title_font.render(title_text, True, (0, 0, 0))
         
@@ -184,65 +185,109 @@ class CombatView:
         """Draw fighter information panels"""
         player = combat_model.getPlayer()
         enemy = combat_model.getEnemy()
-        
-        # Position panels much higher to avoid overlap with action menu and sprites
-        mid_y = 100  # Much higher position for clean layout
-        
-        # === PLAYER (LEFT) ===
-        player_x = 100
-        player_y = mid_y
-        
+        # Try to position panels relative to character sprite positions so
+        # characters appear centered and facing each other in the middle.
+        try:
+            player_x_center = int(player.getX())
+            player_y_center = int(player.getY())
+        except Exception:
+            player_x_center = self.screen_width // 3
+            player_y_center = 120
+
+        try:
+            enemy_x_center = int(enemy.getX())
+            enemy_y_center = int(enemy.getY())
+        except Exception:
+            enemy_x_center = int(self.screen_width * 2 / 3)
+            enemy_y_center = 120
+
+        # Place panels above the sprites (clamped to screen)
+        panel_width = 460
+        panel_height = 300
+        padding = 24
+
+        player_x = max(padding, min(player_x_center - panel_width // 2, self.screen_width - panel_width - padding))
+        player_y = max(padding, player_y_center - panel_height - 40)
+
+        panel_x = player_x - 20
+        panel_y = player_y - 20
+
         # Panel joueur
-        panel_width = 400
-        panel_height = 250
-        self.drawPanel(screen, player_x - 20, player_y - 20, panel_width, panel_height, self.player_color)
-        
-        # Nom
+        self.drawPanel(screen, panel_x, panel_y, panel_width, panel_height, self.player_color)
+
+        # Prepare content positions and center the block vertically in the panel
+        name_h = self.title_font.get_height()
+        hp_h = 30
+        drunk_h = 25
+        stats_h = self.small_font.get_height()
+        effects_h = 20
+        spacing = 10
+
+        content_height = name_h + spacing + hp_h + spacing + drunk_h + spacing + stats_h + spacing + effects_h
+        start_y = panel_y + (panel_height - content_height) // 2
+
+        # Name (left aligned inside panel)
         name_surf = self.title_font.render(player.getName(), True, self.player_color)
-        screen.blit(name_surf, (player_x, player_y))
-        
+        screen.blit(name_surf, (panel_x + 16, start_y))
+
         # HP
-        hp_y = player_y + 50
-        self.drawHealthBar(screen, player_x, hp_y, 350, 30, player.getHealth(), 100, "HP", self.player_color)
-        
+        hp_y = start_y + name_h + spacing
+        player_max = combat_model.getPlayerMaxHealth() if hasattr(combat_model, 'getPlayerMaxHealth') else 100
+        self.drawHealthBar(screen, panel_x + 16, hp_y, panel_width - 32, hp_h, player.getHealth(), player_max, "HP", self.player_color)
+
         # Drunkenness
-        drunk_y = hp_y + 45  # Reduced spacing
+        drunk_y = hp_y + hp_h + spacing
         drunk = player.getDrunkenness()
         drunk_color = (255, 100, 255) if drunk > 60 else (100, 200, 255)
-        self.drawProgressBar(screen, player_x, drunk_y, 350, 25, drunk, 100, f"Drunkenness: {drunk}%", drunk_color)
-        
+        self.drawProgressBar(screen, panel_x + 16, drunk_y, panel_width - 32, drunk_h, drunk, 100, f"Drunkenness: {drunk}%", drunk_color)
+
         # Stats
-        stats_y = drunk_y + 40  # Reduced spacing
+        stats_y = drunk_y + drunk_h + spacing
         stats_text = f"Damage: {player.getDamage()} | Accuracy: {int(player.getAccuracy() * 100)}%"
         stats_surf = self.small_font.render(stats_text, True, (200, 200, 200))
-        screen.blit(stats_surf, (player_x, stats_y))
-        
-        # Status effects
-        self.drawStatusEffects(screen, player_x, stats_y + 25, combat_model, is_player=True)  # Reduced spacing
+        screen.blit(stats_surf, (panel_x + 16, stats_y))
+
+        # Status effects (placed under stats)
+        self.drawStatusEffects(screen, panel_x + 16, stats_y + stats_h + spacing, combat_model, is_player=True)
         
         # === ENEMY (RIGHT) ===
-        enemy_x = self.screen_width - panel_width - 100 + 20
-        enemy_y = mid_y
-        
+        enemy_x = max(padding, min(enemy_x_center - panel_width // 2, self.screen_width - panel_width - padding))
+        enemy_y = max(padding, enemy_y_center - panel_height - 40)
+
+        enemy_panel_x = enemy_x - 20
+        enemy_panel_y = enemy_y - 20
+
         # Panel ennemi
-        self.drawPanel(screen, enemy_x - 20, enemy_y - 20, panel_width, panel_height, self.enemy_color)
-        
-        # Nom
+        self.drawPanel(screen, enemy_panel_x, enemy_panel_y, panel_width, panel_height, self.enemy_color)
+
+        # Center enemy content block vertically
+        name_h = self.title_font.get_height()
+        hp_h = 30
+        drunk_h = 0  # enemy may not show drunkenness here
+        stats_h = self.small_font.get_height()
+        effects_h = 20
+        spacing = 10
+
+        content_height = name_h + spacing + hp_h + spacing + stats_h + spacing + effects_h
+        start_y = enemy_panel_y + (panel_height - content_height) // 2
+
+        # Name (right aligned inside panel)
         enemy_name_surf = self.title_font.render(enemy.getName(), True, self.enemy_color)
-        screen.blit(enemy_name_surf, (enemy_x + panel_width - enemy_name_surf.get_width() - 20, enemy_y))
-        
+        screen.blit(enemy_name_surf, (enemy_panel_x + panel_width - enemy_name_surf.get_width() - 16, start_y))
+
         # HP
-        enemy_hp_y = enemy_y + 50
-        self.drawHealthBar(screen, enemy_x, enemy_hp_y, 350, 30, enemy.getHealth(), 100, "HP", self.enemy_color)
-        
+        enemy_hp_y = start_y + name_h + spacing
+        enemy_max = combat_model.getEnemyMaxHealth() if hasattr(combat_model, 'getEnemyMaxHealth') else 100
+        self.drawHealthBar(screen, enemy_panel_x + 16, enemy_hp_y, panel_width - 32, hp_h, enemy.getHealth(), enemy_max, "HP", self.enemy_color)
+
         # Stats
-        enemy_stats_y = enemy_hp_y + 45  # Reduced spacing
+        enemy_stats_y = enemy_hp_y + hp_h + spacing
         enemy_stats_text = f"Damage: {enemy.getDamage()} | Accuracy: {int(enemy.getAccuracy() * 100)}%"
         enemy_stats_surf = self.small_font.render(enemy_stats_text, True, (200, 200, 200))
-        screen.blit(enemy_stats_surf, (enemy_x, enemy_stats_y))
-        
+        screen.blit(enemy_stats_surf, (enemy_panel_x + 16, enemy_stats_y))
+
         # Status effects
-        self.drawStatusEffects(screen, enemy_x, enemy_stats_y + 25, combat_model, is_player=False)  # Reduced spacing
+        self.drawStatusEffects(screen, enemy_panel_x + 16, enemy_stats_y + stats_h + spacing, combat_model, is_player=False)
     
     def drawHealthBar(self, screen, x, y, width, height, current, maximum, label, color):
         """Dessiner une barre de vie"""
@@ -291,20 +336,20 @@ class CombatView:
         
         if is_player:
             if combat_model.getPlayerStatus("paralyzed") > 0:
-                status_effects.append(f"⚡ Paralyzed ({combat_model.getPlayerStatus('paralyzed')})")
+                status_effects.append(f"Paralyzed ({combat_model.getPlayerStatus('paralyzed')})")
             if combat_model.getPlayerStatus("bleeding") > 0:
-                status_effects.append(f"💉 Bleeding ({combat_model.getPlayerStatus('bleeding')})")
+                status_effects.append(f"Bleeding ({combat_model.getPlayerStatus('bleeding')})")
             if combat_model.getPlayerStatus("stunned") > 0:
-                status_effects.append(f"💫 Stunned ({combat_model.getPlayerStatus('stunned')})")
+                status_effects.append(f"Stunned ({combat_model.getPlayerStatus('stunned')})")
         else:
             if combat_model.getEnemyStatus("paralyzed") > 0:
-                status_effects.append(f"⚡ Paralyzed ({combat_model.getEnemyStatus('paralyzed')})")
+                status_effects.append(f"Paralyzed ({combat_model.getEnemyStatus('paralyzed')})")
             if combat_model.getEnemyStatus("bleeding") > 0:
-                status_effects.append(f"💉 Bleeding ({combat_model.getEnemyStatus('bleeding')})")
+                status_effects.append(f"Bleeding ({combat_model.getEnemyStatus('bleeding')})")
             if combat_model.getEnemyStatus("stunned") > 0:
-                status_effects.append(f"💫 Stunned ({combat_model.getEnemyStatus('stunned')})")
+                status_effects.append(f"Stunned ({combat_model.getEnemyStatus('stunned')})")
             if combat_model.getEnemyStatus("disgusted") > 0:
-                status_effects.append(f"🤮 Disgusted ({combat_model.getEnemyStatus('disgusted')})")
+                status_effects.append(f"Disgusted ({combat_model.getEnemyStatus('disgusted')})")
         
         for i, effect in enumerate(status_effects):
             effect_surf = self.small_font.render(effect, True, (255, 200, 0))
@@ -325,47 +370,54 @@ class CombatView:
         self.drawPanel(screen, log_x, log_y, log_width, log_height, (100, 150, 100))
         
         # Title
-        title_surf = self.font.render("📜 Battle Log", True, (150, 255, 150))
+        title_surf = self.font.render("Battle Log", True, (150, 255, 150))
         screen.blit(title_surf, (log_x + 15, log_y + 10))
         
-        # Messages with text wrapping
-        messages = combat_model.getCombatLog()
-        message_y = log_y + 45
+        # Messages with text wrapping, rendered into the log area using clipping
+        messages = combat_model.getCombatLog() or []
         max_width = log_width - 40  # Leave padding on sides
         line_height = 20
-        displayed_lines = 0
         max_lines = 5
-        
-        # Display last messages
-        for message in reversed(messages[-10:]):  # Get up to 10 recent messages
-            if displayed_lines >= max_lines:
-                break
-                
+
+        # Build list of lines (wrapped) from recent messages
+        wrapped_all = []
+        for message in messages[-10:]:
             try:
-                # Word wrap the message
-                wrapped_lines = self._wrap_text(message, max_width)
-                
-                for wrapped_line in reversed(wrapped_lines):
-                    if displayed_lines >= max_lines:
-                        break
-                    
-                    # Color based on message content (emojis hint at action type)
-                    if "💀" in wrapped_line or "defeats" in wrapped_line:
-                        text_color = (255, 100, 100)  # Red for defeat/death
-                    elif "🏆" in wrapped_line or "defeats" in wrapped_line.lower() or "struck" in wrapped_line.lower():
-                        text_color = (100, 255, 100)  # Green for success
-                    elif "❌" in wrapped_line or "misses" in wrapped_line.lower():
-                        text_color = (200, 100, 100)  # Reddish for failure
-                    else:
-                        text_color = (220, 220, 220)  # Default light gray
-                    
-                    msg_surf = self.log_font.render(wrapped_line, True, text_color)
-                    screen.blit(msg_surf, (log_x + 20, message_y))
-                    message_y -= line_height
-                    displayed_lines += 1
-                    
+                wrapped = self._wrap_text(message, max_width)
+                wrapped_all.extend(wrapped)
             except Exception as e:
-                Logger.error("CombatView.drawCombatLog", e)
+                Logger.error("CombatView.drawCombatLog.wrap", e)
+
+        # Keep only the last `max_lines` lines
+        display_lines = wrapped_all[-max_lines:]
+
+        # Clip drawing to the log inner rect
+        inner_rect = pygame.Rect(log_x + 20, log_y + 45, max_width, log_height - 60)
+        prev_clip = screen.get_clip()
+        screen.set_clip(inner_rect)
+
+        # Draw from bottom up
+        start_y = log_y + log_height - 25
+        for line in reversed(display_lines):
+            try:
+                low = line.lower()
+                if "coma" in low or "defeat" in low or "knocked" in low or "collapsed" in low:
+                    text_color = (255, 100, 100)
+                elif "victory" in low or "defeated" in low or "won" in low:
+                    text_color = (100, 255, 100)
+                elif "miss" in low or "failed" in low:
+                    text_color = (200, 100, 100)
+                else:
+                    text_color = (220, 220, 220)
+
+                msg_surf = self.log_font.render(line, True, text_color)
+                screen.blit(msg_surf, (inner_rect.x, start_y - msg_surf.get_height()))
+                start_y -= line_height
+            except Exception as e:
+                Logger.error("CombatView.drawCombatLog.render", e)
+
+        # Restore previous clip
+        screen.set_clip(prev_clip)
     
     def _wrap_text(self, text, max_width):
         """
@@ -400,17 +452,17 @@ class CombatView:
         """
         Draw the action menu with better alignment and visual hierarchy.
         """
-        # Position menu on left side, lower on screen to avoid overlap
-        menu_x = 40
-        menu_y = self.screen_height - 450  # Moved down further
+        # Position menu on right side, fairly close to center but not overlapping main UI
         menu_width = 380
+        menu_x = max(40, self.screen_width - menu_width - 40)
+        menu_y = self.screen_height - 450  # Moved down further
         menu_height = 320
         
         # Panel with player color accent
         self.drawPanel(screen, menu_x, menu_y, menu_width, menu_height, (100, 255, 100))
         
         # Title
-        title_surf = self.font.render("🎸 ACTIONS", True, (150, 255, 150))
+        title_surf = self.font.render("ACTIONS", True, (150, 255, 150))
         screen.blit(title_surf, (menu_x + 20, menu_y + 12))
         
         # Divider line
@@ -420,10 +472,10 @@ class CombatView:
         
         # Actions with better spacing and color-coded keys
         actions = [
-            ("A", "Simple Attack", "🎸 Strike with your guitar", (150, 255, 100)),
-            ("P", "Power Chord", "⚡ Powerful burst (-10 HP)", (255, 180, 100)),
-            ("D", "Dégueulando", "🤮 Paralyze (60% drunk)", (200, 100, 255)),
-            ("B", "Drink", "🍺 Restore & boost stats", (100, 200, 255))
+            ("A", "Simple Attack", "Strike with your guitar", (150, 255, 100)),
+            ("P", "Power Chord", "Powerful burst (-10 HP)", (255, 180, 100)),
+            ("D", "Dégueulando", "Paralyze (requires >=60% drunk)", (200, 100, 255)),
+            ("B", "Drink", "Restore & boost stats", (100, 200, 255))
         ]
         
         action_y = menu_y + 60
@@ -447,11 +499,11 @@ class CombatView:
             
             action_y += 70  # Better spacing between actions
         
-        # Hint text at bottom
+        # Hint text below the action menu frame
         if combat_model.isPlayerTurn():
-            hint_surf = self.log_font.render("Press KEY to act", True, (150, 200, 150))
+            hint_surf = self.font.render("Press KEY to act", True, (150, 200, 150))
             hint_x = menu_x + menu_width // 2 - hint_surf.get_width() // 2
-            screen.blit(hint_surf, (hint_x, menu_y + menu_height - 30))
+            screen.blit(hint_surf, (hint_x, menu_y + menu_height + 15))
     
     def drawTurnIndicator(self, screen, combat_model):
         """Draw the turn indicator"""
@@ -459,10 +511,10 @@ class CombatView:
             return
         
         if combat_model.isPlayerTurn():
-            text = "🎸 YOUR TURN"
+            text = "YOUR TURN"
             color = self.player_color
         else:
-            text = "👊 ENEMY TURN"
+            text = "ENEMY TURN"
             color = self.enemy_color
         
         # Animation de pulsation
@@ -504,11 +556,11 @@ class CombatView:
             # Victory/defeat message
             try:
                 if combat_model.getWinner() == "PLAYER":
-                    message = "🏆 VICTOIRE ! 🏆"
+                    message = "VICTOIRE !"
                     color = self.player_color
                     sub_message = f"You defeated {combat_model.getEnemy().getName()}!"
                 else:
-                    message = "💀 DÉFAITE 💀"
+                    message = "DÉFAITE"
                     color = self.enemy_color
                     sub_message = f"{combat_model.getEnemy().getName()} knocked you out!"
             except Exception as e:

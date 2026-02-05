@@ -56,11 +56,16 @@ class WelcomPageView(PageView):
             self.buttons = []
             self.buttons_controllers = []
             
-            # Play button (center-top)
+            # Play button (center-right, slightly larger)
             try:
+                # Compute dynamic position: center-right of window
+                play_size = (260, 100)  # slightly larger
+                play_x = int(self.width * 0.75)
+                play_y = int(self.height * 0.45)
                 self.play_button = ButtonView(
                     image_path='Game/Assets/buttonPlay.png',
-                    position=(400, 500),
+                    position=(play_x, play_y),
+                    size=play_size,
                 )
                 self.buttons.append(self.play_button)
                 
@@ -71,11 +76,16 @@ class WelcomPageView(PageView):
                 Logger.error("WelcomPageView.__init__", e)
                 raise
             
-            # Quit button (bottom)
+            # Quit button (just below Play)
             try:
+                quit_size = (220, 80)
+                quit_x = int(self.width * 0.75)
+                # place below play button with small gap
+                quit_y = play_y + play_size[1] // 2 + 20 + quit_size[1] // 2
                 self.quit_button = ButtonView(
                     image_path='Game/Assets/buttonQuit.png',
-                    position=(400, 700),
+                    position=(quit_x, quit_y),
+                    size=quit_size,
                 )
                 self.buttons.append(self.quit_button)
                 

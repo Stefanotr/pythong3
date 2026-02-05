@@ -75,7 +75,7 @@ class Act1View:
                     # Create new player if none provided
                     self.johnny = PlayerModel("Lola Coma", 60, 60)
                     self.johnny.setHealth(100)
-                    self.johnny.setDamage(10)
+                    self.johnny.setDamage(8)
                     self.johnny.setAccuracy(0.85)
                     self.johnny.setDrunkenness(0)
                     self.johnny.setComaRisk(10)
@@ -96,8 +96,8 @@ class Act1View:
             
             try:
                 self.gros_bill = CaracterModel("Gros Bill", 80, 80)
-                self.gros_bill.setHealth(100)  # Full health for boss
-                self.gros_bill.setDamage(8)
+                self.gros_bill.setHealth(150)  # Increased health for tougher boss
+                self.gros_bill.setDamage(12)
                 self.gros_bill.setAccuracy(0.75)  # 75% accuracy
                 
                 Logger.debug("Act1View.__init__", 
@@ -128,22 +128,34 @@ class Act1View:
                 # Gros Bill (boss)
                 self.boss_view = CaracterView("Game/Assets/chefdesmotards.png", base_name="motard")
                 
-                # Set static positions for display - Lola right, Boss far right
-                self.johnny.setX(int(self.screen_width * 0.65))  # Right side (Lola)
-                self.johnny.setY(self.screen_height // 2)  # Middle height
-                self.gros_bill.setX(int(self.screen_width * 0.85))  # Far right (Boss)
-                self.gros_bill.setY(self.screen_height // 2)  # Middle height
+                # Center characters near the middle of the screen, facing each other
+                center_x = self.screen_width // 2
+                offset = int(self.screen_width * 0.15)
+
+                self.johnny.setX(center_x - offset)
+                self.johnny.setY(self.screen_height // 2)
+
+                self.gros_bill.setX(center_x + offset)
+                self.gros_bill.setY(self.screen_height // 2)
                 
                 Logger.debug("Act1View.__init__", "Character views created for static display",
                            player_base="lola", boss_base="motard")
             except Exception as e:
                 Logger.error("Act1View.__init__", e)
                 # Continue even if character views fail
+
+            # Ensure characters are positioned relative to the current screen size
+            try:
+                self._position_characters()
+            except Exception as e:
+                Logger.error("Act1View.__init__", e)
             
             # === ACT STATE ===
             
             self.act_finished = False
             self.victory = False
+            # Track whether we've reset sprites when combat starts
+            self._combat_started = False
             
             # === INTRO ===
             
@@ -204,6 +216,11 @@ class Act1View:
                                     self.combat_view = CombatView(self.screen_width, self.screen_height)
                                     Logger.debug("Act1View.run", "Window resized, combat view updated", 
                                                width=new_width, height=new_height)
+                                    # Reposition characters so they remain centered after resize/fullscreen
+                                    try:
+                                        self._position_characters()
+                                    except Exception as e:
+                                        Logger.error("Act1View.run", e)
                                 except Exception as e:
                                     Logger.error("Act1View.run", e)
                                     
@@ -268,6 +285,29 @@ class Act1View:
                             self.combat_controller.update()
                         except Exception as e:
                             Logger.error("Act1View.run", e)
+                    # If we've just transitioned into combat, reset sprites once
+                    if not self.show_intro and not getattr(self, '_combat_started', False):
+                        try:
+                            try:
+                                # Reset action and sprite for player and boss
+                                self.johnny.setCurrentAction('idle', duration=0)
+                            except Exception:
+                                pass
+                            try:
+                                self.gros_bill.setCurrentAction('idle', duration=0)
+                            except Exception:
+                                pass
+                            try:
+                                self.player_view.resetToBaseSprite()
+                            except Exception:
+                                pass
+                            try:
+                                self.boss_view.resetToBaseSprite()
+                            except Exception:
+                                pass
+                        except Exception as e:
+                            Logger.error("Act1View.run", e)
+                        self._combat_started = True
                     
                     # === RENDERING ===
                     
@@ -344,7 +384,7 @@ class Act1View:
             
             # Title
             try:
-                title_text = "🎸 ACT I : THE DRY THROAT 🍺"
+                title_text = "ACT I : THE DRY THROAT"
                 title_surf = title_font.render(title_text, True, (255, 215, 0))
                 title_shadow = title_font.render(title_text, True, (100, 80, 0))
                 
@@ -404,6 +444,27 @@ class Act1View:
                 
         except Exception as e:
             Logger.error("Act1View.draw_intro", e)
+
+    def _position_characters(self):
+        """Position characters centered and opposite each other based on current screen size."""
+        try:
+            center_x = self.screen_width // 2
+            offset = int(self.screen_width * 0.15)
+
+            # Place player on left of center and boss on right of center
+            try:
+                self.johnny.setX(center_x - offset)
+                self.johnny.setY(self.screen_height // 2)
+            except Exception:
+                pass
+
+            try:
+                self.gros_bill.setX(center_x + offset)
+                self.gros_bill.setY(self.screen_height // 2)
+            except Exception:
+                pass
+        except Exception as e:
+            Logger.error("Act1View._position_characters", e)
     
     def _drawLevelDisplay(self):
         """

@@ -29,6 +29,15 @@ class CombatModel:
         try:
             self._player = player
             self._enemy = enemy
+            # Store initial max health values for UI scaling
+            try:
+                self._player_max_health = player.getHealth()
+            except Exception:
+                self._player_max_health = 100
+            try:
+                self._enemy_max_health = enemy.getHealth()
+            except Exception:
+                self._enemy_max_health = 100
             self._turn = 1
             self._is_player_turn = True
             self._combat_log = []
@@ -66,6 +75,20 @@ class CombatModel:
     
     def getEnemy(self):
         return self._enemy
+
+    def getPlayerMaxHealth(self):
+        try:
+            return getattr(self, '_player_max_health', max(100, self._player.getHealth()))
+        except Exception as e:
+            Logger.error('CombatModel.getPlayerMaxHealth', e)
+            return max(100, self._player.getHealth() if hasattr(self._player, 'getHealth') else 100)
+
+    def getEnemyMaxHealth(self):
+        try:
+            return getattr(self, '_enemy_max_health', max(100, self._enemy.getHealth()))
+        except Exception as e:
+            Logger.error('CombatModel.getEnemyMaxHealth', e)
+            return max(100, self._enemy.getHealth() if hasattr(self._enemy, 'getHealth') else 100)
     
     def getTurn(self):
         """
@@ -295,14 +318,14 @@ class CombatModel:
                 bleed_damage = 2
                 current_hp = self._player.getHealth()
                 self._player.setHealth(max(0, current_hp - bleed_damage))
-                self.addToCombatLog(f"💉 {self._player.getName()} loses {bleed_damage} HP (bleeding)")
+                self.addToCombatLog(f"{self._player.getName()} loses {bleed_damage} HP (bleeding)")
                 Logger.debug("CombatModel.applyBleedingDamage", "Player bleeding damage applied", damage=bleed_damage)
             
             if self._enemy_status["bleeding"] > 0:
                 bleed_damage = 2
                 current_hp = self._enemy.getHealth()
                 self._enemy.setHealth(max(0, current_hp - bleed_damage))
-                self.addToCombatLog(f"💉 {self._enemy.getName()} loses {bleed_damage} HP (bleeding)")
+                self.addToCombatLog(f"{self._enemy.getName()} loses {bleed_damage} HP (bleeding)")
                 Logger.debug("CombatModel.applyBleedingDamage", "Enemy bleeding damage applied", damage=bleed_damage)
         except Exception as e:
             Logger.error("CombatModel.applyBleedingDamage", e)
@@ -326,10 +349,10 @@ class CombatModel:
                 
                 # Check if player died from alcoholic coma
                 if self._died_from_coma:
-                    self.addToCombatLog(f"💀 ALCOHOLIC COMA! {self._player.getName()} collapsed from drinking too much!")
+                    self.addToCombatLog(f"ALCOHOLIC COMA! {self._player.getName()} collapsed from drinking too much!")
                     Logger.debug("CombatModel.checkCombatEnd", "Player died from alcoholic coma")
                 else:
-                    self.addToCombatLog(f"💀 {self._player.getName()} was defeated by {self._enemy.getName()}!")
+                    self.addToCombatLog(f"{self._player.getName()} was defeated by {self._enemy.getName()}!")
                     Logger.debug("CombatModel.checkCombatEnd", "Player defeated by enemy")
                 
                 return True
@@ -337,7 +360,7 @@ class CombatModel:
             if enemy_hp <= 0:
                 self.setCombatFinished(True)
                 self.setWinner("PLAYER")
-                self.addToCombatLog(f"🏆 {self._enemy.getName()} is defeated!")
+                self.addToCombatLog(f"{self._enemy.getName()} is defeated!")
                 Logger.debug("CombatModel.checkCombatEnd", "Player wins!")
                 return True
             

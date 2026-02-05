@@ -71,6 +71,17 @@ class CaracterView:
         except Exception as e:
             Logger.error("CaracterView._loadSprite", e)
 
+    def resetToBaseSprite(self):
+        """Reset the character view to the base (idle) sprite and clear action cache."""
+        try:
+            # Clear cached action sprites so future updates start from base
+            self.action_sprites = {}
+            # Reload base image into `self.sprite`
+            self._loadSprite(self.base_image_path)
+            Logger.debug("CaracterView.resetToBaseSprite", "Sprite reset to base image", base=self.base_image_path)
+        except Exception as e:
+            Logger.error("CaracterView.resetToBaseSprite", e)
+
     def _getActionImagePath(self, base_name, action):
         """
         Get the image path for a specific action.

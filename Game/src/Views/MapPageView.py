@@ -598,7 +598,13 @@ class MapPageView(PageView):
                                 except Exception:
                                     font = pygame.font.Font(None, 14)
                                 label = font.render('SHOP', True, (100, 255, 100))  # Green color
-                                self.screen.blit(label, (shop_center[0] - label.get_width()//2, shop_center[1] - self.shop_height//2 - label.get_height() - 4))
+                                # Draw black background behind label for readability
+                                lbl_x = shop_center[0] - label.get_width()//2
+                                lbl_y = shop_center[1] - self.shop_height//2 - label.get_height() - 4
+                                padding = 6
+                                bg_rect = pygame.Rect(lbl_x - padding//2, lbl_y - padding//2, label.get_width() + padding, label.get_height() + padding)
+                                pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
+                                self.screen.blit(label, (lbl_x, lbl_y))
                             except Exception:
                                 pass
                             Logger.debug("MapPageView.run", "Shop marker", shop_center=shop_center)
@@ -774,7 +780,7 @@ class MapPageView(PageView):
 
             # Draw text
             try:
-                title_surf = font.render("🛒 SHOP", True, (0, 0, 0))
+                title_surf = font.render("SHOP", True, (0, 0, 0))
                 instruction_surf = small_font.render("Press E to enter shop", True, (0, 0, 0))
                 
                 self.screen.blit(title_surf, (prompt_x + (prompt_width - title_surf.get_width()) // 2, prompt_y + 15))
@@ -895,5 +901,17 @@ class MapPageView(PageView):
             pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
             
             self.screen.blit(level_text, (text_x, text_y))
+            
+            # Draw Alcohol level above the level display
+            try:
+                alcohol = self.johnny.getDrunkenness() if hasattr(self.johnny, 'getDrunkenness') else 0
+                alcohol_text = font.render(f"Alcohol: {alcohol}%", True, (0, 255, 0))
+                alcohol_x = text_x
+                alcohol_y = text_y - alcohol_text.get_height() - 10
+                bg_rect_alcohol = pygame.Rect(alcohol_x - 5, alcohol_y - 5, alcohol_text.get_width() + 10, alcohol_text.get_height() + 10)
+                pygame.draw.rect(self.screen, (0, 0, 0), bg_rect_alcohol)
+                self.screen.blit(alcohol_text, (alcohol_x, alcohol_y))
+            except Exception:
+                pass
         except Exception as e:
             Logger.error("MapPageView._drawLevelDisplay", e)

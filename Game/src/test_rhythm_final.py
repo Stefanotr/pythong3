@@ -37,12 +37,12 @@ def main():
     # 4. Création du Contrôleur
     try:
         controller = RhythmController(rhythm_model, johnny, screen_height, rhythm_view)
-        print("✅ Contrôleur chargé.")
-        print("🎸 Mode : CONCERT (Gagnez du Cash !)")
-        print("🔊 Protection Audio : ACTIVÉE")
-        print("😈 Fausses Notes : ACTIVÉES")
+        print("Contrôleur chargé.")
+        print("Mode : CONCERT (Gagnez du Cash !)")
+        print("Protection Audio : ACTIVÉE")
+        print("Fausses Notes : ACTIVÉES")
     except Exception as e:
-        print(f"❌ Erreur critique : {e}")
+        print(f"Erreur critique : {e}")
         return
 
     # 5. Boucle de Jeu
@@ -66,7 +66,7 @@ def main():
 
         # C. Vérification Game Over (Tomates)
         if controller.game_over:
-            print("💀 GAME OVER : Le public vous a viré !")
+            print("GAME OVER : Le public vous a viré !")
             running = False # On arrête le test
 
         # D. Dessin

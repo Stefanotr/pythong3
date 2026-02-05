@@ -203,7 +203,7 @@ class ShopModel:
         """
         try:
             self.purchase_message = str(message) if message else ""
-            Logger.debug("ShopModel.setPurchaseMessage", "Purchase message set", message=self.purchase_message)
+            Logger.debug("ShopModel.setPurchaseMessage", "Purchase message set", purchase_message=self.purchase_message)
         except Exception as e:
             Logger.error("ShopModel.setPurchaseMessage", e)
     

@@ -20,10 +20,10 @@ class RhythmView:
             self.overlay = pygame.Surface((screen_width, screen_height))
             self.overlay.fill((0, 0, 0))
             self.overlay.set_alpha(100) 
-            print(f"✅ Background chargé : {image_path}")
+            print(f"Background chargé : {image_path}")
             
         except FileNotFoundError:
-            print(f"⚠️ Image non trouvée ({image_path}). Mode Dégradé activé.")
+            print(f"Image non trouvée ({image_path}). Mode Dégradé activé.")
             self.background_image = None
 
         # --- 2. FONTS ---
@@ -113,7 +113,7 @@ class RhythmView:
 
     def draw_precision_zones(self, screen, hit_line_y):
         """
-        🎯 NOUVEAU : Afficher les zones de précision autour de la ligne de frappe
+        NOUVEAU : Afficher les zones de précision autour de la ligne de frappe
         pour aider le joueur à comprendre le système
         """
         # Zone PERFECT (±50ms @ 0.5 speed = ±25px)
@@ -177,7 +177,7 @@ class RhythmView:
         screen.blit(guitar_surf, guitar_rect)
         pygame.draw.rect(screen, (80, 120, 180), guitar_rect, 2, border_radius=10)
         
-        # --- 🎯 ZONES DE PRÉCISION (NOUVEAU) ---
+        # --- ZONES DE PRÉCISION (NOUVEAU) ---
         hit_line_y = rhythm_model.hit_line_y
         self.draw_precision_zones(screen, hit_line_y)
         
@@ -246,8 +246,8 @@ class RhythmView:
         # Jauge Hype
         hype_col = (0, 255, 255) if rhythm_model.crowd_satisfaction > 80 else (50, 255, 50)
         if rhythm_model.crowd_satisfaction < 40: hype_col = (255, 50, 50)
-        label_hype = "🔥 EN FEU" if rhythm_model.crowd_satisfaction > 80 else "😐 PUBLIC"
-        if rhythm_model.crowd_satisfaction < 40: label_hype = "🤬 BOUUH"
+        label_hype = "EN FEU" if rhythm_model.crowd_satisfaction > 80 else "PUBLIC"
+        if rhythm_model.crowd_satisfaction < 40: label_hype = "EN COLERE"
         
         self.draw_health_bar(screen, 20, int(hud_h*0.4), int(self.screen_width*0.25), int(hud_h*0.35), 
                              rhythm_model.crowd_satisfaction, 100, label_hype, hype_col, (50, 0, 0))
