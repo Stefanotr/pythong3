@@ -76,7 +76,7 @@ class Act2View:
                                drunkenness=self.johnny.getDrunkenness())
                 else:
                     # Create new player if none provided
-                    self.johnny = PlayerModel("Johnny Fuzz", 60, 60)
+                    self.johnny = PlayerModel("Lola Coma", 60, 60)
                     self.johnny.setHealth(100)
                     self.johnny.setDamage(10)
                     self.johnny.setAccuracy(0.85)
@@ -126,16 +126,19 @@ class Act2View:
             
             try:
                 # Create character views for visual display
-                self.player_view = CaracterView("Game/Assets/guitare.png")
-                self.boss_view = CaracterView("Game/Assets/boss.png")
+                # Johnny is Lola with action-based sprites
+                self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola")
+                # Security Chief (boss)
+                self.boss_view = CaracterView("Game/Assets/Agentdesecurité.png", base_name="agent")
                 
-                # Set static positions for display
-                self.johnny.setX(self.screen_width // 4)  # Left side
-                self.johnny.setY(self.screen_height // 2)
-                self.security_chief.setX(self.screen_width * 3 // 4)  # Right side
-                self.security_chief.setY(self.screen_height // 2)
+                # Set static positions for display - centered vertically, sides horizontally
+                self.johnny.setX(self.screen_width // 4)  # Left side (Lola)
+                self.johnny.setY(self.screen_height // 2)  # Middle height
+                self.security_chief.setX(self.screen_width * 3 // 4)  # Right side (Boss)
+                self.security_chief.setY(self.screen_height // 2)  # Middle height
                 
-                Logger.debug("Act2View.__init__", "Character views created for static display")
+                Logger.debug("Act2View.__init__", "Character views created for static display",
+                           player_base="lola", boss_base="agent")
             except Exception as e:
                 Logger.error("Act2View.__init__", e)
                 # Continue even if character views fail
@@ -262,7 +265,7 @@ class Act2View:
                         elif self.phase == "combat":
                             if not self.combat_model.isCombatFinished():
                                 try:
-                                    self.combat_controller.handleInput(event)
+                                    self.combat_controller.handle_input(event)
                                 except Exception as e:
                                     Logger.error("Act2View.run", e)
                             else:
@@ -281,7 +284,7 @@ class Act2View:
                         elif self.phase == "rhythm":
                             try:
                                 if self.rhythm_controller:
-                                    self.rhythm_controller.handleInput(event)
+                                    self.rhythm_controller.handle_input(event)
                                 
                                 # Check for rhythm phase completion (SPACE to finish)
                                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:

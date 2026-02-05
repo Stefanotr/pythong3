@@ -73,7 +73,7 @@ class Act1View:
                                drunkenness=self.johnny.getDrunkenness())
                 else:
                     # Create new player if none provided
-                    self.johnny = PlayerModel("Johnny Fuzz", 60, 60)
+                    self.johnny = PlayerModel("Lola Coma", 60, 60)
                     self.johnny.setHealth(100)
                     self.johnny.setDamage(10)
                     self.johnny.setAccuracy(0.85)
@@ -123,16 +123,19 @@ class Act1View:
             
             try:
                 # Create character views for visual display
-                self.player_view = CaracterView("Game/Assets/guitare.png")
-                self.boss_view = CaracterView("Game/Assets/boss.png")
+                # Johnny is Lola with action-based sprites
+                self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola")
+                # Gros Bill (boss)
+                self.boss_view = CaracterView("Game/Assets/chefdesmotards.png", base_name="motard")
                 
-                # Set static positions for display
-                self.johnny.setX(self.screen_width // 4)  # Left side
-                self.johnny.setY(self.screen_height // 2)
-                self.gros_bill.setX(self.screen_width * 3 // 4)  # Right side
-                self.gros_bill.setY(self.screen_height // 2)
+                # Set static positions for display - centered vertically, sides horizontally
+                self.johnny.setX(self.screen_width // 4)  # Left side (Lola)
+                self.johnny.setY(self.screen_height // 2)  # Middle height
+                self.gros_bill.setX(self.screen_width * 3 // 4)  # Right side (Boss)
+                self.gros_bill.setY(self.screen_height // 2)  # Middle height
                 
-                Logger.debug("Act1View.__init__", "Character views created for static display")
+                Logger.debug("Act1View.__init__", "Character views created for static display",
+                           player_base="lola", boss_base="motard")
             except Exception as e:
                 Logger.error("Act1View.__init__", e)
                 # Continue even if character views fail
@@ -246,7 +249,7 @@ class Act1View:
                         # Combat events
                         elif not self.combat_model.isCombatFinished():
                             try:
-                                self.combat_controller.handleInput(event)
+                                self.combat_controller.handle_input(event)
                             except Exception as e:
                                 Logger.error("Act1View.run", e)
                         
@@ -359,7 +362,7 @@ class Act1View:
             # Story
             try:
                 story_lines = [
-                    "You are Johnny Fuzz, a rockstar on the decline.",
+                    "You are Lola Coma, a rockstar on the decline.",
                     "",
                     "The bar owner refuses to pay you",
                     "until you get rid of the bikers",

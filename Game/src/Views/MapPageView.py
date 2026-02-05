@@ -103,7 +103,7 @@ class MapPageView(PageView):
                                position=(center_x, center_y))
                 else:
                     # Create new player if none provided
-                    self.johnny = PlayerModel("Johnny Fuzz", center_x, center_y)
+                    self.johnny = PlayerModel("Lola Coma", center_x, center_y)
                     beer = BottleModel("Beer", 15, 3, 5)
                     self.johnny.setSelectedBottle(beer)
                     Logger.debug("MapPageView.__init__", "New player created", 
@@ -126,7 +126,8 @@ class MapPageView(PageView):
             # === VIEW INITIALIZATION ===
             
             try:
-                self.player_view = CaracterView("Game/Assets/guitare.png")
+                # Lola in map: small size (2 tiles = 64x64)
+                self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(64, 64))
                 self.map_view = MapView(self.map)
                 
                 Logger.debug("MapPageView.__init__", "Character and map views created")

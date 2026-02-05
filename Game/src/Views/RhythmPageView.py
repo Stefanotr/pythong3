@@ -69,7 +69,7 @@ class RhythmPageView:
                                drunkenness=self.johnny.getDrunkenness())
                 else:
                     # Create new player if none provided
-                    self.johnny = PlayerModel("Johnny Fuzz", 60, 60)
+                    self.johnny = PlayerModel("Lola Coma", 60, 60)
                     self.johnny.setHealth(100)
                     self.johnny.setDrunkenness(0)
                     Logger.debug("RhythmPageView.__init__", "New player created", 

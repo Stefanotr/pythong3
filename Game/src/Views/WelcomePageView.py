@@ -258,7 +258,7 @@ class WelcomPageView(PageView):
                 from Models.GuitarModel import GuitarFactory
                 from Models.CaracterModel import CaracterModel
                 
-                player = PlayerModel("Johnny Fuzz", 60, 60)
+                player = PlayerModel("Lola Coma", 60, 60)
                 player.setHealth(100)
                 player.setDamage(10)
                 player.setAccuracy(0.85)

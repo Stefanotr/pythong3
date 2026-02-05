@@ -25,7 +25,7 @@ def main():
 
     # 2. Création des Modèles
     # Johnny (Sa vie importe peu ici, c'est la Hype qui compte)
-    johnny = CaracterModel("Johnny Fuzz", x=0, y=0, type="PLAYER")
+    johnny = CaracterModel("Lola Coma", x=0, y=0, type="PLAYER")
     johnny.setHealth(100) 
     
     # Modèle Rythme

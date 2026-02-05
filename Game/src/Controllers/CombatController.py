@@ -160,6 +160,9 @@ class CombatController(BaseController):
             if random.randint(1, 100) <= hit_chance:
                 # Hit!
                 try:
+                    # Set attack animation
+                    self.player.setCurrentAction("attacking", 30)
+                    
                     final_damage = max(1, int(base_damage))
                     current_hp = self.enemy.getHealth()
                     self.enemy.setHealth(max(0, current_hp - final_damage))
@@ -174,6 +177,7 @@ class CombatController(BaseController):
                     Logger.error("CombatController.playerSimpleAttack", e)
             else:
                 # Missed!
+                self.player.setCurrentAction("attacking", 30)
                 self.combat.addToCombatLog(f"💨 {self.player.getName()} misses the attack!")
                 Logger.debug("CombatController.playerSimpleAttack", "Attack missed")
             
@@ -208,6 +212,9 @@ class CombatController(BaseController):
             
             # Massive damage
             try:
+                # Set attack animation
+                self.player.setCurrentAction("attacking", 30)
+                
                 power_damage = int(self.player.getDamage() * 2.5)
                 current_hp = self.enemy.getHealth()
                 self.enemy.setHealth(max(0, current_hp - power_damage))
@@ -250,6 +257,9 @@ class CombatController(BaseController):
             
             # Paralyze enemy with disgust
             try:
+                # Set drink/vomit animation
+                self.player.setCurrentAction("drinking", 30)
+                
                 self.combat.setEnemyStatus("disgusted", 2)
                 self.combat.addToCombatLog(f"🤮 DÉGUEULANDO ! {self.enemy.getName()} is paralyzed with disgust!")
                 Logger.debug("CombatController.playerDegueulando", "Enemy paralyzed with disgust")
@@ -283,6 +293,9 @@ class CombatController(BaseController):
             
             # Drink
             try:
+                # Set drinking animation
+                self.player.setCurrentAction("drinking", 30)
+                
                 self.player.drink(selected_bottle)
                 
                 drunkenness = self.player.getDrunkenness()
@@ -359,6 +372,9 @@ class CombatController(BaseController):
             
             if random.randint(1, 100) <= hit_chance:
                 try:
+                    # Set enemy attack animation
+                    self.enemy.setCurrentAction("attacking", 30)
+                    
                     current_hp = self.player.getHealth()
                     self.player.setHealth(max(0, current_hp - damage))
                     
@@ -371,6 +387,8 @@ class CombatController(BaseController):
                 except Exception as e:
                     Logger.error("CombatController.enemySimpleAttack", e)
             else:
+                # Enemy misses - player dodges
+                self.player.setCurrentAction("dodging", 20)
                 self.combat.addToCombatLog(f"💨 {self.enemy.getName()} misses the attack!")
                 Logger.debug("CombatController.enemySimpleAttack", "Enemy attack missed")
             
@@ -389,6 +407,9 @@ class CombatController(BaseController):
             # Less accurate
             if random.randint(1, 100) <= 60:
                 try:
+                    # Set enemy attack animation
+                    self.enemy.setCurrentAction("attacking", 30)
+                    
                     current_hp = self.player.getHealth()
                     self.player.setHealth(max(0, current_hp - heavy_damage))
                     
@@ -410,6 +431,8 @@ class CombatController(BaseController):
                 except Exception as e:
                     Logger.error("CombatController.enemyHeavyAttack", e)
             else:
+                # Enemy misses - player dodges
+                self.player.setCurrentAction("dodging", 20)
                 self.combat.addToCombatLog(f"💨 {self.enemy.getName()} misses the heavy attack!")
                 Logger.debug("CombatController.enemyHeavyAttack", "Enemy heavy attack missed")
             
