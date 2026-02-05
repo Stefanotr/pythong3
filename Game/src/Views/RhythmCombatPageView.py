@@ -128,6 +128,14 @@ class RhythmCombatPageView:
                                     # Return a special code to indicate stage change
                                     return f"STAGE_{stage_number}"
                         
+                        elif event.type == pygame.VIDEORESIZE:
+                            self.screen_width = event.w
+                            self.screen_height = event.h
+                            # Recreate combat view with new dimensions
+                            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height)
+                            Logger.debug("RhythmCombatPageView.run", "Window resized", width=self.screen_width, height=self.screen_height)
+                        
+                        
                         # Pass other events to the controller
                         try:
                             if self.controller:
@@ -238,8 +246,8 @@ class RhythmCombatPageView:
                 Logger.error("RhythmCombatPageView.run", e)
                 return GameState.QUIT.value
         except Exception as e:
-                Logger.error("RhythmCombatPageView.run", e)
-                return GameState.QUIT.value
+            Logger.error("RhythmCombatPageView.run", e)
+            return GameState.QUIT.value
     
     def _toggle_fullscreen(self):
         """Toggle between fullscreen and resizable window modes."""
@@ -256,15 +264,20 @@ class RhythmCombatPageView:
             else:
                 # Currently resizable, switch to fullscreen
                 screen_info = pygame.display.Info()
-                self.screen = pygame.display.set_mode(
-                    (screen_info.current_w, screen_info.current_h),
-                    pygame.FULLSCREEN
-                )
                 self.screen_width = screen_info.current_w
                 self.screen_height = screen_info.current_h
+                self.screen = pygame.display.set_mode(
+                    (self.screen_width, self.screen_height),
+                    pygame.FULLSCREEN
+                )
                 Logger.debug("RhythmCombatPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
+            
+            # Recreate combat view with new dimensions
+            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height)
+            
+            # Update controller's screen height reference if available
+            if self.controller and hasattr(self.controller, 'screen_height'):
+                self.controller.screen_height = self.screen_height
+                
         except Exception as e:
             Logger.error("RhythmCombatPageView._toggle_fullscreen", e)
-        except Exception as e:
-            Logger.error("RhythmCombatPageView.run", e)
-            return GameState.QUIT.value

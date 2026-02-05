@@ -403,13 +403,17 @@ class RhythmPageView:
             else:
                 # Currently resizable, switch to fullscreen
                 screen_info = pygame.display.Info()
-                self.screen = pygame.display.set_mode(
-                    (screen_info.current_w, screen_info.current_h),
-                    pygame.FULLSCREEN
-                )
                 self.screen_width = screen_info.current_w
                 self.screen_height = screen_info.current_h
+                self.screen = pygame.display.set_mode(
+                    (self.screen_width, self.screen_height),
+                    pygame.FULLSCREEN
+                )
                 Logger.debug("RhythmPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
+            
+            # Recreate rhythm view with new dimensions
+            self.rhythm_view = RhythmView(self.screen_width, self.screen_height)
+            
         except Exception as e:
             Logger.error("RhythmPageView._toggle_fullscreen", e)
     
