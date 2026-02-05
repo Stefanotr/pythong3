@@ -26,7 +26,6 @@ class ShopModel:
         """
         try:
             self.player = player
-            self.player_currency = 100  # Starting currency (can be adjusted)
             
             # Available shop items
             self.available_items = [
@@ -63,9 +62,11 @@ class ShopModel:
             self.selected_index = 0
             self.purchase_success = False
             self.purchase_message = ""
+            self.items_per_page = 8
+            self.current_page = 0
             
             Logger.debug("ShopModel.__init__", "Shop model initialized", 
-                        currency=self.player_currency,
+                        currency=self.player.getCurrency(),
                         items_count=len(self.available_items))
         except Exception as e:
             Logger.error("ShopModel.__init__", e)
@@ -107,7 +108,7 @@ class ShopModel:
             int: Current currency amount
         """
         try:
-            return self.player_currency
+            return self.player.getCurrency()
         except Exception as e:
             Logger.error("ShopModel.getPlayerCurrency", e)
             return 0
@@ -120,8 +121,8 @@ class ShopModel:
             amount: New currency amount
         """
         try:
-            self.player_currency = max(0, amount)
-            Logger.debug("ShopModel.setPlayerCurrency", "Currency updated", amount=self.player_currency)
+            self.player.setCurrency(max(0, amount))
+            Logger.debug("ShopModel.setPlayerCurrency", "Currency updated", amount=self.player.getCurrency())
         except Exception as e:
             Logger.error("ShopModel.setPlayerCurrency", e)
     
@@ -256,11 +257,11 @@ class ShopModel:
             price = item["price"]
             
             # Check if player has enough currency
-            if self.player_currency < price:
-                self.setPurchaseMessage(f"Not enough currency! Need {price}, have {self.player_currency}")
+            if self.player.getCurrency() < price:
+                self.setPurchaseMessage(f"Not enough currency! Need {price}, have {self.player.getCurrency()}")
                 self.setPurchaseSuccess(False)
                 Logger.debug("ShopModel.purchaseItem", "Insufficient currency", 
-                           required=price, available=self.player_currency)
+                           required=price, available=self.player.getCurrency())
                 return False
             
             # Apply item effect
@@ -301,10 +302,10 @@ class ShopModel:
                                    new_damage=self.player.getDamage())
                 
                 # Deduct currency
-                self.setPlayerCurrency(self.player_currency - price)
+                self.player.setCurrency(self.player.getCurrency() - price)
                 self.setPurchaseSuccess(True)
                 Logger.debug("ShopModel.purchaseItem", "Purchase successful", 
-                           item=item["name"], remaining_currency=self.player_currency)
+                           item=item["name"], remaining_currency=self.player.getCurrency())
                 return True
                 
             except Exception as e:
@@ -318,4 +319,53 @@ class ShopModel:
             self.setPurchaseMessage(f"Purchase failed: {str(e)}")
             self.setPurchaseSuccess(False)
             return False
+
+    # === PAGINATION ===
+
+    def nextPage(self):
+        """Move to the next page of items"""
+        try:
+            max_page = (len(self.available_items) - 1) // self.items_per_page
+            if self.current_page < max_page:
+                self.current_page += 1
+                self.selected_index = self.current_page * self.items_per_page
+                Logger.debug("ShopModel.nextPage", "Page changed", page=self.current_page)
+        except Exception as e:
+            Logger.error("ShopModel.nextPage", e)
+
+    def previousPage(self):
+        """Move to the previous page of items"""
+        try:
+            if self.current_page > 0:
+                self.current_page -= 1
+                self.selected_index = self.current_page * self.items_per_page
+                Logger.debug("ShopModel.previousPage", "Page changed", page=self.current_page)
+        except Exception as e:
+            Logger.error("ShopModel.previousPage", e)
+
+    def getCurrentPage(self):
+        """Get current page number"""
+        return self.current_page
+
+    def getPageCount(self):
+        """Get total number of pages"""
+        return (len(self.available_items) - 1) // self.items_per_page + 1
+
+    def getItemsForCurrentPage(self):
+        """Get items for the current page"""
+        try:
+            start_idx = self.current_page * self.items_per_page
+            end_idx = start_idx + self.items_per_page
+            return self.available_items[start_idx:end_idx]
+        except Exception as e:
+            Logger.error("ShopModel.getItemsForCurrentPage", e)
+            return []
+
+    def getItemIndexOnCurrentPage(self, page_index):
+        """Convert page-relative item index to absolute index"""
+        try:
+            return self.current_page * self.items_per_page + page_index
+        except Exception as e:
+            Logger.error("ShopModel.getItemIndexOnCurrentPage", e)
+            return 0
 

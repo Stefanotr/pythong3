@@ -43,7 +43,7 @@ class PlayerModel(CaracterModel):
             self.inventory = InventoryModel()
             
             # Add default beer to inventory and select it
-            default_beer = BottleModel("Beer", alcohol_level=25, bonus_damage=10, accuracy_penalty=5)
+            default_beer = BottleModel("Beer", alcohol_level=15, bonus_damage=3, accuracy_penalty=5)
             self.inventory.add_item(default_beer)
             # Beer is automatically selected since inventory was empty
             

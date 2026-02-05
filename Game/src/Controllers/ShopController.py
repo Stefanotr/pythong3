@@ -46,32 +46,70 @@ class ShopController(BaseController):
             event: Pygame event to process
         """
         try:
-            if event.type != pygame.KEYDOWN:
-                return None
+            if event.type == pygame.KEYDOWN:
+                # Navigation up/down within page
+                if event.key == pygame.K_UP or event.key == pygame.K_w:
+                    current_index = self.shop_model.getSelectedIndex()
+                    current_page = self.shop_model.getCurrentPage()
+                    page_start = current_page * self.shop_model.items_per_page
+                    page_end = page_start + self.shop_model.items_per_page
+                    
+                    if current_index > page_start:
+                        # Move up within the same page
+                        self.shop_model.setSelectedIndex(current_index - 1)
+                    else:
+                        # At top of page, go to previous page
+                        self.shop_model.previousPage()
+                        new_index = self.shop_model.getCurrentPage() * self.shop_model.items_per_page + self.shop_model.items_per_page - 1
+                        if new_index < len(self.shop_model.getAvailableItems()):
+                            self.shop_model.setSelectedIndex(new_index)
+                    Logger.debug("ShopController.handle_input", "Selection moved up")
 
-            # Navigation
-            if event.key == pygame.K_UP or event.key == pygame.K_w:
-                current_index = self.shop_model.getSelectedIndex()
-                new_index = (current_index - 1) % len(self.shop_model.getAvailableItems())
-                self.shop_model.setSelectedIndex(new_index)
-                Logger.debug("ShopController.handle_input", "Selection moved up", index=new_index)
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                    current_index = self.shop_model.getSelectedIndex()
+                    current_page = self.shop_model.getCurrentPage()
+                    page_start = current_page * self.shop_model.items_per_page
+                    page_end = min(page_start + self.shop_model.items_per_page, len(self.shop_model.getAvailableItems()))
+                    
+                    if current_index < page_end - 1:
+                        # Move down within the same page
+                        self.shop_model.setSelectedIndex(current_index + 1)
+                    else:
+                        # At bottom of page, go to next page
+                        self.shop_model.nextPage()
+                        new_index = self.shop_model.getCurrentPage() * self.shop_model.items_per_page
+                        self.shop_model.setSelectedIndex(new_index)
+                    Logger.debug("ShopController.handle_input", "Selection moved down")
 
-            elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                current_index = self.shop_model.getSelectedIndex()
-                new_index = (current_index + 1) % len(self.shop_model.getAvailableItems())
-                self.shop_model.setSelectedIndex(new_index)
-                Logger.debug("ShopController.handle_input", "Selection moved down", index=new_index)
+                # Page navigation
+                elif event.key == pygame.K_LEFT:
+                    self.shop_model.previousPage()
+                    Logger.debug("ShopController.handle_input", "Previous page")
 
-            # Purchase
-            elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
-                selected_index = self.shop_model.getSelectedIndex()
-                self.shop_model.purchaseItem(selected_index)
-                Logger.debug("ShopController.handle_input", "Purchase attempted", index=selected_index)
+                elif event.key == pygame.K_RIGHT:
+                    self.shop_model.nextPage()
+                    Logger.debug("ShopController.handle_input", "Next page")
 
-            # Exit shop
-            elif event.key == pygame.K_ESCAPE or event.key == pygame.K_e:
-                Logger.debug("ShopController.handle_input", "Exit shop requested")
-                return "exit"
+                # Purchase
+                elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                    selected_index = self.shop_model.getSelectedIndex()
+                    self.shop_model.purchaseItem(selected_index)
+                    Logger.debug("ShopController.handle_input", "Purchase attempted", index=selected_index)
+
+                # Exit shop
+                elif event.key == pygame.K_ESCAPE or event.key == pygame.K_e:
+                    Logger.debug("ShopController.handle_input", "Exit shop requested")
+                    return "exit"
+
+            # Handle mouse clicks
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if hasattr(self.view, 'prev_button_rect') and self.view.prev_button_rect.collidepoint(event.pos):
+                    self.shop_model.previousPage()
+                    Logger.debug("ShopController.handle_input", "Previous button clicked")
+                
+                elif hasattr(self.view, 'next_button_rect') and self.view.next_button_rect.collidepoint(event.pos):
+                    self.shop_model.nextPage()
+                    Logger.debug("ShopController.handle_input", "Next button clicked")
 
             return None
         except Exception as e:

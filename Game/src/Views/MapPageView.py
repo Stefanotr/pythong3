@@ -488,28 +488,28 @@ class MapPageView(PageView):
                                             shop_model = ShopModel(self.johnny)
                                             shop_view = ShopPageView(self.screen, shop_model)
                                             shop_controller = ShopController(shop_model, shop_view)
-                                        
-                                        # Shop loop
-                                        shop_running = True
-                                        shop_clock = pygame.time.Clock()
-                                        
-                                        while shop_running:
-                                            for shop_event in pygame.event.get():
-                                                if shop_event.type == pygame.QUIT:
-                                                    shop_running = False
-                                                    return GameState.QUIT.value
-                                                
-                                                result = shop_controller.handleInput(shop_event)
-                                                if result == "exit":
-                                                    shop_running = False
-                                                    Logger.debug("MapPageView.run", "Shop closed")
                                             
-                                            shop_controller.update()
-                                            shop_view.draw(self.johnny)
-                                            pygame.display.flip()
-                                            shop_clock.tick(60)
-                                        
-                                        Logger.debug("MapPageView.run", "Returned from shop")
+                                            # Shop loop
+                                            shop_running = True
+                                            shop_clock = pygame.time.Clock()
+                                            
+                                            while shop_running:
+                                                for shop_event in pygame.event.get():
+                                                    if shop_event.type == pygame.QUIT:
+                                                        shop_running = False
+                                                        return GameState.QUIT.value
+                                                    
+                                                    result = shop_controller.handleInput(shop_event)
+                                                    if result == "exit":
+                                                        shop_running = False
+                                                        Logger.debug("MapPageView.run", "Shop closed")
+                                                
+                                                shop_controller.update()
+                                                shop_view.draw(self.johnny)
+                                                pygame.display.flip()
+                                                shop_clock.tick(60)
+                                            
+                                            Logger.debug("MapPageView.run", "Returned from shop")
                                     except Exception as e:
                                         Logger.error("MapPageView.run", e)
 

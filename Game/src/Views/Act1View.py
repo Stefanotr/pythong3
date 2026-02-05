@@ -108,9 +108,11 @@ class ActView:
                     except Exception:
                         guitar = GuitarFactory.createLaPelle()
                     
+                    # Add second beer to inventory (first one is added in PlayerModel.__init__)
                     beer = BottleModel("Beer", 15, 3, 5)
-                    self.johnny.setSelectedBottle(beer)
-                    Logger.debug("ActView.__init__", "New player created")
+                    self.johnny.inventory.add_item(beer)
+                    self.johnny.setSelectedBottle(self.johnny.inventory.get_selected_item())
+                    Logger.debug("ActView.__init__", "New player created with 2 beers")
             except Exception as e:
                 Logger.error("ActView.__init__", e)
                 raise
@@ -555,7 +557,8 @@ class ActView:
                 self.rhythm_model, 
                 self.johnny, 
                 self.screen_height, 
-                self.rhythm_view
+                self.rhythm_view,
+                context="act2"  # Rhythm phase is only in Act 2
             )
             
             # Transition to rhythm phase

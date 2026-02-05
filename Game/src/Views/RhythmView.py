@@ -260,8 +260,9 @@ class RhythmView:
         score_label = self.font.render("SCORE", True, (200, 200, 200))
         screen.blit(score_label, (self.screen_width//2 - score_label.get_width()//2, int(hud_h*0.1)))
         
-        cash_est = min(100, int(rhythm_model.score / 250))
-        cash_txt = self.score_font.render(f"{cash_est}$", True, (100, 255, 100))
+        # Display actual earned cash from rhythm_model
+        actual_cash = rhythm_model.cash_earned if hasattr(rhythm_model, 'cash_earned') and rhythm_model.cash_earned > 0 else 0
+        cash_txt = self.score_font.render(f"{actual_cash}$", True, (100, 255, 100))
         screen.blit(cash_txt, (self.screen_width - cash_txt.get_width() - 20, hud_h//2 - 20))
 
         # Feedback & Combo
