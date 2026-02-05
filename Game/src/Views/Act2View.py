@@ -192,36 +192,6 @@ class Act2View:
                             Logger.debug("Act2View.run", "QUIT event received")
                             return GameState.QUIT.value
                         
-                        elif event.type == pygame.KEYDOWN:
-                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
-                            if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
-                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
-                                if self.sequence_controller.handle_numeric_input(stage_number):
-                                    Logger.debug("Act2View.run", "Navigation to stage requested", 
-                                               stage=stage_number, 
-                                               stage_name=self.sequence_controller.get_current_stage_name())
-                                    # Return a special code to indicate stage change
-                                    return f"STAGE_{stage_number}"
-                            
-                            # === HANDLE ESCAPE KEY ===
-                            if event.key == pygame.K_ESCAPE:
-                                # Open pause menu (delegates its own event loop to PauseMenuView.run)
-                                try:
-                                    pause_menu = PauseMenuView(self.screen)
-                                    pause_result = pause_menu.run()
-
-                                    if pause_result == GameState.QUIT.value:
-                                        Logger.debug("Act2View.run", "Quit requested from pause menu")
-                                        return GameState.QUIT.value
-                                    elif pause_result == GameState.MAIN_MENU.value:
-                                        Logger.debug("Act2View.run", "Main menu requested from pause menu")
-                                        return GameState.MAIN_MENU.value
-
-                                    # If CONTINUE or anything else, just resume the game loop
-                                    Logger.debug("Act2View.run", "Resuming from pause menu")
-                                except Exception as e:
-                                    Logger.error("Act2View.run", e)
-                        
                         elif event.type == pygame.VIDEORESIZE:
                             # Handle window resize
                             try:
@@ -254,46 +224,75 @@ class Act2View:
                             except Exception as e:
                                 Logger.error("Act2View.run", e)
                         
-                        # Intro screen events
-                        elif self.phase == "intro":
-                            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                        elif event.type == pygame.KEYDOWN:
+                            # === HANDLE ESCAPE KEY (GLOBAL) ===
+                            if event.key == pygame.K_ESCAPE:
+                                try:
+                                    pause_menu = PauseMenuView(self.screen)
+                                    pause_result = pause_menu.run()
+
+                                    if pause_result == GameState.QUIT.value:
+                                        Logger.debug("Act2View.run", "Quit requested from pause menu")
+                                        return GameState.QUIT.value
+                                    elif pause_result == GameState.MAIN_MENU.value:
+                                        Logger.debug("Act2View.run", "Main menu requested from pause menu")
+                                        return GameState.MAIN_MENU.value
+
+                                    Logger.debug("Act2View.run", "Resuming from pause menu")
+                                except Exception as e:
+                                    Logger.error("Act2View.run", e)
+                            
+                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
+                            elif self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
+                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
+                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                    Logger.debug("Act2View.run", "Navigation to stage requested", 
+                                               stage=stage_number, 
+                                               stage_name=self.sequence_controller.get_current_stage_name())
+                                    return f"STAGE_{stage_number}"
+                            
+                            # === INTRO SKIP (SPACE) ===
+                            elif self.phase == "intro" and event.key == pygame.K_SPACE:
                                 self.phase = "combat"
                                 self.show_intro = False
                                 Logger.debug("Act2View.run", "Intro skipped by user")
-                        
-                        # Combat events
-                        elif self.phase == "combat":
-                            if not self.combat_model.isCombatFinished():
+                            
+                            # === COMBAT PHASE (A, P, D, B) OR COMPLETION (SPACE) ===
+                            elif self.phase == "combat":
+                                Logger.debug("Act2View.run", "Combat key received", key=pygame.key.name(event.key))
+                                
+                                if not self.combat_model.isCombatFinished():
+                                    try:
+                                        self.combat_controller.handle_input(event)
+                                    except Exception as e:
+                                        Logger.error("Act2View.run", e)
+                                else:
+                                    # Combat finished
+                                    if event.key == pygame.K_SPACE:
+                                        if self.combat_model.getWinner() == "PLAYER":
+                                            # Transition to rhythm phase
+                                            self.initRhythmPhase()
+                                            Logger.debug("Act2View.run", "Combat won, transitioning to rhythm phase")
+                                        else:
+                                            # Player lost, exit
+                                            running = False
+                                            Logger.debug("Act2View.run", "Combat lost")
+                            
+                            # === RHYTHM PHASE (depends on RhythmController key handling) ===
+                            elif self.phase == "rhythm":
+                                Logger.debug("Act2View.run", "Rhythm key received", key=pygame.key.name(event.key))
                                 try:
-                                    self.combat_controller.handle_input(event)
+                                    if self.rhythm_controller:
+                                        self.rhythm_controller.handle_input(event)
+                                    
+                                    # Check for rhythm phase completion (SPACE to finish)
+                                    if event.key == pygame.K_SPACE:
+                                        if self.isRhythmComplete():
+                                            self.phase = "finished"
+                                            running = False
+                                            Logger.debug("Act2View.run", "Rhythm phase completed")
                                 except Exception as e:
                                     Logger.error("Act2View.run", e)
-                            else:
-                                # Combat finished, check result
-                                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                                    if self.combat_model.getWinner() == "PLAYER":
-                                        # Transition to rhythm phase
-                                        self.initRhythmPhase()
-                                        Logger.debug("Act2View.run", "Combat won, transitioning to rhythm phase")
-                                    else:
-                                        # Player lost, exit
-                                        running = False
-                                        Logger.debug("Act2View.run", "Combat lost")
-                        
-                        # Rhythm events
-                        elif self.phase == "rhythm":
-                            try:
-                                if self.rhythm_controller:
-                                    self.rhythm_controller.handle_input(event)
-                                
-                                # Check for rhythm phase completion (SPACE to finish)
-                                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                                    if self.isRhythmComplete():
-                                        self.phase = "finished"
-                                        running = False
-                                        Logger.debug("Act2View.run", "Rhythm phase completed")
-                            except Exception as e:
-                                Logger.error("Act2View.run", e)
                     
                     # === UPDATE ===
                     

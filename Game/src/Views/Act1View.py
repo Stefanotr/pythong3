@@ -180,36 +180,6 @@ class Act1View:
                             Logger.debug("Act1View.run", "QUIT event received")
                             return GameState.QUIT.value
                         
-                        elif event.type == pygame.KEYDOWN:
-                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
-                            if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
-                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
-                                if self.sequence_controller.handle_numeric_input(stage_number):
-                                    Logger.debug("Act1View.run", "Navigation to stage requested", 
-                                               stage=stage_number, 
-                                               stage_name=self.sequence_controller.get_current_stage_name())
-                                    # Return a special code to indicate stage change
-                                    return f"STAGE_{stage_number}"
-                            
-                            # === HANDLE ESCAPE KEY ===
-                            if event.key == pygame.K_ESCAPE:
-                                # Open pause menu (delegates its own event loop to PauseMenuView.run)
-                                try:
-                                    pause_menu = PauseMenuView(self.screen)
-                                    pause_result = pause_menu.run()
-
-                                    if pause_result == GameState.QUIT.value:
-                                        Logger.debug("Act1View.run", "Quit requested from pause menu")
-                                        return GameState.QUIT.value
-                                    elif pause_result == GameState.MAIN_MENU.value:
-                                        Logger.debug("Act1View.run", "Main menu requested from pause menu")
-                                        return GameState.MAIN_MENU.value
-
-                                    # If "continue" or anything else, just resume the game loop
-                                    Logger.debug("Act1View.run", "Resuming from pause menu")
-                                except Exception as e:
-                                    Logger.error("Act1View.run", e)
-                        
                         elif event.type == pygame.VIDEORESIZE:
                             # Handle window resize
                             try:
@@ -240,24 +210,51 @@ class Act1View:
                             except Exception as e:
                                 Logger.error("Act1View.run", e)
                         
-                        # Intro screen events
-                        elif self.show_intro:
-                            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                        elif event.type == pygame.KEYDOWN:
+                            # === HANDLE ESCAPE KEY (GLOBAL) ===
+                            if event.key == pygame.K_ESCAPE:
+                                try:
+                                    pause_menu = PauseMenuView(self.screen)
+                                    pause_result = pause_menu.run()
+                                    if pause_result == GameState.QUIT.value:
+                                        Logger.debug("Act1View.run", "Quit requested from pause menu")
+                                        return GameState.QUIT.value
+                                    elif pause_result == GameState.MAIN_MENU.value:
+                                        Logger.debug("Act1View.run", "Main menu requested from pause menu")
+                                        return GameState.MAIN_MENU.value
+                                    Logger.debug("Act1View.run", "Resuming from pause menu")
+                                except Exception as e:
+                                    Logger.error("Act1View.run", e)
+                            
+                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
+                            elif self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
+                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
+                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                    Logger.debug("Act1View.run", "Navigation to stage requested", 
+                                               stage=stage_number, 
+                                               stage_name=self.sequence_controller.get_current_stage_name())
+                                    return f"STAGE_{stage_number}"
+                            
+                            # === INTRO SKIP (SPACE) ===
+                            elif self.show_intro and event.key == pygame.K_SPACE:
                                 self.show_intro = False
                                 Logger.debug("Act1View.run", "Intro skipped by user")
-                        
-                        # Combat events
-                        elif not self.combat_model.isCombatFinished():
-                            try:
-                                self.combat_controller.handle_input(event)
-                            except Exception as e:
-                                Logger.error("Act1View.run", e)
-                        
-                        # Combat end events
-                        else:
-                            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                                running = False
-                                Logger.debug("Act1View.run", "Combat end screen skipped")
+                            
+                            # === COMBAT ACTIONS (A, P, D, B) OR END SCREEN (SPACE) ===
+                            elif not self.show_intro:
+                                Logger.debug("Act1View.run", "Key event received", key=pygame.key.name(event.key), combat_finished=self.combat_model.isCombatFinished())
+                                
+                                if not self.combat_model.isCombatFinished():
+                                    # Combat is active - pass to controller
+                                    Logger.debug("Act1View.run", "Passing key to combat controller", key=pygame.key.name(event.key))
+                                    try:
+                                        self.combat_controller.handle_input(event)
+                                    except Exception as e:
+                                        Logger.error("Act1View.run", e)
+                                elif event.key == pygame.K_SPACE:
+                                    # Combat finished and user pressed SPACE to continue
+                                    running = False
+                                    Logger.debug("Act1View.run", "Combat end screen skipped")
                     
                     # === UPDATE ===
                     
