@@ -8,6 +8,7 @@ Wraps RhythmCombatController in a game loop structure with event handling.
 import pygame
 from Controllers.RhythmCombatController import RhythmCombatController
 from Views.RhythmCombatView import RhythmCombatView
+from Views.FinTransitionPageView import FinTransitionPageView
 from Controllers.GameState import GameState
 from Controllers.GameSequenceController import GameSequenceController
 from Models.RhythmModel import RhythmModel
@@ -168,18 +169,39 @@ class RhythmCombatPageView:
             # === DETERMINE RESULT ===
             try:
                 if hasattr(self.controller, 'victory') and self.controller.victory:
-                    Logger.debug("RhythmCombatPageView.run", "Rhythm combat completed successfully - returning to stage 1 with level increment")
+                    Logger.debug("RhythmCombatPageView.run", "Rhythm combat completed successfully - showing victory transition")
                     # Increment player level
                     if self.player:
                         current_level = self.player.getLevel()
                         self.player.setLevel(current_level + 1)
                         Logger.debug("RhythmCombatPageView.run", "Player level incremented", 
                                    old_level=current_level, new_level=current_level + 1)
-                    # Return to stage 1 (RhythmPageView)
+                    
+                    # Show victory transition screen with 5-second auto-advance
+                    transition = FinTransitionPageView(
+                        self.screen,
+                        message="Stage Complete!",
+                        next_stage_name="Continued Adventure",
+                        duration_seconds=5
+                    )
+                    transition.run()
+                    
+                    # After transition, return to stage 1 (RhythmPageView)
                     return "STAGE_1"
                 else:
-                    Logger.debug("RhythmCombatPageView.run", "Rhythm combat ended (not victory)")
-                    return GameState.GAME_OVER.value
+                    Logger.debug("RhythmCombatPageView.run", "Rhythm combat ended (not victory) - showing defeat transition then returning to main menu")
+                    
+                    # Show defeat transition screen with 3-second auto-advance
+                    transition = FinTransitionPageView(
+                        self.screen,
+                        message="Game Over",
+                        next_stage_name="Main Menu",
+                        duration_seconds=3
+                    )
+                    transition.run()
+                    
+                    # After transition, return to main menu
+                    return GameState.MAIN_MENU.value
             except Exception as e:
                 Logger.error("RhythmCombatPageView.run", e)
                 return GameState.QUIT.value

@@ -98,12 +98,12 @@ class PlayerController(BaseController):
             dx = 0
             dy = 0
 
-            # Support both arrows and WASD
-            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            # Support both arrows and ZQSD (French keyboard layout)
+            if keys[pygame.K_LEFT] or keys[pygame.K_q]:
                 dx -= self.SPEED
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 dx += self.SPEED
-            if keys[pygame.K_UP] or keys[pygame.K_w]:
+            if keys[pygame.K_UP] or keys[pygame.K_z]:
                 dy -= self.SPEED
             if keys[pygame.K_DOWN] or keys[pygame.K_s]:
                 dy += self.SPEED

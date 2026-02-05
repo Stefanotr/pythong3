@@ -206,7 +206,7 @@ class RhythmView:
         
         # --- D. NOTES ---
         for note in rhythm_model.notes:
-            if note["active"]:
+            if note["active"] and "y" in note:  # Only draw if Y position is set
                 lane_index = rhythm_model.lanes.index(note["lane"])
                 x_pos = self.lane_x[lane_index]
                 color = self.lane_colors[lane_index]

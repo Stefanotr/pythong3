@@ -222,7 +222,7 @@ class RhythmPageView:
                         if not self.countdown_active:
                             try:
                                 if self.rhythm_controller:
-                                    self.rhythm_controller.handleInput(event)
+                                    self.rhythm_controller.handle_input(event)
                                 
                                 # Check for completion (SPACE to finish)
                                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
@@ -235,6 +235,13 @@ class RhythmPageView:
                     
                     # === UPDATE ===
                     
+                    # Always update controller (handles countdown animation AND game)
+                    try:
+                        if self.rhythm_controller:
+                            self.rhythm_controller.update()
+                    except Exception as e:
+                        Logger.error("RhythmPageView.run", e)
+                    
                     if self.countdown_active:
                         self.countdown_timer -= 1
                         if self.countdown_timer <= 0:
@@ -242,9 +249,6 @@ class RhythmPageView:
                             Logger.debug("RhythmPageView.run", "Countdown finished, starting rhythm game")
                     else:
                         try:
-                            if self.rhythm_controller:
-                                self.rhythm_controller.update()
-                            
                             # Check if rhythm is complete
                             if self.isRhythmComplete() and not self.game_complete:
                                 self.game_complete = True
@@ -275,10 +279,21 @@ class RhythmPageView:
             
             try:
                 if self.game_complete:
-                    Logger.debug("RhythmPageView.run", "Final rhythm sequence completed")
-                    return GameState.COMPLETE.value
+                    # Check if it's a victory or defeat based on crowd satisfaction
+                    is_victory = self.rhythm_model.crowd_satisfaction > 0
+                    
+                    Logger.debug("RhythmPageView.run", "Rhythm game completed", 
+                               satisfaction=self.rhythm_model.crowd_satisfaction,
+                               is_victory=is_victory)
+                    
+                    if is_victory:
+                        Logger.debug("RhythmPageView.run", "Rhythm sequence won - returning to next stage")
+                        return GameState.COMPLETE.value
+                    else:
+                        Logger.debug("RhythmPageView.run", "Rhythm sequence lost - returning to main menu")
+                        return GameState.MAIN_MENU.value
                 else:
-                    Logger.debug("RhythmPageView.run", "Rhythm sequence ended")
+                    Logger.debug("RhythmPageView.run", "Rhythm sequence cancelled")
                     return GameState.QUIT.value
             except Exception as e:
                 Logger.error("RhythmPageView.run", e)
@@ -295,17 +310,19 @@ class RhythmPageView:
         Check if the rhythm game is complete.
         
         Returns:
-            bool: True if all notes are completed or player health is too low
+            bool: True if all notes are completed OR public satisfaction reaches 0 (loss) OR > 100 (shouldn't happen)
         """
         try:
             if not self.rhythm_model:
                 return True
             
             # Check if all notes are inactive (completed or missed)
-            active_notes = [n for n in self.rhythm_model.getNotes() if n.get("active", False)]
+            active_notes = [n for n in self.rhythm_model.notes if n.get("active", False)]
             
-            # Also check if player is dead
-            if self.johnny.getHealth() <= 0:
+            # Check if public satisfaction has reached 0 (defeat) or if all notes are done
+            if self.rhythm_model.crowd_satisfaction <= 0:
+                Logger.debug("RhythmPageView.isRhythmComplete", "Game over - crowd satisfaction too low", 
+                           satisfaction=self.rhythm_model.crowd_satisfaction)
                 return True
             
             # Complete if no active notes remain
