@@ -13,6 +13,7 @@ from Models.BottleModel import BottleModel
 from Models.GuitarModel import GuitarFactory
 from Models.CombatModel import CombatModel
 from Controllers.CombatController import CombatController
+from Controllers.GameSequenceController import GameSequenceController
 from Views.CombatView import CombatView
 from Views.PauseMenuView import PauseMenuView
 from Views.CaracterView import CaracterView
@@ -30,16 +31,18 @@ class Act1View:
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen, player=None):
+    def __init__(self, screen, player=None, sequence_controller=None):
         """
         Initialize Act 1 view with screen and game entities.
         
         Args:
             screen: Pygame surface for rendering
             player: Optional PlayerModel instance to preserve state (if None, creates new)
+            sequence_controller: Optional GameSequenceController for stage navigation
         """
         try:
             self.screen = screen
+            self.sequence_controller = sequence_controller
             
             # Get screen dimensions
             try:
@@ -70,7 +73,7 @@ class Act1View:
                                drunkenness=self.johnny.getDrunkenness())
                 else:
                     # Create new player if none provided
-                    self.johnny = PlayerModel("Johnny Fuzz", 60, 60)
+                    self.johnny = PlayerModel("Lola Coma", 60, 60)
                     self.johnny.setHealth(100)
                     self.johnny.setDamage(10)
                     self.johnny.setAccuracy(0.85)
@@ -120,16 +123,19 @@ class Act1View:
             
             try:
                 # Create character views for visual display
-                self.player_view = CaracterView("Game/Assets/guitare.png")
-                self.boss_view = CaracterView("Game/Assets/boss.png")
+                # Johnny is Lola with action-based sprites
+                self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola")
+                # Gros Bill (boss)
+                self.boss_view = CaracterView("Game/Assets/chefdesmotards.png", base_name="motard")
                 
-                # Set static positions for display
-                self.johnny.setX(self.screen_width // 4)  # Left side
-                self.johnny.setY(self.screen_height // 2)
-                self.gros_bill.setX(self.screen_width * 3 // 4)  # Right side
-                self.gros_bill.setY(self.screen_height // 2)
+                # Set static positions for display - Lola right, Boss far right
+                self.johnny.setX(int(self.screen_width * 0.65))  # Right side (Lola)
+                self.johnny.setY(self.screen_height // 2)  # Middle height
+                self.gros_bill.setX(int(self.screen_width * 0.85))  # Far right (Boss)
+                self.gros_bill.setY(self.screen_height // 2)  # Middle height
                 
-                Logger.debug("Act1View.__init__", "Character views created for static display")
+                Logger.debug("Act1View.__init__", "Character views created for static display",
+                           player_base="lola", boss_base="motard")
             except Exception as e:
                 Logger.error("Act1View.__init__", e)
                 # Continue even if character views fail
@@ -174,24 +180,6 @@ class Act1View:
                             Logger.debug("Act1View.run", "QUIT event received")
                             return GameState.QUIT.value
                         
-                        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                            # Open pause menu (delegates its own event loop to PauseMenuView.run)
-                            try:
-                                pause_menu = PauseMenuView(self.screen)
-                                pause_result = pause_menu.run()
-
-                                if pause_result == GameState.QUIT.value:
-                                    Logger.debug("Act1View.run", "Quit requested from pause menu")
-                                    return GameState.QUIT.value
-                                elif pause_result == GameState.MAIN_MENU.value:
-                                    Logger.debug("Act1View.run", "Main menu requested from pause menu")
-                                    return GameState.MAIN_MENU.value
-
-                                # If "continue" or anything else, just resume the game loop
-                                Logger.debug("Act1View.run", "Resuming from pause menu")
-                            except Exception as e:
-                                Logger.error("Act1View.run", e)
-                        
                         elif event.type == pygame.VIDEORESIZE:
                             # Handle window resize
                             try:
@@ -222,24 +210,51 @@ class Act1View:
                             except Exception as e:
                                 Logger.error("Act1View.run", e)
                         
-                        # Intro screen events
-                        elif self.show_intro:
-                            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                        elif event.type == pygame.KEYDOWN:
+                            # === HANDLE ESCAPE KEY (GLOBAL) ===
+                            if event.key == pygame.K_ESCAPE:
+                                try:
+                                    pause_menu = PauseMenuView(self.screen)
+                                    pause_result = pause_menu.run()
+                                    if pause_result == GameState.QUIT.value:
+                                        Logger.debug("Act1View.run", "Quit requested from pause menu")
+                                        return GameState.QUIT.value
+                                    elif pause_result == GameState.MAIN_MENU.value:
+                                        Logger.debug("Act1View.run", "Main menu requested from pause menu")
+                                        return GameState.MAIN_MENU.value
+                                    Logger.debug("Act1View.run", "Resuming from pause menu")
+                                except Exception as e:
+                                    Logger.error("Act1View.run", e)
+                            
+                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
+                            elif self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
+                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
+                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                    Logger.debug("Act1View.run", "Navigation to stage requested", 
+                                               stage=stage_number, 
+                                               stage_name=self.sequence_controller.get_current_stage_name())
+                                    return f"STAGE_{stage_number}"
+                            
+                            # === INTRO SKIP (SPACE) ===
+                            elif self.show_intro and event.key == pygame.K_SPACE:
                                 self.show_intro = False
                                 Logger.debug("Act1View.run", "Intro skipped by user")
-                        
-                        # Combat events
-                        elif not self.combat_model.isCombatFinished():
-                            try:
-                                self.combat_controller.handleInput(event)
-                            except Exception as e:
-                                Logger.error("Act1View.run", e)
-                        
-                        # Combat end events
-                        else:
-                            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                                running = False
-                                Logger.debug("Act1View.run", "Combat end screen skipped")
+                            
+                            # === COMBAT ACTIONS (A, P, D, B) OR END SCREEN (SPACE) ===
+                            elif not self.show_intro:
+                                Logger.debug("Act1View.run", "Key event received", key=pygame.key.name(event.key), combat_finished=self.combat_model.isCombatFinished())
+                                
+                                if not self.combat_model.isCombatFinished():
+                                    # Combat is active - pass to controller
+                                    Logger.debug("Act1View.run", "Passing key to combat controller", key=pygame.key.name(event.key))
+                                    try:
+                                        self.combat_controller.handle_input(event)
+                                    except Exception as e:
+                                        Logger.error("Act1View.run", e)
+                                elif event.key == pygame.K_SPACE:
+                                    # Combat finished and user pressed SPACE to continue
+                                    running = False
+                                    Logger.debug("Act1View.run", "Combat end screen skipped")
                     
                     # === UPDATE ===
                     
@@ -265,6 +280,12 @@ class Act1View:
                             try:
                                 self.player_view.drawCaracter(self.screen, self.johnny)
                                 self.boss_view.drawCaracter(self.screen, self.gros_bill)
+                            except Exception as e:
+                                Logger.error("Act1View.run", e)
+                            
+                            # Draw level display
+                            try:
+                                self._drawLevelDisplay()
                             except Exception as e:
                                 Logger.error("Act1View.run", e)
                     except Exception as e:
@@ -338,7 +359,7 @@ class Act1View:
             # Story
             try:
                 story_lines = [
-                    "You are Johnny Fuzz, a rockstar on the decline.",
+                    "You are Lola Coma, a rockstar on the decline.",
                     "",
                     "The bar owner refuses to pay you",
                     "until you get rid of the bikers",
@@ -383,6 +404,39 @@ class Act1View:
                 
         except Exception as e:
             Logger.error("Act1View.draw_intro", e)
+    
+    def _drawLevelDisplay(self):
+        """
+        Draw the level and alcohol display in the bottom left corner (map style).
+        """
+        try:
+            import pygame
+            font = pygame.font.Font(None, 36)
+            
+            # Draw Level
+            level = self.johnny.getLevel() if hasattr(self.johnny, 'getLevel') else 1
+            level_text = font.render(f"LEVEL {level}", True, (0, 255, 0))
+            
+            # Draw black rectangle background for level
+            text_x = 20
+            text_y = self.screen_height - 50
+            bg_rect = pygame.Rect(text_x - 5, text_y - 5, level_text.get_width() + 10, level_text.get_height() + 10)
+            pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
+            self.screen.blit(level_text, (text_x, text_y))
+            
+            # Draw Alcohol
+            alcohol = self.johnny.getDrunkenness() if hasattr(self.johnny, 'getDrunkenness') else 0
+            alcohol_text = font.render(f"Alcohol: {alcohol}%", True, (0, 255, 0))
+            
+            # Draw black rectangle background for alcohol
+            alcohol_x = 20
+            alcohol_y = self.screen_height - 90
+            bg_rect_alcohol = pygame.Rect(alcohol_x - 5, alcohol_y - 5, alcohol_text.get_width() + 10, alcohol_text.get_height() + 10)
+            pygame.draw.rect(self.screen, (0, 0, 0), bg_rect_alcohol)
+            self.screen.blit(alcohol_text, (alcohol_x, alcohol_y))
+            
+        except Exception as e:
+            Logger.error("Act1View._drawLevelDisplay", e)
 
 
 # === STANDALONE TEST ===

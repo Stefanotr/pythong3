@@ -26,7 +26,7 @@ def main():
     # === CRÉATION DES COMBATTANTS ===
     
     # Johnny (Joueur)
-    johnny = CaracterModel("Johnny Fuzz", x=0, y=0, type="PLAYER")
+    johnny = CaracterModel("Lola Coma", x=0, y=0, type="PLAYER")
     johnny.setHealth(100)
     johnny.setDamage(10)  # Pas utilisé ici, c'est le rythme qui compte
     

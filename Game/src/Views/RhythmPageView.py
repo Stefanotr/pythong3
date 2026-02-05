@@ -13,29 +13,33 @@ from Models.RhythmModel import RhythmModel
 from Controllers.RhythmController import RhythmController
 from Views.RhythmView import RhythmView
 from Views.PauseMenuView import PauseMenuView
+from Views.FinTransitionPageView import FinTransitionPageView
 from Utils.Logger import Logger
+from Controllers.GameSequenceController import GameSequenceController
 
 
 # === RHYTHM PAGE VIEW CLASS ===
 
 class RhythmPageView:
     """
-    View class for the final rhythm sequence.
+    View class for the classic rhythm sequence.
     Wraps existing rhythm classes in a game loop structure.
     """
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen, player=None):
+    def __init__(self, screen, player=None, sequence_controller=None):
         """
         Initialize the rhythm page view.
         
         Args:
             screen: Pygame surface for rendering
             player: Optional PlayerModel instance to preserve state (if None, creates new)
+            sequence_controller: Optional GameSequenceController for stage navigation
         """
         try:
             self.screen = screen
+            self.sequence_controller = sequence_controller
             
             # Get screen dimensions
             try:
@@ -65,7 +69,7 @@ class RhythmPageView:
                                drunkenness=self.johnny.getDrunkenness())
                 else:
                     # Create new player if none provided
-                    self.johnny = PlayerModel("Johnny Fuzz", 60, 60)
+                    self.johnny = PlayerModel("Lola Coma", 60, 60)
                     self.johnny.setHealth(100)
                     self.johnny.setDrunkenness(0)
                     Logger.debug("RhythmPageView.__init__", "New player created", 
@@ -88,17 +92,16 @@ class RhythmPageView:
                 rhythm_boss = CaracterModel("Final Boss", 80, 80)
                 rhythm_boss.setDamage(10)  # Stronger boss for final sequence
                 
-                # Create rhythm controller with boss
+                # Create rhythm controller
                 self.rhythm_controller = RhythmController(
                     self.rhythm_model, 
                     self.johnny, 
                     self.screen_height, 
-                    self.rhythm_view,
-                    rhythm_boss  # Pass boss for attack simulation
+                    self.rhythm_view
                 )
                 
                 Logger.debug("RhythmPageView.__init__", "Rhythm system initialized", 
-                           total_notes=len(self.rhythm_model.getNotes()))
+                           total_notes=len(self.rhythm_model.notes))
             except Exception as e:
                 Logger.error("RhythmPageView.__init__", e)
                 raise
@@ -137,9 +140,36 @@ class RhythmPageView:
                             Logger.debug("RhythmPageView.run", "QUIT event received")
                             return GameState.QUIT.value
                         
-                        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                            # Open pause menu (only if countdown is finished)
-                            if not self.countdown_active:
+                        elif event.type == pygame.KEYDOWN:
+                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
+                            if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
+                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
+                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                    Logger.debug("RhythmPageView.run", "Navigation to stage requested", 
+                                               stage=stage_number, 
+                                               stage_name=self.sequence_controller.get_current_stage_name())
+                                    # Return a special code to indicate stage change
+                                    return f"STAGE_{stage_number}"
+                            
+                            # === HANDLE ESCAPE KEY ===
+                            elif event.key == pygame.K_ESCAPE:
+                                # Open pause menu (only if countdown is finished)
+                                if not self.countdown_active:
+                                    try:
+                                        pause_menu = PauseMenuView(self.screen)
+                                        pause_result = pause_menu.run()
+
+                                        if pause_result == GameState.QUIT.value:
+                                            Logger.debug("RhythmPageView.run", "Quit requested from pause menu")
+                                            return GameState.QUIT.value
+                                        elif pause_result == GameState.MAIN_MENU.value:
+                                            Logger.debug("RhythmPageView.run", "Main menu requested from pause menu")
+                                            return GameState.MAIN_MENU.value
+
+                                        # If CONTINUE or anything else, just resume the game loop
+                                        Logger.debug("RhythmPageView.run", "Resuming from pause menu")
+                                    except Exception as e:
+                                        Logger.error("RhythmPageView.run", e)
                                 try:
                                     pause_menu = PauseMenuView(self.screen)
                                     pause_result = pause_menu.run()
@@ -193,7 +223,7 @@ class RhythmPageView:
                         if not self.countdown_active:
                             try:
                                 if self.rhythm_controller:
-                                    self.rhythm_controller.handleInput(event)
+                                    self.rhythm_controller.handle_input(event)
                                 
                                 # Check for completion (SPACE to finish)
                                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
@@ -206,6 +236,13 @@ class RhythmPageView:
                     
                     # === UPDATE ===
                     
+                    # Always update controller (handles countdown animation AND game)
+                    try:
+                        if self.rhythm_controller:
+                            self.rhythm_controller.update()
+                    except Exception as e:
+                        Logger.error("RhythmPageView.run", e)
+                    
                     if self.countdown_active:
                         self.countdown_timer -= 1
                         if self.countdown_timer <= 0:
@@ -213,12 +250,10 @@ class RhythmPageView:
                             Logger.debug("RhythmPageView.run", "Countdown finished, starting rhythm game")
                     else:
                         try:
-                            if self.rhythm_controller:
-                                self.rhythm_controller.update()
-                            
                             # Check if rhythm is complete
                             if self.isRhythmComplete() and not self.game_complete:
                                 self.game_complete = True
+                                running = False
                                 Logger.debug("RhythmPageView.run", "Rhythm game completed automatically")
                         except Exception as e:
                             Logger.error("RhythmPageView.run", e)
@@ -245,11 +280,61 @@ class RhythmPageView:
             # === DETERMINE RESULT ===
             
             try:
+                # Log game_complete status after loop ends
+                Logger.debug("RhythmPageView.run", "Main loop ended", 
+                           game_complete=self.game_complete,
+                           running=running)
+                
                 if self.game_complete:
-                    Logger.debug("RhythmPageView.run", "Final rhythm sequence completed")
-                    return GameState.COMPLETE.value
+                    # Check if it's a victory or defeat based on crowd satisfaction
+                    is_victory = self.rhythm_model.crowd_satisfaction > 0
+                    
+                    Logger.debug("RhythmPageView.run", "Rhythm game completed", 
+                               satisfaction=self.rhythm_model.crowd_satisfaction,
+                               is_victory=is_victory,
+                               total_notes=len(self.rhythm_model.notes),
+                               active_notes=len([n for n in self.rhythm_model.notes if n.get("active", False)]))
+                    
+                    if is_victory:
+                        Logger.debug("RhythmPageView.run", "Rhythm sequence won - showing transition")
+                        Logger.debug("RhythmPageView.run", "Creating FinTransitionPageView",
+                                   screen=self.screen,
+                                   screen_size=self.screen.get_size() if self.screen else None)
+                        
+                        # Show victory transition screen with 5-second auto-advance
+                        transition = FinTransitionPageView(
+                            self.screen,
+                            message="Stage Complete!",
+                            next_stage_name="Next Chapter",
+                            duration_seconds=5
+                        )
+                        
+                        Logger.debug("RhythmPageView.run", "FinTransitionPageView created, calling run()")
+                        transition.run()
+                        Logger.debug("RhythmPageView.run", "FinTransitionPageView.run() returned")
+                        
+                        return GameState.COMPLETE.value
+                    else:
+                        Logger.debug("RhythmPageView.run", "Rhythm sequence lost - showing defeat transition")
+                        Logger.debug("RhythmPageView.run", "Creating defeat transition",
+                                   screen=self.screen,
+                                   screen_size=self.screen.get_size() if self.screen else None)
+                        
+                        # Show defeat transition screen with 3-second auto-advance
+                        transition = FinTransitionPageView(
+                            self.screen,
+                            message="Game Over",
+                            next_stage_name="Main Menu",
+                            duration_seconds=3
+                        )
+                        
+                        Logger.debug("RhythmPageView.run", "Defeat transition created, calling run()")
+                        transition.run()
+                        Logger.debug("RhythmPageView.run", "Defeat transition.run() returned")
+                        
+                        return GameState.MAIN_MENU.value
                 else:
-                    Logger.debug("RhythmPageView.run", "Rhythm sequence ended")
+                    Logger.debug("RhythmPageView.run", "Rhythm sequence cancelled")
                     return GameState.QUIT.value
             except Exception as e:
                 Logger.error("RhythmPageView.run", e)
@@ -266,17 +351,19 @@ class RhythmPageView:
         Check if the rhythm game is complete.
         
         Returns:
-            bool: True if all notes are completed or player health is too low
+            bool: True if all notes are completed OR public satisfaction reaches 0 (loss) OR > 100 (shouldn't happen)
         """
         try:
             if not self.rhythm_model:
                 return True
             
             # Check if all notes are inactive (completed or missed)
-            active_notes = [n for n in self.rhythm_model.getNotes() if n.get("active", False)]
+            active_notes = [n for n in self.rhythm_model.notes if n.get("active", False)]
             
-            # Also check if player is dead
-            if self.johnny.getHealth() <= 0:
+            # Check if public satisfaction has reached 0 (defeat) or if all notes are done
+            if self.rhythm_model.crowd_satisfaction <= 0:
+                Logger.debug("RhythmPageView.isRhythmComplete", "Game over - crowd satisfaction too low", 
+                           satisfaction=self.rhythm_model.crowd_satisfaction)
                 return True
             
             # Complete if no active notes remain

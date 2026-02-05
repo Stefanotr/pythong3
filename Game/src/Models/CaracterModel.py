@@ -14,6 +14,8 @@ class CaracterModel:
         self._drunkenness = 0
         self._coma_risk = 0
         self._selected_bottle = None
+        self._current_action = "idle"  # idle, attacking, drinking, dodging
+        self._action_timer = 0  # Timer for action animation
 
     def getType(self):
         return self._type
@@ -71,6 +73,30 @@ class CaracterModel:
         except ValueError as e:
             Logger.error("CaracterModel.setAccuracy",e)
 
+    def getCurrentAction(self):
+        return self._current_action
+    
+    def setCurrentAction(self, action, duration=30):
+        """
+        Set the current action for the character.
+        
+        Args:
+            action: Action type (idle, attacking, drinking, dodging)
+            duration: How long to display this action (in frames)
+        """
+        self._current_action = action
+        self._action_timer = duration
+        Logger.debug("CaracterModel.setCurrentAction", f"Action set to {action}", duration=duration)
+    
+    def getActionTimer(self):
+        return self._action_timer
+    
+    def updateActionTimer(self):
+        """Decrement action timer, reset to idle when done"""
+        if self._action_timer > 0:
+            self._action_timer -= 1
+        elif self._current_action != "idle":
+            self._current_action = "idle"
 
     def attack(caracter1,caracter2):
 
