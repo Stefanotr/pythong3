@@ -176,6 +176,18 @@ class RhythmCombatPageView:
                         self.player.setLevel(current_level + 1)
                         Logger.debug("RhythmCombatPageView.run", "Player level incremented", 
                                    old_level=current_level, new_level=current_level + 1)
+                        
+                        # Check if this is the last stage (stage 8 - RHYTHM_COMBAT)
+                        is_last_stage = (self.sequence_controller and 
+                                        self.sequence_controller.get_current_stage() == 8)
+                        
+                        if is_last_stage:
+                            # Reset player stats for next playthrough
+                            self.player.setHealth(100)
+                            self.player.setDrunkenness(0)
+                            self.player.setComaRisk(0)
+                            Logger.debug("RhythmCombatPageView.run", "Player stats reset for new playthrough", 
+                                       health=100, drunkenness=0, coma_risk=0)
                     
                     # Show victory transition screen with 5-second auto-advance
                     transition = FinTransitionPageView(

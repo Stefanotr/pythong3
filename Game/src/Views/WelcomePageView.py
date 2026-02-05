@@ -384,6 +384,8 @@ class WelcomPageView(PageView):
                         try:
                             stage_num = int(result.split("_")[1])
                             Logger.debug("WelcomPageView._startGameFlow", "Stage jump via numeric key", target_stage=stage_num)
+                            # Set the sequence controller to the requested stage
+                            sequence_controller.set_stage(stage_num)
                             # Continue to next iteration which will display the requested stage
                             continue
                         except Exception as e:
