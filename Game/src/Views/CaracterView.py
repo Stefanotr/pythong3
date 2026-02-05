@@ -40,14 +40,16 @@ class CaracterView:
             # Load base sprite
             self._loadSprite(image_path)
             
-            # Initialize font for text rendering
+            # Initialize fonts for text rendering
             try:
                 self.font = pygame.font.SysFont(None, 36)
-                Logger.debug("CaracterView.__init__", "Font initialized")
+                self.small_font = pygame.font.SysFont(None, 18)  # For map view
+                Logger.debug("CaracterView.__init__", "Fonts initialized")
             except Exception as e:
                 Logger.error("CaracterView.__init__", e)
                 # Use default font if SysFont fails
                 self.font = pygame.font.Font(None, 36)
+                self.small_font = pygame.font.Font(None, 18)
                 
         except Exception as e:
             Logger.error("CaracterView.__init__", e)
@@ -159,7 +161,7 @@ class CaracterView:
 
     # === RENDERING ===
     
-    def drawCaracter(self, screen, caracter, offset=(0, 0)):
+    def drawCaracter(self, screen, caracter, offset=(0, 0), is_map=False):
         """
         Draw the character sprite and status information to the screen.
 
@@ -167,6 +169,7 @@ class CaracterView:
             screen: Pygame surface to draw on
             caracter: Character model instance (PlayerModel, BossModel, etc.)
             offset: Tuple (offset_x, offset_y) applied to world coordinates for screen rendering
+            is_map: Whether this is drawing on the map (affects text size and positioning)
         """
         try:
             # Update sprite based on current action
@@ -193,24 +196,37 @@ class CaracterView:
             except Exception as e:
                 Logger.error("CaracterView.drawCaracter", e)
 
-            # Draw character name below sprite
-            try:
-                name = caracter.getName()
-                name_surface = self.font.render(name, True, (255, 255, 255))
-                name_x = draw_x + sprite_w // 2 - name_surface.get_width() // 2
-                name_y = draw_y + sprite_h + 10
-                screen.blit(name_surface, (name_x, name_y))
-            except Exception as e:
-                Logger.error("CaracterView.drawCaracter", e)
+            # Draw character name below sprite (smaller font for map)
+            if not is_map:  # Only draw name in combat/act views
+                try:
+                    name = caracter.getName()
+                    name_surface = self.font.render(name, True, (255, 255, 255))
+                    name_x = draw_x + sprite_w // 2 - name_surface.get_width() // 2
+                    name_y = draw_y + sprite_h + 10
+                    screen.blit(name_surface, (name_x, name_y))
+                except Exception as e:
+                    Logger.error("CaracterView.drawCaracter", e)
 
             # Draw player-specific information (alcohol level)
             if isinstance(caracter, PlayerModel):
                 try:
                     alcohol = caracter.getDrunkenness()
                     text_content = f"Alcohol: {alcohol}%"
-                    text_surface = self.font.render(text_content, True, (255, 255, 255))
-                    screen.blit(text_surface, (10, 10))
-                    Logger.debug("CaracterView.drawCaracter", "Player alcohol level displayed", alcohol=alcohol)
+                    
+                    if is_map:
+                        # Small font, bottom right corner for map
+                        text_surface = self.small_font.render(text_content, True, (255, 100, 100))
+                        text_x = screen.get_width() - text_surface.get_width() - 10
+                        text_y = screen.get_height() - text_surface.get_height() - 10
+                    else:
+                        # Large font, top left for combat
+                        text_surface = self.font.render(text_content, True, (255, 255, 255))
+                        text_x = 10
+                        text_y = 10
+                    
+                    screen.blit(text_surface, (text_x, text_y))
+                    Logger.debug("CaracterView.drawCaracter", "Player alcohol level displayed", 
+                               alcohol=alcohol, is_map=is_map)
                 except Exception as e:
                     Logger.error("CaracterView.drawCaracter", e)
 

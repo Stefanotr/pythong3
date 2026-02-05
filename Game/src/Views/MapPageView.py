@@ -582,7 +582,7 @@ class MapPageView(PageView):
                         try:
                             self.map_view.draw(self.screen, (0, 0))
                             self._drawShopBuilding((0, 0))
-                            self.player_view.drawCaracter(self.screen, self.johnny, offset=(0, 0))
+                            self.player_view.drawCaracter(self.screen, self.johnny, offset=(0, 0), is_map=True)
                         except Exception as e:
                             Logger.error("MapPageView.render.draw", e)
 
