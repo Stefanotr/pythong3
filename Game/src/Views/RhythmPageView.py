@@ -99,8 +99,9 @@ class RhythmPageView:
                 # Create rhythm model
                 self.rhythm_model = RhythmModel()
                 
-                # Create rhythm view
-                self.rhythm_view = RhythmView(self.screen_width, self.screen_height)
+                # Create rhythm view with context-specific background
+                bg_image = "Game/Assets/barconcert.png" if context == "act1" else "Game/Assets/woodstock.png"
+                self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image)
                 
                 # Create a boss for attack simulation on missed notes
                 from Models.CaracterModel import CaracterModel
@@ -169,7 +170,8 @@ class RhythmPageView:
                                 
                                 # Update rhythm view with new dimensions
                                 try:
-                                    self.rhythm_view = RhythmView(self.screen_width, self.screen_height)
+                                    bg_image = "Game/Assets/barconcert.png" if self.context == "act1" else "Game/Assets/woodstock.png"
+                                    self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image)
                                 except Exception as e:
                                     Logger.error("RhythmPageView.run", e)
                                 
@@ -252,7 +254,8 @@ class RhythmPageView:
                                 
                                 # Recreate rhythm view with new dimensions
                                 try:
-                                    self.rhythm_view = RhythmView(self.screen_width, self.screen_height)
+                                    bg_image = "Game/Assets/barconcert.png" if self.context == "act1" else "Game/Assets/woodstock.png"
+                                    self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image)
                                     # Update controller with new view
                                     self.rhythm_controller.view = self.rhythm_view
                                     Logger.debug("RhythmPageView.run", "Window resized, rhythm view updated", 
@@ -418,7 +421,8 @@ class RhythmPageView:
                 Logger.debug("RhythmPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
             
             # Recreate rhythm view with new dimensions
-            self.rhythm_view = RhythmView(self.screen_width, self.screen_height)
+            bg_image = "Game/Assets/barconcert.png" if self.context == "act1" else "Game/Assets/woodstock.png"
+            self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image)
             
         except Exception as e:
             Logger.error("RhythmPageView._toggle_fullscreen", e)

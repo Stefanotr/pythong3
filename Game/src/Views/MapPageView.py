@@ -453,6 +453,14 @@ class MapPageView(PageView):
                                     Logger.error("MapPageView.run", e)
                                 except Exception as e:
                                     Logger.error("MapPageView.run", e)
+                            
+                            # Launch act if transition is ready and press SPACE
+                            elif event.key == pygame.K_SPACE:
+                                if self.transition_ready:
+                                    Logger.debug("MapPageView.run", "Transition triggered by SPACE", next_act=self.current_act)
+                                    transition_triggered = True
+                                    running = False
+                                    break
 
                         # Handle mouse click on transition prompt or shop
                         elif event.type == pygame.MOUSEBUTTONDOWN:

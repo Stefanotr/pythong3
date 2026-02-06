@@ -7,7 +7,7 @@ class RhythmCombatView:
     Vue pour le MODE COMBAT RHYTHM
     Affiche le jeu de rythme + les HP du joueur et du boss
     """
-    def __init__(self, screen_width, screen_height, boss_max_health=3000, player_max_health=100):
+    def __init__(self, screen_width, screen_height, boss_max_health=3000, player_max_health=100, background_image_path="Game/Assets/managerevade.png"):
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.boss_max_health = boss_max_health  # Store boss max health for health bar display
@@ -25,7 +25,7 @@ class RhythmCombatView:
         self.background_image = None
         self.overlay = None
         
-        image_path = "Game/Assets/stage.png"
+        image_path = background_image_path
         try:
             loaded_img = pygame.image.load(image_path).convert()
             # Background scales to actual screen size

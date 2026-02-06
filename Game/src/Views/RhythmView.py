@@ -2,7 +2,7 @@ import pygame
 import math
 
 class RhythmView:
-    def __init__(self, screen_width, screen_height):
+    def __init__(self, screen_width, screen_height, background_image_path="Game/Assets/stage.png"):
         self.screen_width = screen_width
         self.screen_height = screen_height
         
@@ -10,7 +10,7 @@ class RhythmView:
         self.background_image = None
         self.overlay = None
         
-        image_path = "Game/Assets/stage.png"
+        image_path = background_image_path
 
         try:
             loaded_img = pygame.image.load(image_path).convert()

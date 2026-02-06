@@ -184,7 +184,9 @@ class ActView:
             try:
                 self.combat_model = CombatModel(self.johnny, self.boss)
                 self.combat_controller = CombatController(self.combat_model)
-                self.combat_view = CombatView(self.screen_width, self.screen_height)
+                # Pass appropriate background image based on act
+                bg_image = act_config.get('background_image', 'Game/Assets/grosbillfight.png')
+                self.combat_view = CombatView(self.screen_width, self.screen_height, background_image_path=bg_image)
                 Logger.debug("ActView.__init__", "Combat system initialized")
             except Exception as e:
                 Logger.error("ActView.__init__", e)
@@ -250,7 +252,8 @@ class ActView:
             'boss_damage': 12,
             'boss_accuracy': 0.75,
             'guitar_factory_method': 'createLaPelle',
-            'has_rhythm_phase': False
+            'has_rhythm_phase': False,
+            'background_image': 'Game/Assets/grosbillfight.png'
         }
     
     def _get_act2_config(self):
@@ -276,7 +279,8 @@ class ActView:
             'boss_damage': 14,
             'boss_accuracy': 0.80,
             'guitar_factory_method': 'createGuitareGonflable',
-            'has_rhythm_phase': True
+            'has_rhythm_phase': True,
+            'background_image': 'Game/Assets/chefsecuritefight.png'
         }
     
     @staticmethod
@@ -328,7 +332,8 @@ class ActView:
                                 
                                 # Update combat view with new dimensions
                                 try:
-                                    self.combat_view = CombatView(self.screen_width, self.screen_height)
+                                    bg_image = self.act_config.get('background_image', 'Game/Assets/grosbillfight.png')
+                                    self.combat_view = CombatView(self.screen_width, self.screen_height, background_image_path=bg_image)
                                 except Exception as e:
                                     Logger.error("ActView.run", e)
                                 
@@ -578,8 +583,8 @@ class ActView:
             # Create rhythm model
             self.rhythm_model = RhythmModel()
             
-            # Create rhythm view
-            self.rhythm_view = RhythmView(self.screen_width, self.screen_height)
+            # Create rhythm view with Act 2 background (woodstock)
+            self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path="Game/Assets/woodstock.png")
             
             # Create rhythm controller with boss for attack simulation
             self.rhythm_controller = RhythmController(

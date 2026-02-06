@@ -118,7 +118,7 @@ class RhythmCombatPageView:
             # Create rhythm model and view
             try:
                 self.rhythm_model = RhythmModel()
-                self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health)
+                self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path="Game/Assets/managerevade.png")
                 Logger.debug("RhythmCombatPageView.__init__", "Rhythm and combat views created")
             except Exception as e:
                 Logger.error("RhythmCombatPageView.__init__", e)
@@ -186,7 +186,7 @@ class RhythmCombatPageView:
                             self.screen_width = event.w
                             self.screen_height = event.h
                             # Recreate combat view with new dimensions
-                            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health)
+                            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path="Game/Assets/managerevade.png")
                             Logger.debug("RhythmCombatPageView.run", "Window resized", width=self.screen_width, height=self.screen_height)
                         
                         
@@ -362,7 +362,7 @@ class RhythmCombatPageView:
                 Logger.debug("RhythmCombatPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
             
             # Recreate combat view with new dimensions
-            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health)
+            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path="Game/Assets/managerevade.png")
             
             # Update controller's screen height reference if available
             if self.controller and hasattr(self.controller, 'screen_height'):
