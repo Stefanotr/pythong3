@@ -69,34 +69,73 @@ class MapModel:
                     # Parse layers (CSV encoded) and store layers by name
                     layers = []
                     layers_by_name = {}
+                    flip_layers = []  # Store flip information for each layer
+                    FLIP_H = 0x80000000  # Horizontal flip
+                    FLIP_V = 0x40000000  # Vertical flip
+                    FLIP_D = 0x20000000  # Diagonal flip
+                    
                     for layer in root.findall('layer'):
                         layer_name = layer.attrib.get('name', '')
                         data_elem = layer.find('data')
                         if data_elem is None or data_elem.text is None:
                             matrix = [[0]*width for _ in range(height)]
+                            flips = [[0]*width for _ in range(height)]  # 0 = no flip
                             layers.append((layer_name, matrix))
+                            flip_layers.append((layer_name, flips))
                             layers_by_name[layer_name] = matrix
                             continue
                         csv = data_elem.text.strip()
                         nums = [int(n) for n in csv.replace('\n', ',').split(',') if n.strip()]
-                        # convert flat list to 2D
+                        # convert flat list to 2D and extract flips
                         matrix = []
+                        flips = []
                         for r in range(height):
-                            row = nums[r*width:(r+1)*width]
+                            row = []
+                            flip_row = []
+                            for c in range(width):
+                                idx = r * width + c
+                                if idx < len(nums):
+                                    gid = nums[idx]
+                                    # Extract flip flags
+                                    flip_flags = 0
+                                    if gid & FLIP_H:
+                                        flip_flags |= 1  # Bit 0: horizontal
+                                    if gid & FLIP_V:
+                                        flip_flags |= 2  # Bit 1: vertical
+                                    if gid & FLIP_D:
+                                        flip_flags |= 4  # Bit 2: diagonal
+                                    # Remove flip bits to get actual GID
+                                    gid = gid & ~(FLIP_H | FLIP_V | FLIP_D)
+                                    row.append(gid)
+                                    flip_row.append(flip_flags)
+                                else:
+                                    row.append(0)
+                                    flip_row.append(0)
                             matrix.append(row)
+                            flips.append(flip_row)
                         layers.append((layer_name, matrix))
+                        flip_layers.append((layer_name, flips))
                         layers_by_name[layer_name] = matrix
 
-                    # Merge layers (topmost non-zero tile wins)
+                    # Store flip information for all layers
+                    self.flip_layers = {name: flips for name, flips in flip_layers}
+
+                    # Merge layers (topmost non-zero tile wins) and merge flips
                     merged = [[0 for _ in range(width)] for _ in range(height)]
-                    for _name, layer in layers:
+                    merged_flips = [[0 for _ in range(width)] for _ in range(height)]
+                    for i, (_name, layer) in enumerate(layers):
+                        # Get corresponding flip layer
+                        flip_layer = flip_layers[i][1] if i < len(flip_layers) else None
                         for y in range(height):
                             for x in range(width):
                                 gid = layer[y][x]
                                 if gid:
                                     merged[y][x] = gid
+                                    if flip_layer:
+                                        merged_flips[y][x] = flip_layer[y][x]
 
                     self.tiles = merged
+                    self.tile_flips = merged_flips  # Store flip flags for each tile
                     # expose parsed layers
                     self.layers = layers_by_name
                     # preserve ordered list of layers (bottom -> top) to allow proper rendering
@@ -312,6 +351,8 @@ class MapModel:
                     # Legacy simple text format parsing
                     # Initialize tile_kinds as empty dict for consistency
                     self.tile_kinds = {}
+                    # No flips for legacy format maps
+                    self.tile_flips = []
                     for line in data.split("\n"):
                         if line.strip():  # Skip empty lines
                             row = []

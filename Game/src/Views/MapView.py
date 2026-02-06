@@ -71,12 +71,21 @@ class MapView:
                                     continue
                                 location = (x * self.map.tile_size + offset_x, y * self.map.tile_size + offset_y)
                                 tile_size = self.map.tile_size  # Define tile_size early
+                                
+                                # Get flip flags for this tile
+                                flip_flags = 0
+                                if hasattr(self.map, 'tile_flips'):
+                                    try:
+                                        flip_flags = self.map.tile_flips[y][x]
+                                    except (IndexError, TypeError):
+                                        flip_flags = 0
+                                
                                 if tile in self.map.tile_kinds:
                                     image = self.map.tile_kinds[tile].image
                                     try:
                                         if not isinstance(image, pygame.Surface):
                                             raise TypeError('tile image not a Surface')
-                                        cache_key = (id(image), tile_size)
+                                        cache_key = (id(image), tile_size, flip_flags)
                                         scaled = self._scaled_tile_cache.get(cache_key)
                                         if scaled is None:
                                             try:
@@ -85,6 +94,12 @@ class MapView:
                                                     scaled = pygame.transform.scale(image, (tile_size, tile_size))
                                                 else:
                                                     scaled = image
+                                                
+                                                # Apply flip transformations
+                                                flip_h = bool(flip_flags & 1)  # Bit 0: horizontal
+                                                flip_v = bool(flip_flags & 2)  # Bit 1: vertical
+                                                if flip_h or flip_v:
+                                                    scaled = pygame.transform.flip(scaled, flip_h, flip_v)
                                             except Exception:
                                                 scaled = image
                                             self._scaled_tile_cache[cache_key] = scaled
