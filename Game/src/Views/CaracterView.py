@@ -113,6 +113,12 @@ class CaracterView:
                 "moving_right": [
                     "Game/Assets/lolacoursdroite.png",
                     "Game/Assets/lola.png"
+                ],
+                # Animation musique : 3 frames
+                "musique": [
+                    "Game/Assets/lolamusique1.png",
+                    "Game/Assets/lolamusique2.png",
+                    "Game/Assets/lolamusique3.png"
                 ]
             },
             # Agent de Sécurité

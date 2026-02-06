@@ -102,20 +102,18 @@ class RhythmPageView:
                 self.rhythm_model = RhythmModel()
                 
                 # Create character view for displaying the player
-                character_view = None
+                self.character_view = None
                 try:
-                    character_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(200, 200))
-                    print(f"[DEBUG] CaracterView created successfully, sprite: {character_view.sprite}")
+                    self.character_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(200, 200))
+                    print(f"[DEBUG] CaracterView created successfully, sprite: {self.character_view.sprite}")
                     Logger.debug("RhythmPageView.__init__", "Character view created for rhythm display")
                 except Exception as e:
                     print(f"[ERROR] Failed to create character view: {e}")
                     Logger.error("RhythmPageView.__init__", f"Failed to create character view: {e}")
                 
-                # Create rhythm view with context-specific background and character
+                # Create rhythm view with context-specific background
                 bg_image = "Game/Assets/barconcert.png" if context == "act1" else "Game/Assets/woodstock.png"
-                print(f"[DEBUG] Creating RhythmView with character_view: {character_view}")
-                self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image, character_view=character_view)
-                print(f"[DEBUG] RhythmView created, rhythm_view.character_view: {self.rhythm_view.character_view}")
+                self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image, character_view=None)
                 
                 # Create a boss for attack simulation on missed notes
                 from Models.CaracterModel import CaracterModel
@@ -145,6 +143,8 @@ class RhythmPageView:
             self.countdown_active = True
             self.countdown_timer = 5 * 60  # 5 seconds at 60fps
             self.game_complete = False
+            self.last_feedback = ""  # Track last feedback for animation trigger
+
             
         except Exception as e:
             Logger.error("RhythmPageView.__init__", e)
@@ -307,6 +307,19 @@ class RhythmPageView:
                     except Exception as e:
                         Logger.error("RhythmPageView.run", e)
                     
+                    # === TRIGGER CHARACTER ANIMATION ON GOOD HITS ===
+                    try:
+                        if self.rhythm_model and self.johnny:
+                            feedback = getattr(self.rhythm_model, 'feedback', '')
+                            # Check if the feedback has changed and is a good hit (not a miss)
+                            if feedback and feedback != self.last_feedback and "MISS" not in feedback:
+                                # Trigger music animation when player makes a good hit
+                                # Duration is 30 frames (animates through the 3 frames)
+                                self.johnny.setCurrentAction("musique", duration=30)
+                            self.last_feedback = feedback
+                    except Exception as e:
+                        Logger.error("RhythmPageView.run - animation trigger", e)
+                    
                     if self.countdown_active:
                         self.countdown_timer -= 1
                         if self.countdown_timer <= 0:
@@ -330,6 +343,26 @@ class RhythmPageView:
                         else:
                             if self.rhythm_view and self.rhythm_model:
                                 self.rhythm_view.draw(self.screen, self.rhythm_model, self.johnny)
+                                
+                                # Draw character on the left side
+                                if self.character_view and self.johnny:
+                                    try:
+                                        # Temporarily set player position to (0,0) for offset-based drawing
+                                        original_x = self.johnny.getX()
+                                        original_y = self.johnny.getY()
+                                        self.johnny.setX(0)
+                                        self.johnny.setY(0)
+                                        
+                                        # Position: 15% from left, centered vertically
+                                        player_x = int(self.screen_width * 0.15)
+                                        player_y = self.screen_height // 2
+                                        self.character_view.drawCaracter(self.screen, self.johnny, offset=(player_x, player_y), is_map=False)
+                                        
+                                        # Restore original position
+                                        self.johnny.setX(original_x)
+                                        self.johnny.setY(original_y)
+                                    except Exception as e:
+                                        Logger.error("RhythmPageView.run - character drawing", e)
                     except Exception as e:
                         Logger.error("RhythmPageView.run", e)
                     

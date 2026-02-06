@@ -4,5 +4,17 @@ Game/logs/*.log
 Game/logs/*
 !Game/logs/.gitkeep
 
-# VS Code config (local only)
+# Python cache directories - all occurrences
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+
+# IDE/Editor
 .vscode/launch.json
+
+# OS
+.DS_Store
+Thumbs.db
