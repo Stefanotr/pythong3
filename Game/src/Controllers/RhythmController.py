@@ -168,7 +168,7 @@ class RhythmController:
             # Calcul du chiffre à afficher (5, 4, 3...)
             self.current_countdown_val = math.ceil(remaining / 1000)
             
-            🎵 Les notes descendent PENDANT le compte à rebours (logic a garder voir si mieuxou pas)
+            #🎵 Les notes descendent PENDANT le compte à rebours (logic a garder voir si mieuxou pas)
             fake_time = -remaining
             
             for note in self.rhythm.notes:
