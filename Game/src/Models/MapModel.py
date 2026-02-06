@@ -131,9 +131,12 @@ class MapModel:
                                 continue
                         self.object_layers[layer_name] = objs
 
-                    # Handle tileset (external .tsx)
-                    tileset_elem = root.find('tileset')
-                    if tileset_elem is not None:
+                    # Handle multiple tilesets (external .tsx files)
+                    self.tile_kinds = {}  # Initialize as dict BEFORE the loop
+                    self.tilesets = []  # Store metadata for all tilesets
+                    tileset_elems = root.findall('tileset')  # Get all tilesets
+                    
+                    for tileset_elem in tileset_elems:
                         source = tileset_elem.attrib.get('source')
                         firstgid = int(tileset_elem.attrib.get('firstgid', 1))
                         tsx_path = os.path.join(tmx_dir, source) if source else None
@@ -237,8 +240,9 @@ class MapModel:
                             except Exception as e:
                                 Logger.error('MapModel.__init__', e)
 
-                        # Build tile_kinds mapping from gid -> TileModel
-                        self.tile_kinds = {}
+                        # Build tile_kinds mapping from gid -> TileModel for this tileset
+                        # (self.tile_kinds is already initialized as a dict before the loop)
+                        
                         # Fallback for missing columns
                         columns = tileset_columns if tileset_columns > 0 else max(1, (tileset_tilecount or 0))
                         for gid_index in range(tileset_tilecount):
@@ -269,35 +273,45 @@ class MapModel:
                                 self.tile_kinds[gid] = _Tile(tile_surf)
                             except Exception:
                                 continue
+                        
+                        # Store tileset metadata for reference
+                        self.tilesets.append({
+                            'firstgid': firstgid,
+                            'source': source,
+                            'tilecount': tileset_tilecount,
+                            'columns': tileset_columns
+                        })
 
-                        # Ensure any GID used in the merged map has at least a placeholder tile
-                        try:
-                            used_gids = set()
-                            for row in self.tiles:
-                                for v in row:
-                                    if isinstance(v, int) and v > 0:
-                                        used_gids.add(v)
-                            missing = [g for g in sorted(used_gids) if g not in self.tile_kinds]
-                            if missing:
-                                Logger.debug('MapModel.__init__', 'Missing GIDs found - creating placeholders', missing_count=len(missing), missing_sample=missing[:20])
-                            for gid in missing:
-                                try:
-                                    tile_surf = pygame.Surface((tilewidth, tileheight))
-                                    color = ((gid * 37) % 256, (gid * 61) % 256, (gid * 97) % 256)
-                                    tile_surf.fill(color)
-                                    class _Tile2:
-                                        def __init__(self, image):
-                                            self.image = image
-                                    self.tile_kinds[gid] = _Tile2(tile_surf)
-                                except Exception:
-                                    continue
-                        except Exception as e:
-                            Logger.error('MapModel.__init__', e)
+                    # Ensure any GID used in the merged map has at least a placeholder tile
+                    try:
+                        used_gids = set()
+                        for row in self.tiles:
+                            for v in row:
+                                if isinstance(v, int) and v > 0:
+                                    used_gids.add(v)
+                        missing = [g for g in sorted(used_gids) if g not in self.tile_kinds]
+                        if missing:
+                            Logger.debug('MapModel.__init__', 'Missing GIDs found - creating placeholders', missing_count=len(missing), missing_sample=missing[:20])
+                        for gid in missing:
+                            try:
+                                tile_surf = pygame.Surface((tilewidth, tileheight))
+                                color = ((gid * 37) % 256, (gid * 61) % 256, (gid * 97) % 256)
+                                tile_surf.fill(color)
+                                class _Tile2:
+                                    def __init__(self, image):
+                                        self.image = image
+                                self.tile_kinds[gid] = _Tile2(tile_surf)
+                            except Exception:
+                                continue
+                    except Exception as e:
+                        Logger.error('MapModel.__init__', e)
 
-                    Logger.debug("MapModel.__init__", "TMX map parsed successfully", width=width, height=height, tilewidth=tilewidth, tileheight=tileheight, object_layers=list(self.object_layers.keys()))
+                    Logger.debug("MapModel.__init__", "TMX map parsed successfully", width=width, height=height, tilewidth=tilewidth, tileheight=tileheight, tilesets=len(self.tilesets), object_layers=list(self.object_layers.keys()))
 
                 else:
                     # Legacy simple text format parsing
+                    # Initialize tile_kinds as empty dict for consistency
+                    self.tile_kinds = {}
                     for line in data.split("\n"):
                         if line.strip():  # Skip empty lines
                             row = []

@@ -70,12 +70,12 @@ class MapView:
                                 if not tile:
                                     continue
                                 location = (x * self.map.tile_size + offset_x, y * self.map.tile_size + offset_y)
+                                tile_size = self.map.tile_size  # Define tile_size early
                                 if tile in self.map.tile_kinds:
                                     image = self.map.tile_kinds[tile].image
                                     try:
                                         if not isinstance(image, pygame.Surface):
                                             raise TypeError('tile image not a Surface')
-                                        tile_size = self.map.tile_size
                                         cache_key = (id(image), tile_size)
                                         scaled = self._scaled_tile_cache.get(cache_key)
                                         if scaled is None:
