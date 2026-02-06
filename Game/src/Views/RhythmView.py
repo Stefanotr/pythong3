@@ -172,10 +172,13 @@ class RhythmView:
                 # Positionner le personnage au milieu gauche de l'écran
                 char_x = int(self.screen_width * 0.15)  # 15% from left
                 char_y = self.screen_height // 2  # Middle vertically
-                # Draw character sprite at the calculated position
+                
+                # Draw character sprite directly if it exists
                 if self.character_view.sprite:
-                    sprite_rect = self.character_view.sprite.get_rect(center=(char_x, char_y))
-                    screen.blit(self.character_view.sprite, sprite_rect)
+                    sprite_w, sprite_h = self.character_view.sprite.get_size()
+                    draw_x = char_x - sprite_w // 2
+                    draw_y = char_y - sprite_h // 2
+                    screen.blit(self.character_view.sprite, (draw_x, draw_y))
             except Exception as e:
                 print(f"Erreur affichage personnage: {e}")
         

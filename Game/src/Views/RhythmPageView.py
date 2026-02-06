@@ -101,16 +101,20 @@ class RhythmPageView:
                 self.rhythm_model = RhythmModel()
                 
                 # Create character view for displaying the player
+                character_view = None
                 try:
                     character_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(200, 200))
+                    print(f"[DEBUG] CaracterView created successfully, sprite: {character_view.sprite}")
                     Logger.debug("RhythmPageView.__init__", "Character view created for rhythm display")
                 except Exception as e:
+                    print(f"[ERROR] Failed to create character view: {e}")
                     Logger.error("RhythmPageView.__init__", f"Failed to create character view: {e}")
-                    character_view = None
                 
                 # Create rhythm view with context-specific background and character
                 bg_image = "Game/Assets/barconcert.png" if context == "act1" else "Game/Assets/woodstock.png"
+                print(f"[DEBUG] Creating RhythmView with character_view: {character_view}")
                 self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image, character_view=character_view)
+                print(f"[DEBUG] RhythmView created, rhythm_view.character_view: {self.rhythm_view.character_view}")
                 
                 # Create a boss for attack simulation on missed notes
                 from Models.CaracterModel import CaracterModel
