@@ -18,9 +18,9 @@ class InventoryView:
         self.screen_width = screen_width
         self.screen_height = screen_height
         
-        # Fonts
-        self.font = pygame.font.SysFont("Arial", int(screen_height * 0.025), bold=True)
-        self.big_font = pygame.font.SysFont("Arial", int(screen_height * 0.04), bold=True)
+        # Fonts (reduced by 20% for inventory)
+        self.font = pygame.font.SysFont("Arial", int(screen_height * 0.02), bold=True)
+        self.big_font = pygame.font.SysFont("Arial", int(screen_height * 0.032), bold=True)
     
     def draw_inventory_display(self, screen, inventory_model, x, y):
         """

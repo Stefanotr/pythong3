@@ -91,7 +91,7 @@ class MapView:
                                         screen.blit(scaled, location)
                                     except Exception as e:
                                         Logger.error('MapView.draw.blit', e)
-                                        rect = (location[0], location[1], self.map.tile_size, self.map.tile_size)
+                                        rect = (location[0], location[1], tile_size, tile_size)
                                         pygame.draw.rect(screen, (120, 0, 120), rect)
                                 else:
                                     try:
@@ -101,7 +101,7 @@ class MapView:
                                             self._unknown_gids.add(tile)
                                             Logger.debug("MapView.draw", "Unknown tile type, drawing placeholder", tile=tile, position=(x, y))
                                         color = ((tile * 37) % 256, (tile * 61) % 256, (tile * 97) % 256) if isinstance(tile, int) else (150, 0, 150)
-                                        rect = (location[0], location[1], self.map.tile_size, self.map.tile_size)
+                                        rect = (location[0], location[1], tile_size, tile_size)
                                         pygame.draw.rect(screen, color, rect)
                                     except Exception as e:
                                         Logger.error("MapView.draw.placeholder", e)

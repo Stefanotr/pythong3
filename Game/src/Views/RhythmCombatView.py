@@ -36,12 +36,12 @@ class RhythmCombatView:
         except FileNotFoundError:
             pass
 
-        # Fonts - based on fixed game height
-        self.font = pygame.font.SysFont("Arial", int(self.game_height * 0.025), bold=True)
-        self.big_font = pygame.font.SysFont("Arial", int(self.game_height * 0.08), bold=True)
-        self.combo_font = pygame.font.SysFont("Arial", int(self.game_height * 0.05), bold=True)
-        self.title_font = pygame.font.SysFont("Arial", int(self.game_height * 0.035), bold=True)
-        self.huge_font = pygame.font.SysFont("Arial", int(self.game_height * 0.3), bold=True)
+        # Fonts - based on fixed game height, reduced for fullscreen display (increased 5%)
+        self.font = pygame.font.SysFont("Arial", int(self.game_height * 0.0158), bold=True)
+        self.big_font = pygame.font.SysFont("Arial", int(self.game_height * 0.047), bold=True)
+        self.combo_font = pygame.font.SysFont("Arial", int(self.game_height * 0.0315), bold=True)
+        self.title_font = pygame.font.SysFont("Arial", int(self.game_height * 0.021), bold=True)
+        self.huge_font = pygame.font.SysFont("Arial", int(self.game_height * 0.21), bold=True)
         
         # Character views for player and boss animations
         # Use DIFFERENT sizes for Lola: smaller for map, larger for combat
@@ -211,7 +211,7 @@ class RhythmCombatView:
         self.update_particles()
         
         # --- HUD COMBAT (reste relatif à l'écran réel) ---
-        hud_h = int(self.screen_height * 0.15)
+        hud_h = int(self.screen_height * 0.10)  # Reduced from 15% to 10%
         hud_bg = pygame.Surface((self.screen_width, hud_h), pygame.SRCALPHA)
         hud_bg.fill((10, 10, 20, 220))
         screen.blit(hud_bg, (0, 0))
@@ -219,7 +219,7 @@ class RhythmCombatView:
         
         # Titre du combat
         combat_title = self.title_font.render("COMBAT RHYTHM", True, (255, 215, 0))
-        screen.blit(combat_title, (self.screen_width//2 - combat_title.get_width()//2, 10))
+        screen.blit(combat_title, (self.screen_width//2 - combat_title.get_width()//2, 5))
         
         # Cash sous le titre
         try:
@@ -228,7 +228,7 @@ class RhythmCombatView:
             base_hit_cash = total_hits * 2  # 2$ per hit for boss combat
             display_cash = base_hit_cash * (level + 1)
             cash_text = self.font.render(f"CASH: ${display_cash}", True, (100, 200, 255))
-            screen.blit(cash_text, (self.screen_width//2 - cash_text.get_width()//2, 40))
+            screen.blit(cash_text, (self.screen_width//2 - cash_text.get_width()//2, int(hud_h * 0.5)))
         except Exception as e:
             pass
         
@@ -241,23 +241,24 @@ class RhythmCombatView:
         except Exception:
             pass
         
-        # HP JOUEUR (Gauche)
-        player_hp_width = int(self.screen_width * 0.3)
+        # HP JOUEUR (Gauche) - Taille réduite pour fullscreen
+        player_hp_width = int(self.screen_width * 0.12)  # Réduit à 12%
+        player_hp_x = 30  # Padding depuis la gauche
         self.draw_health_bar(
             screen, 
-            20, 
+            player_hp_x, 
             int(hud_h * 0.5),
             player_hp_width,
-            int(hud_h * 0.3),
+            int(hud_h * 0.20),
             player_model.getHealth(),
             self.player_max_health,
             f"{player_model.getName()}",
             is_player=True
         )
         
-        # HP BOSS (Droite)
-        boss_hp_width = int(self.screen_width * 0.3)
-        boss_hp_x = self.screen_width - boss_hp_width - 20
+        # HP BOSS (Droite) - Taille réduite pour fullscreen
+        boss_hp_width = int(self.screen_width * 0.12)  # Réduit à 12%
+        boss_hp_x = self.screen_width - boss_hp_width - 30  # Padding depuis la droite
         
         # Debug: Log health values before drawing
         boss_current_health = boss_model.getHealth()
@@ -274,7 +275,7 @@ class RhythmCombatView:
             boss_hp_x,
             int(hud_h * 0.5),
             boss_hp_width,
-            int(hud_h * 0.3),
+            int(hud_h * 0.20),
             boss_current_health,
             self.boss_max_health,  # Use actual max health from initialization
             f"{boss_model.getName()}",
@@ -332,8 +333,8 @@ class RhythmCombatView:
         
         # --- CHARACTER ANIMATIONS (Joueur à gauche, Boss à droite) ---
         try:
-            # Player on the left (Lola) - centered vertically at middle of screen, positioned middle-left
-            player_x = int(self.screen_width * 0.15)  # 15% from left (middle-left position)
+            # Player on the left (Lola) - centered vertically at middle of screen, positioned more left
+            player_x = int(self.screen_width * 0.08)  # 8% from left (more left position)
             player_y = self.screen_height // 2  # Middle of screen
             self.player_view.drawCaracter(screen, player_model, offset=(player_x, player_y), is_map=False)
             

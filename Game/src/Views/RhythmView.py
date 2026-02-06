@@ -27,15 +27,15 @@ class RhythmView:
             print(f"Image non trouvée ({image_path}). Mode Dégradé activé.")
             self.background_image = None
 
-        # --- 2. FONTS ---
-        self.font = pygame.font.SysFont("Arial", int(screen_height * 0.025), bold=True)
-        self.big_font = pygame.font.SysFont("Arial", int(screen_height * 0.08), bold=True)
-        self.combo_font = pygame.font.SysFont("Arial", int(screen_height * 0.05), bold=True)
-        self.title_font = pygame.font.SysFont("Arial", int(screen_height * 0.035), bold=True)
-        self.score_font = pygame.font.SysFont("Arial", int(screen_height * 0.06), bold=True)
+        # --- 2. FONTS (reduced for fullscreen display, 5% increase) ---
+        self.font = pygame.font.SysFont("Arial", int(screen_height * 0.0158), bold=True)
+        self.big_font = pygame.font.SysFont("Arial", int(screen_height * 0.047), bold=True)
+        self.combo_font = pygame.font.SysFont("Arial", int(screen_height * 0.0315), bold=True)
+        self.title_font = pygame.font.SysFont("Arial", int(screen_height * 0.021), bold=True)
+        self.score_font = pygame.font.SysFont("Arial", int(screen_height * 0.0368), bold=True)
         
-        # Police GÉANTE pour le compte à rebours
-        self.huge_font = pygame.font.SysFont("Arial", int(screen_height * 0.3), bold=True)
+        # Police GÉANTE pour le compte à rebours (5% increase)
+        self.huge_font = pygame.font.SysFont("Arial", int(screen_height * 0.1575), bold=True)
         
         # Couleurs néon pour les 4 cordes
         self.lane_colors = [
@@ -241,7 +241,7 @@ class RhythmView:
         self.update_particles()
         
         # --- F. HUD ---
-        hud_h = int(self.screen_height * 0.12)
+        hud_h = int(self.screen_height * 0.10)  # Reduced from 12% to 10%
         hud_bg = pygame.Surface((self.screen_width, hud_h), pygame.SRCALPHA)
         hud_bg.fill((10, 10, 20, 200))
         screen.blit(hud_bg, (0, 0))
@@ -253,16 +253,16 @@ class RhythmView:
         label_hype = "EN FEU" if rhythm_model.crowd_satisfaction > 80 else "PUBLIC"
         if rhythm_model.crowd_satisfaction < 40: label_hype = "EN COLERE"
         
-        self.draw_health_bar(screen, 20, int(hud_h*0.4), int(self.screen_width*0.25), int(hud_h*0.35), 
+        self.draw_health_bar(screen, 20, int(hud_h*0.4), int(self.screen_width*0.12), int(hud_h*0.2), 
                              rhythm_model.crowd_satisfaction, 100, label_hype, hype_col, (50, 0, 0))
         
         # Score & Cash
         score_txt = self.score_font.render(f"{rhythm_model.score:,}", True, (255, 215, 0))
-        screen.blit(score_txt, (self.screen_width//2 - score_txt.get_width()//2, hud_h//2 - 20))
+        screen.blit(score_txt, (self.screen_width//2 - score_txt.get_width()//2, int(hud_h*0.3)))
         
         # Label SCORE
         score_label = self.font.render("SCORE", True, (200, 200, 200))
-        screen.blit(score_label, (self.screen_width//2 - score_label.get_width()//2, int(hud_h*0.1)))
+        screen.blit(score_label, (self.screen_width//2 - score_label.get_width()//2, int(hud_h*0.05)))
         
         # Display earned cash - calculate in real-time based on current performance
         # If cash_earned was set (end of game), use that; otherwise estimate from current hits
@@ -282,7 +282,7 @@ class RhythmView:
             display_cash = base_hit_cash * (player_level + 1)
         
         cash_txt = self.score_font.render(f"{display_cash}$", True, (100, 255, 100))
-        screen.blit(cash_txt, (self.screen_width - cash_txt.get_width() - 20, hud_h//2 - 20))
+        screen.blit(cash_txt, (self.screen_width - cash_txt.get_width() - 20, int(hud_h*0.3)))
 
         # Feedback & Combo
         if rhythm_model.feedback and rhythm_model.feedback_timer > 0:
