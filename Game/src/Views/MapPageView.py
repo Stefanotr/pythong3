@@ -6,6 +6,7 @@ Allows player navigation and transitions to different acts.
 """
 
 import pygame
+import os
 from Views.PageView import PageView
 from Views.MapView import MapView
 from Views.CaracterView import CaracterView
@@ -46,12 +47,25 @@ class MapPageView(PageView):
         """
         try:
             # Get screen dimensions
-            screen_width = screen.get_width()
-            screen_height = screen.get_height()
+            screen_info = pygame.display.Info()
+            screen_width = screen_info.current_w
+            screen_height = screen_info.current_h
+            
+            # Set window to center
+            try:
+                os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
+            except:
+                pass
+            
+            # Create resizable window at full screen size
+            self.screen = pygame.display.set_mode(
+                (screen_width, screen_height),
+                pygame.RESIZABLE
+            )
             
             # Initialize PageView without background image to avoid visual artifacts on the map
             super().__init__("Map - Six-String Hangover", screen_width, screen_height, pygame.RESIZABLE, None)
-            self.screen = screen
+            
             self.sequence_controller = sequence_controller
             Logger.debug("MapPageView.__init__", "Map view created with no background image to avoid visual bugs")
             self.current_act = current_act
@@ -76,7 +90,7 @@ class MapPageView(PageView):
                         TileModel("road", "Game/Assets/road3_carre.png", False),
                         TileModel("road2", "Game/Assets/road3_carre.png", False)
                     ]
-                    self.map = MapModel("Game/Assets/maps/map.map", tile_kinds, 106)
+                    self.map = MapModel("Game/Assets/maps/map.map", tile_kinds, 16)
                     Logger.debug("MapPageView.__init__", "Fallback map loaded")
             except Exception as e:
                 Logger.error("MapPageView.__init__", e)
@@ -173,8 +187,13 @@ class MapPageView(PageView):
                     # TMX object y is top coordinate; use as-is
                     self.shop_left = sx
                     self.shop_top = sy
-                    self.shop_width = sw
-                    self.shop_height = sh
+                    self.shop_tile_x = self.shop_left // self.map.tile_size
+                    self.shop_tile_y = self.shop_top // self.map.tile_size
+                    self.shop_tile_width = 3  # 3x3 collision hitbox
+                    self.shop_tile_height = 3  # 3x3 collision hitbox
+                    # Recalculate pixel dimensions based on 3x3 tile collision
+                    self.shop_width = self.shop_tile_width * self.map.tile_size
+                    self.shop_height = self.shop_tile_height * self.map.tile_size
                     self.shop_rect_world = pygame.Rect(self.shop_left, self.shop_top, self.shop_width, self.shop_height)
                     # door at bottom center unless door property specified
                     door_w = max(8, self.map.tile_size // 2)
@@ -182,10 +201,6 @@ class MapPageView(PageView):
                     door_x = self.shop_left + (self.shop_width - door_w) // 2
                     door_y = self.shop_top + self.shop_height - door_h
                     self.shop_door_rect = pygame.Rect(door_x, door_y, door_w, door_h)
-                    self.shop_tile_x = self.shop_left // self.map.tile_size
-                    self.shop_tile_y = self.shop_top // self.map.tile_size
-                    self.shop_tile_width = max(1, self.shop_width // self.map.tile_size)
-                    self.shop_tile_height = max(1, self.shop_height // self.map.tile_size)
                     self.chosen_building = (self.shop_tile_x, self.shop_tile_y, self.shop_tile_x + self.shop_tile_width - 1, self.shop_tile_y + self.shop_tile_height -1)
                     Logger.debug('MapPageView.__init__', 'Using shop object from TMX', shop=self.chosen_building, obj=shop_obj)
                 else:
@@ -364,6 +379,12 @@ class MapPageView(PageView):
                                 Logger.error("MapPageView.run", e)
                         
                         elif event.type == pygame.KEYDOWN:
+                            # === HANDLE F11 FOR FULLSCREEN TOGGLE ===
+                            if event.key == pygame.K_F11:
+                                try:
+                                    self._toggle_fullscreen()
+                                except Exception as e:
+                                    Logger.error("MapPageView.run", e)
                             # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
                             if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
                                 stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
@@ -432,6 +453,14 @@ class MapPageView(PageView):
                                     Logger.error("MapPageView.run", e)
                                 except Exception as e:
                                     Logger.error("MapPageView.run", e)
+                            
+                            # Launch act if transition is ready and press SPACE
+                            elif event.key == pygame.K_SPACE:
+                                if self.transition_ready:
+                                    Logger.debug("MapPageView.run", "Transition triggered by SPACE", next_act=self.current_act)
+                                    transition_triggered = True
+                                    running = False
+                                    break
 
                         # Handle mouse click on transition prompt or shop
                         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -468,28 +497,28 @@ class MapPageView(PageView):
                                             shop_model = ShopModel(self.johnny)
                                             shop_view = ShopPageView(self.screen, shop_model)
                                             shop_controller = ShopController(shop_model, shop_view)
-                                        
-                                        # Shop loop
-                                        shop_running = True
-                                        shop_clock = pygame.time.Clock()
-                                        
-                                        while shop_running:
-                                            for shop_event in pygame.event.get():
-                                                if shop_event.type == pygame.QUIT:
-                                                    shop_running = False
-                                                    return GameState.QUIT.value
-                                                
-                                                result = shop_controller.handleInput(shop_event)
-                                                if result == "exit":
-                                                    shop_running = False
-                                                    Logger.debug("MapPageView.run", "Shop closed")
                                             
-                                            shop_controller.update()
-                                            shop_view.draw()
-                                            pygame.display.flip()
-                                            shop_clock.tick(60)
-                                        
-                                        Logger.debug("MapPageView.run", "Returned from shop")
+                                            # Shop loop
+                                            shop_running = True
+                                            shop_clock = pygame.time.Clock()
+                                            
+                                            while shop_running:
+                                                for shop_event in pygame.event.get():
+                                                    if shop_event.type == pygame.QUIT:
+                                                        shop_running = False
+                                                        return GameState.QUIT.value
+                                                    
+                                                    result = shop_controller.handleInput(shop_event)
+                                                    if result == "exit":
+                                                        shop_running = False
+                                                        Logger.debug("MapPageView.run", "Shop closed")
+                                                
+                                                shop_controller.update()
+                                                shop_view.draw(self.johnny)
+                                                pygame.display.flip()
+                                                shop_clock.tick(60)
+                                            
+                                            Logger.debug("MapPageView.run", "Returned from shop")
                                     except Exception as e:
                                         Logger.error("MapPageView.run", e)
 
@@ -598,7 +627,13 @@ class MapPageView(PageView):
                                 except Exception:
                                     font = pygame.font.Font(None, 14)
                                 label = font.render('SHOP', True, (100, 255, 100))  # Green color
-                                self.screen.blit(label, (shop_center[0] - label.get_width()//2, shop_center[1] - self.shop_height//2 - label.get_height() - 4))
+                                # Draw black background behind label for readability
+                                lbl_x = shop_center[0] - label.get_width()//2
+                                lbl_y = shop_center[1] - self.shop_height//2 - label.get_height() - 4
+                                padding = 6
+                                bg_rect = pygame.Rect(lbl_x - padding//2, lbl_y - padding//2, label.get_width() + padding, label.get_height() + padding)
+                                pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
+                                self.screen.blit(label, (lbl_x, lbl_y))
                             except Exception:
                                 pass
                             Logger.debug("MapPageView.run", "Shop marker", shop_center=shop_center)
@@ -774,7 +809,7 @@ class MapPageView(PageView):
 
             # Draw text
             try:
-                title_surf = font.render("🛒 SHOP", True, (0, 0, 0))
+                title_surf = font.render("SHOP", True, (0, 0, 0))
                 instruction_surf = small_font.render("Press E to enter shop", True, (0, 0, 0))
                 
                 self.screen.blit(title_surf, (prompt_x + (prompt_width - title_surf.get_width()) // 2, prompt_y + 15))
@@ -812,7 +847,7 @@ class MapPageView(PageView):
                         Logger.error("MapPageView._run_shop", e)
 
                 try:
-                    shop_view.draw()
+                    shop_view.draw(self.johnny)
                 except Exception as e:
                     Logger.error("MapPageView._run_shop.draw", e)
 
@@ -895,5 +930,42 @@ class MapPageView(PageView):
             pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
             
             self.screen.blit(level_text, (text_x, text_y))
+            
+            # Draw Alcohol level above the level display
+            try:
+                alcohol = self.johnny.getDrunkenness() if hasattr(self.johnny, 'getDrunkenness') else 0
+                alcohol_text = font.render(f"Alcohol: {alcohol}%", True, (0, 255, 0))
+                alcohol_x = text_x
+                alcohol_y = text_y - alcohol_text.get_height() - 10
+                bg_rect_alcohol = pygame.Rect(alcohol_x - 5, alcohol_y - 5, alcohol_text.get_width() + 10, alcohol_text.get_height() + 10)
+                pygame.draw.rect(self.screen, (0, 0, 0), bg_rect_alcohol)
+                self.screen.blit(alcohol_text, (alcohol_x, alcohol_y))
+            except Exception:
+                pass
         except Exception as e:
             Logger.error("MapPageView._drawLevelDisplay", e)
+    
+    def _toggle_fullscreen(self):
+        """Toggle between fullscreen and resizable window modes."""
+        try:
+            current_flags = self.screen.get_flags()
+            
+            if current_flags & pygame.FULLSCREEN:
+                # Currently fullscreen, switch to resizable
+                self.screen = pygame.display.set_mode(
+                    (self.screen_width, self.screen_height),
+                    pygame.RESIZABLE
+                )
+                Logger.debug("MapPageView._toggle_fullscreen", "Switched to RESIZABLE mode")
+            else:
+                # Currently resizable, switch to fullscreen
+                screen_info = pygame.display.Info()
+                self.screen = pygame.display.set_mode(
+                    (screen_info.current_w, screen_info.current_h),
+                    pygame.FULLSCREEN
+                )
+                self.screen_width = screen_info.current_w
+                self.screen_height = screen_info.current_h
+                Logger.debug("MapPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
+        except Exception as e:
+            Logger.error("MapPageView._toggle_fullscreen", e)

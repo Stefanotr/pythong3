@@ -1,28 +1,32 @@
 import pygame
 import random
 import math
-from Songs.SevenNationArmy import load_seven_nation_army
+from Songs.TheFinalCountdown import load_final_countdown
 
 class RhythmCombatController:
     """
-    🎸⚔️ MODE COMBAT RHYTHM - BOSS FINAL
+    # MODE COMBAT RHYTHM - BOSS FINAL
     
     Combine le jeu de rythme avec le combat :
     - Bonnes notes → Dégâts au BOSS
     - Mauvaises notes / Miss → Dégâts au JOUEUR + Vie du boss augmente
     - Game Over si le boss a encore de la vie à la fin OU si le joueur meurt
     """
-    def __init__(self, rhythm_model, player_model, boss_model, screen_height, view, song_loader=None):
+    def __init__(self, rhythm_model, player_model, boss_model, screen_height, view, song_loader=load_final_countdown()):
         self.rhythm = rhythm_model
         self.player = player_model
         self.boss = boss_model
         self.view = view
+        self.context = "rhythm_combat"  # Always rhythm_combat for final boss
+        
+        # Store boss max health for healing calculations
+        self.boss_max_health = getattr(self.boss, '_rhythm_combat_max_health', self.boss.getHealth())
         
         # --- 1. INITIALISATION DE LA MAP & AUDIO ---
         if song_loader is None:
-            song_loader = load_seven_nation_army
+            song_loader = load_final_countdown()
         
-        self.current_song = song_loader()
+        self.current_song = song_loader
         self.rhythm.notes = self.current_song.get_notes()
         
         # Initialiser les positions Y des notes
@@ -66,9 +70,10 @@ class RhythmCombatController:
         
         # --- 🕒 COMPTE À REBOURS ---
         self.waiting_to_start = True
-        self.countdown_duration = 5000
+        self.countdown_duration = 5000  # 5 secondes
         self.countdown_start_tick = pygame.time.get_ticks()
         self.current_countdown_val = 5
+        self.is_paused = False  # Flag pour pause menu
 
         self.start_time = 0
         self.is_playing = False
@@ -88,12 +93,12 @@ class RhythmCombatController:
             pygame.K_n: "LANE4"
         }
         
-        # --- ⚔️ STATS DE COMBAT ---
+        # --- STATS DE COMBAT ---
         self.total_notes = len([n for n in self.rhythm.notes if n.get("active", True)])
         self.notes_hit = 0
         self.notes_missed = 0
         
-        print(f"🎸⚔️ MODE COMBAT RHYTHM")
+        print(f"MODE COMBAT RHYTHM")
         print(f"Boss: {self.boss.getName()} (HP: {self.boss.getHealth()})")
         print(f"Player: {self.player.getName()} (HP: {self.player.getHealth()})")
         print(f"Total notes: {self.total_notes}")
@@ -110,17 +115,64 @@ class RhythmCombatController:
             sound = random.choice(self.hit_sounds)
             sound.play()
 
+    def stop_all_audio(self):
+        """Arrête tous les sons du jeu"""
+        try:
+            self.guitar_channel.stop()
+            self.track_backing.stop()
+            self.track_guitar.stop()
+            # Arrêter tous les fail_sounds
+            for sound in self.fail_sounds:
+                sound.stop()
+            # Arrêter tous les hit_sounds
+            for sound in self.hit_sounds:
+                sound.stop()
+        except Exception as e:
+            print(f"Erreur en arrêtant les audios: {e}")
+
+    def pause_audio(self):
+        """Met en pause tous les sons du jeu"""
+        try:
+            # Store current volume for resume
+            self.stored_guitar_volume = self.guitar_channel.get_volume()
+            self.guitar_channel.set_volume(0)
+            if self.track_backing:
+                self.track_backing.set_volume(0)
+        except Exception as e:
+            print(f"Erreur en mettant en pause les audios: {e}")
+
+    def resume_audio(self):
+        """Reprend tous les sons du jeu"""
+        try:
+            # Restore volume
+            if hasattr(self, 'stored_guitar_volume'):
+                self.guitar_channel.set_volume(self.stored_guitar_volume)
+            else:
+                self.guitar_channel.set_volume(1.0)
+            if self.track_backing:
+                self.track_backing.set_volume(1.0)
+        except Exception as e:
+            print(f"Erreur en reprenant les audios: {e}")
+
     def start_music(self):
         """Lance la musique"""
         self.start_time = pygame.time.get_ticks()
         self.track_backing.play()
         self.guitar_channel.play(self.track_guitar)
         self.is_playing = True
-        print("🎵 Musique lancée - LE COMBAT COMMENCE !")
+        print("Musique lancée - LE COMBAT COMMENCE !")
 
     def update(self):
         """Boucle principale"""
-        if self.game_over:
+        if self.game_over or self.is_paused:
+            return
+        
+        # === CHECK PLAYER DEATH AT START ===
+        if self.player.getHealth() <= 0:
+            self.game_over = True
+            self.victory = False
+            print(f"GAME OVER : {self.player.getName()} est K.O. !")
+            self.stop_all_audio()
             return
 
         # --- 1. COMPTE À REBOURS ---
@@ -131,14 +183,7 @@ class RhythmCombatController:
             
             self.current_countdown_val = math.ceil(remaining / 1000)
             
-            # Les notes descendent pendant le décompte
-            fake_time = -remaining
-            
-            for note in self.rhythm.notes:
-                if note["active"]:
-                    time_diff = note["time"] - fake_time
-                    note["y"] = self.rhythm.hit_line_y - (time_diff * self.note_speed)
-            
+            # Notes stay in place during countdown
             if remaining <= 0:
                 self.waiting_to_start = False
                 self.start_music()
@@ -176,7 +221,7 @@ class RhythmCombatController:
 
     def trigger_miss(self):
         """
-        ❌ MISS : Le joueur prend des dégâts ET le boss récupère de la vie
+        MISS : Le joueur prend des dégâts ET le boss récupère de la vie
         """
         current_real_time = pygame.time.get_ticks()
         
@@ -189,30 +234,32 @@ class RhythmCombatController:
         self.notes_missed += 1
         
         # Feedback
-        self.rhythm.feedback = "MISS! 💀"
+        self.rhythm.feedback = "MISS!"
         self.rhythm.feedback_timer = 30
         self.rhythm.combo = 0
         
-        # --- ⚔️ DÉGÂTS AU JOUEUR ---
+        # --- DÉGÂTS AU JOUEUR ---
         damage_to_player = 10  # Le boss contre-attaque !
         current_hp = self.player.getHealth()
         self.player.setHealth(max(0, current_hp - damage_to_player))
         
-        print(f"💀 MISS → {self.player.getName()} prend {damage_to_player} dégâts ! (HP: {self.player.getHealth()})")
+        # --- ANIMATION D'ATTAQUE DU BOSS ---
+        self.boss.setCurrentAction("attacking", 30)
         
-        # --- 🩹 LE BOSS RÉCUPÈRE DE LA VIE ---
+        print(f"MISS → {self.player.getName()} prend {damage_to_player} dégâts ! (HP: {self.player.getHealth()})")
+        
+        # --- LE BOSS RÉCUPÈRE DE LA VIE ---
         boss_heal = 5
         boss_hp = self.boss.getHealth()
-        max_boss_hp = 100  # À ajuster selon ton boss
-        self.boss.setHealth(min(max_boss_hp, boss_hp + boss_heal))
+        self.boss.setHealth(min(self.boss_max_health, boss_hp + boss_heal))
         
-        print(f"🩹 Le boss récupère {boss_heal} HP ! (HP: {self.boss.getHealth()})")
+        print(f"Le boss récupère {boss_heal} HP ! (HP: {self.boss.getHealth()})")
         
         # GAME OVER si le joueur meurt
         if self.player.getHealth() <= 0:
             self.game_over = True
             self.victory = False
-            print(f"💀 GAME OVER : {self.player.getName()} est K.O. !")
+            print(f"GAME OVER : {self.player.getName()} est K.O. !")
             self.guitar_channel.stop()
             self.track_backing.stop()
 
@@ -254,36 +301,38 @@ class RhythmCombatController:
             hit_found = True
             best_note["active"] = False
             self.notes_hit += 1
+            # Update model total_hits for display
+            self.rhythm.total_hits = self.notes_hit
             
             self.guitar_channel.set_volume(1.0)
             self.last_hit_time = pygame.time.get_ticks()
             
-            # --- ⚔️ CALCUL DES DÉGÂTS AU BOSS ---
+            # --- CALCUL DES DÉGÂTS AU BOSS ---
             base_damage = 0
             
             if best_distance <= perfect_window:
                 base_damage = 15  # GROS dégâts
-                feedback = "PERFECT! ⭐"
+                feedback = "PERFECT!"
                 particle_color = (255, 255, 0)
                 self.view.create_particles(self.get_lane_x(lane), self.rhythm.hit_line_y, particle_color)
                 
             elif best_distance <= excellent_window:
                 base_damage = 12  # Bons dégâts
-                feedback = "EXCELLENT! ✨"
+                feedback = "EXCELLENT!"
                 particle_color = (100, 255, 255)
                 self.view.create_particles(self.get_lane_x(lane), self.rhythm.hit_line_y, particle_color)
                 
             elif best_distance <= good_window:
                 base_damage = 8  # Dégâts normaux
-                feedback = "GOOD 👍"
+                feedback = "GOOD"
                 
             elif best_distance <= ok_window:
                 base_damage = 5  # Petits dégâts
-                feedback = "OK 😐"
+                feedback = "OK"
                 
             else:
                 base_damage = 2  # Dégâts minimes
-                feedback = "LATE! 💩" if (best_note["time"] - current_time) < 0 else "EARLY! 💩"
+                feedback = "LATE!" if (best_note["time"] - current_time) < 0 else "EARLY!"
             
             # Appliquer les dégâts au boss
             self.deal_damage_to_boss(base_damage, feedback)
@@ -301,59 +350,129 @@ class RhythmCombatController:
             if self.player.getHealth() <= 0:
                 self.game_over = True
                 self.victory = False
+                self.stop_all_audio()
 
     def deal_damage_to_boss(self, damage, feedback):
         """Inflige des dégâts au boss"""
         # Combo bonus
         self.rhythm.combo += 1
         combo_multiplier = 1 + (self.rhythm.combo // 5) * 0.2  # +20% tous les 5 combos
-        
         final_damage = int(damage * combo_multiplier)
+
+        # --- DRUNKENNESS ONLY AFFECTS DAMAGE OUTPUT, NOT HIT/MISS ---
+        try:
+            drunkenness = self.player.getDrunkenness()
+        except Exception:
+            drunkenness = 0
+        
+        # At high drunkenness: slight damage reduction (harder to aim well)
+        # But if very drunk (50%+), the hits that DO connect are more powerful (aggression)
+        drunkenness_damage_penalty = int((drunkenness / 100) * 20)  # -0 to -20% damage from poor aim
+        final_damage = max(1, final_damage - drunkenness_damage_penalty)
+        
+        # Very drunk hits (50%+) get a small bonus (reckless aggression)
+        if drunkenness >= 50:
+            final_damage = int(final_damage * 1.2)
+
+        # === RHYTHM COMBAT DAMAGE REDUCTION ===
+        # Divide damage by 2 for rhythm combat balance
+        final_damage = final_damage // 2  # Integer division to cut damage in half
+        
+        # --- ANIMATION D'ATTAQUE DU JOUEUR ---
+        self.player.setCurrentAction("attacking", 30)
         
         # Appliquer dégâts
         boss_hp = self.boss.getHealth()
-        self.boss.setHealth(max(0, boss_hp - final_damage))
+        new_boss_hp = max(0, boss_hp - final_damage)
+        self.boss.setHealth(new_boss_hp)
         
-        # Feedback
-        self.rhythm.feedback = f"{feedback} → {final_damage} DMG!"
+        # Debug logging
+        from Utils.Logger import Logger
+        Logger.debug("RhythmCombatController.deal_damage_to_boss", 
+                    f"Boss health: {boss_hp} -> {new_boss_hp} ({feedback})", 
+                    damage=final_damage)
+        
+        # Set feedback (just the rating, combo will be displayed below)
+        self.rhythm.feedback = feedback
         self.rhythm.feedback_timer = 20
         
         # Son
         self.play_random_hit()
         
-        print(f"⚔️ {feedback} → {final_damage} dégâts au boss ! (HP: {self.boss.getHealth()}) [Combo x{self.rhythm.combo}]")
-        
         # Vérifier si boss vaincu
         if self.boss.getHealth() <= 0:
             self.victory = True
             self.game_over = True
-            print(f"🏆 VICTOIRE ! {self.boss.getName()} est vaincu !")
-            self.guitar_channel.stop()
-            self.track_backing.stop()
+            print(f"VICTOIRE ! {self.boss.getName()} est vaincu !")
+            self.stop_all_audio()
 
     def end_combat(self):
-        """Fin de la chanson - Déterminer victoire/défaite"""
+        """
+        End of combat - Determine victory/defeat and award rewards.
+        
+        Victory rewards (rhythm_combat context):
+        - Base $250 at level 0
+        - Scales by (player_level + 1)
+        - 20% bonus if perfect performance (all notes hit, boss defeated with high health remaining)
+        """
         self.game_over = True
+        self.victory = False
+        self.rhythm.cash_earned = 0
         
         if self.boss.getHealth() > 0:
             # Le boss a survécu = Défaite
             self.victory = False
-            print(f"💀 DÉFAITE : {self.boss.getName()} a survécu avec {self.boss.getHealth()} HP !")
+            print(f"DÉFAITE : {self.boss.getName()} a survécu avec {self.boss.getHealth()} HP !")
         else:
             # Boss vaincu = Victoire
             self.victory = True
-            print(f"🏆 VICTOIRE : {self.boss.getName()} vaincu !")
+            
+            # Calculate victory rewards
+            try:
+                player_level = self.player.getLevel() if self.player else 0
+                level_multiplier = player_level + 1
+                base_reward = 250  # Rhythm combat pays the most
+                
+                # Apply level scaling
+                base_cash = int(base_reward * level_multiplier)
+                
+                # Calculate performance bonus (20% if perfect)
+                bonus_cash = 0
+                if self.notes_missed == 0 and self.total_notes > 0:
+                    # Perfect performance - all notes hit
+                    bonus_cash = int(base_cash * 0.20)
+                
+                # Final cash
+                cash = base_cash + bonus_cash
+                self.rhythm.cash_earned = cash
+                
+                # Award currency to player
+                if self.player:
+                    self.player.addCurrency(cash)
+                
+                print(f"=== BOSS DEFEATED - VICTORY! ===")
+                print(f"Base Reward: ${base_reward} × {level_multiplier} (level multiplier) = ${base_cash}")
+                print(f"Performance: {self.notes_hit}/{self.total_notes} notes hit")
+                if bonus_cash > 0:
+                    print(f"Perfect Performance Bonus: +${bonus_cash}")
+                print(f"Total Earnings: ${cash}")
+                print(f"Player Total Currency: ${self.player.getCurrency() if self.player else '?'}")
+                
+            except Exception as e:
+                print(f"ERROR calculating victory rewards: {e}")
+                self.rhythm.cash_earned = 0
+            
+            print(f"VICTOIRE : {self.boss.getName()} vaincu !")
         
         # Stats finales
-        print(f"📊 STATS FINALES :")
+        print(f"STATS FINALES :")
         print(f"   Notes touchées : {self.notes_hit}/{self.total_notes}")
         print(f"   Notes ratées : {self.notes_missed}")
         print(f"   Combo max : {self.rhythm.combo}")
-        print(f"   HP Joueur : {self.player.getHealth()}")
+        print(f"   HP Joueur : {self.player.getHealth() if self.player else '?'}")
         print(f"   HP Boss : {self.boss.getHealth()}")
         
-        self.guitar_channel.stop()
-        self.track_backing.stop()
+        self.stop_all_audio()
 
     def get_lane_x(self, lane):
         """Retourne la position X d'une lane"""

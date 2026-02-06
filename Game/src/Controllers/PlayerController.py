@@ -109,7 +109,26 @@ class PlayerController(BaseController):
                 dy += self.SPEED
 
             if dx == 0 and dy == 0:
+                # No movement: return to idle action
+                try:
+                    self.player.setCurrentAction("idle")
+                except Exception as e:
+                    Logger.error("PlayerController.handle_events", e)
                 return
+            
+            # Set directional moving action for animation
+            try:
+                if dx < 0:
+                    self.player.setCurrentAction("moving_left", duration=10)
+                elif dx > 0:
+                    self.player.setCurrentAction("moving_right", duration=10)
+                else:
+                    # Movement vertical seulement: keep current action or default to moving_right
+                    action = self.player.getCurrentAction()
+                    if action not in ["moving_left", "moving_right"]:
+                        self.player.setCurrentAction("moving_right", duration=10)
+            except Exception as e:
+                Logger.error("PlayerController.handle_events", e)
 
             try:
                 current_x = self.player.getX()

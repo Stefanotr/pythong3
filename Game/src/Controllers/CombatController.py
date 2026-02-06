@@ -99,12 +99,12 @@ class CombatController(BaseController):
     def _performPlayerAttack(self, base_damage, action_name, hit_message, miss_message, is_powerful=False):
         try:
             if self.combat.getPlayerStatus("paralyzed") > 0:
-                self.combat.addToCombatLog(f"⚡ {self.player.getName()} is paralyzed!")
+                self.combat.addToCombatLog(f"{self.player.getName()} is paralyzed!")
                 self.endPlayerTurn()
                 return False
 
             if self.combat.getPlayerStatus("stunned") > 0:
-                self.combat.addToCombatLog(f"💫 {self.player.getName()} is stunned!")
+                self.combat.addToCombatLog(f"{self.player.getName()} is stunned!")
                 self.endPlayerTurn()
                 return False
 
@@ -122,7 +122,7 @@ class CombatController(BaseController):
 
             if drunkenness >= 50 and not is_powerful:
                 damage = int(damage * 1.5)
-                self.combat.addToCombatLog("🍺 Drunkenness bonus! (+50% damage)")
+                self.combat.addToCombatLog("Drunkenness bonus! (+50% damage)")
 
             # Accuracy
             try:
@@ -151,8 +151,8 @@ class CombatController(BaseController):
             success = self._performPlayerAttack(
                 base_damage,
                 "attacking",
-                "🎸 {player} strikes with guitar! ({damage} damage)",
-                "💨 {player} misses the attack!",
+                "{player} strikes with guitar! ({damage} damage)",
+                "{player} misses the attack!",
                 is_powerful=False,
             )
 
@@ -166,7 +166,7 @@ class CombatController(BaseController):
         try:
             player_hp = self.player.getHealth()
             if player_hp <= 10:
-                self.combat.addToCombatLog("❌ Not enough HP for Power Chord! (need 10 HP)")
+                self.combat.addToCombatLog("Not enough HP for Power Chord! (need 10 HP)")
                 return
 
             self.player.setHealth(player_hp - 10)
@@ -175,15 +175,15 @@ class CombatController(BaseController):
             success = self._performPlayerAttack(
                 base_damage,
                 "attacking",
-                "⚡🎸 POWER CHORD! {player} deals {damage} damage!",
-                "💨 {player} misses the power chord!",
+                "POWER CHORD! {player} deals {damage} damage!",
+                "{player} misses the power chord!",
                 is_powerful=True,
             )
 
             if success:
                 if random.randint(1, 100) <= 30:
                     self.combat.setEnemyStatus("stunned", 1)
-                    self.combat.addToCombatLog(f"💫 {self.enemy.getName()} is stunned!")
+                    self.combat.addToCombatLog(f"{self.enemy.getName()} is stunned!")
                     Logger.debug("CombatController.playerPowerChord", "Enemy stunned")
 
                 if self.combat.checkCombatEnd():
@@ -197,12 +197,12 @@ class CombatController(BaseController):
         try:
             drunkenness = self.player.getDrunkenness()
             if drunkenness < 60:
-                self.combat.addToCombatLog("❌ Not drunk enough! (Need 60% drunkenness)")
+                self.combat.addToCombatLog("Not drunk enough! (Need 60% drunkenness)")
                 return
 
             self.player.setCurrentAction("drinking", 30)
             self.combat.setEnemyStatus("disgusted", 2)
-            self.combat.addToCombatLog(f"🤮 DÉGUEULANDO! {self.enemy.getName()} is paralyzed with disgust!")
+            self.combat.addToCombatLog(f"DEGUEULANDO! {self.enemy.getName()} is paralyzed with disgust!")
             self.player.setDrunkenness(max(0, drunkenness - 20))
             Logger.debug("CombatController.playerDegueulando", "Executed", drunkenness_cost=20)
             self.endPlayerTurn()
@@ -211,20 +211,33 @@ class CombatController(BaseController):
 
     def playerDrink(self):
         try:
-            selected_bottle = self.player.getSelectedBottle()
+            # Check if player has inventory and items
+            if not hasattr(self.player, 'inventory') or not self.player.inventory:
+                self.combat.addToCombatLog("No inventory available!")
+                return
+
+            # Get selected bottle from inventory
+            selected_bottle = self.player.inventory.get_selected_item()
             if not selected_bottle:
-                self.combat.addToCombatLog("❌ No bottle selected!")
+                self.combat.addToCombatLog("No bottle selected!")
                 return
 
             self.player.setCurrentAction("drinking", 30)
             self.player.drink(selected_bottle)
             drunkenness = self.player.getDrunkenness()
-            self.combat.addToCombatLog(f"🍺 {self.player.getName()} drinks {selected_bottle.getName()}! (Drunkenness: {drunkenness}%)")
+            self.combat.addToCombatLog(f"{self.player.getName()} drinks {selected_bottle.getName()}! (Drunkenness: {drunkenness}%)")
+            
+            # Remove the bottle from inventory after drinking
+            self.player.inventory.consume_selected()
+            
+            # Update selected bottle to the new selected item (or None if inventory is empty)
+            self.player.setSelectedBottle(self.player.inventory.get_selected_item())
+            
             Logger.debug("CombatController.playerDrink", "Player drank", bottle=selected_bottle.getName(), drunkenness=drunkenness)
 
             if self.player.getHealth() <= 0:
                 self.combat.setDiedFromComa(True)
-                self.combat.addToCombatLog(f"💀 ALCOHOLIC COMA! {self.player.getName()} collapses!")
+                self.combat.addToCombatLog(f"ALCOHOLIC COMA! {self.player.getName()} collapses!")
                 self.combat.checkCombatEnd()
                 return
 
@@ -236,12 +249,12 @@ class CombatController(BaseController):
     def enemyTurn(self):
         try:
             if self.combat.getEnemyStatus("paralyzed") > 0 or self.combat.getEnemyStatus("disgusted") > 0:
-                self.combat.addToCombatLog(f"😵 {self.enemy.getName()} is unable to act!")
+                self.combat.addToCombatLog(f"{self.enemy.getName()} is unable to act!")
                 self.endEnemyTurn()
                 return
 
             if self.combat.getEnemyStatus("stunned") > 0:
-                self.combat.addToCombatLog(f"💫 {self.enemy.getName()} is stunned!")
+                self.combat.addToCombatLog(f"{self.enemy.getName()} is stunned!")
                 self.endEnemyTurn()
                 return
 
@@ -268,13 +281,13 @@ class CombatController(BaseController):
             if random.randint(1, 100) <= accuracy:
                 self.enemy.setCurrentAction("attacking", 30)
                 self.player.setHealth(max(0, self.player.getHealth() - damage))
-                self.combat.addToCombatLog(f"👊 {self.enemy.getName()} attacks! ({damage} damage)")
+                self.combat.addToCombatLog(f"{self.enemy.getName()} attacks! ({damage} damage)")
                 Logger.debug("CombatController.enemySimpleAttack", "Hit", damage=damage)
                 if self.combat.checkCombatEnd():
                     return
             else:
                 self.player.setCurrentAction("dodging", 20)
-                self.combat.addToCombatLog(f"💨 {self.enemy.getName()} misses the attack!")
+                self.combat.addToCombatLog(f"{self.enemy.getName()} misses the attack!")
                 Logger.debug("CombatController.enemySimpleAttack", "Missed")
 
             self.endEnemyTurn()
@@ -287,16 +300,16 @@ class CombatController(BaseController):
             if random.randint(1, 100) <= 60:
                 self.enemy.setCurrentAction("attacking", 30)
                 self.player.setHealth(max(0, self.player.getHealth() - heavy_damage))
-                self.combat.addToCombatLog(f"💥 {self.enemy.getName()} strikes violently! ({heavy_damage} damage)")
+                self.combat.addToCombatLog(f"{self.enemy.getName()} strikes violently! ({heavy_damage} damage)")
                 Logger.debug("CombatController.enemyHeavyAttack", "Hit", damage=heavy_damage)
                 if random.randint(1, 100) <= 25:
                     self.combat.setPlayerStatus("stunned", 1)
-                    self.combat.addToCombatLog(f"💫 {self.player.getName()} is stunned!")
+                    self.combat.addToCombatLog(f"{self.player.getName()} is stunned!")
                 if self.combat.checkCombatEnd():
                     return
             else:
                 self.player.setCurrentAction("dodging", 20)
-                self.combat.addToCombatLog(f"💨 {self.enemy.getName()} misses the heavy attack!")
+                self.combat.addToCombatLog(f"{self.enemy.getName()} misses the heavy attack!")
                 Logger.debug("CombatController.enemyHeavyAttack", "Missed")
 
             self.endEnemyTurn()

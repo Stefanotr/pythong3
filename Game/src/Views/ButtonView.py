@@ -19,7 +19,7 @@ class ButtonView:
     
     # === INITIALIZATION ===
     
-    def __init__(self, image_path, position):
+    def __init__(self, image_path, position, size=(200, 80)):
         """
         Initialize the button view with an image and position.
         
@@ -31,12 +31,13 @@ class ButtonView:
             # Load and scale button image
             try:
                 self.image = pygame.image.load(image_path)
-                self.image = pygame.transform.scale(self.image, (200, 80))
-                Logger.debug("ButtonView.__init__", "Button image loaded", path=image_path)
+                # Scale to requested size
+                self.image = pygame.transform.scale(self.image, size)
+                Logger.debug("ButtonView.__init__", "Button image loaded", path=image_path, size=size)
             except FileNotFoundError as e:
                 Logger.error("ButtonView.__init__", e)
                 # Create a default button surface if image not found
-                self.image = pygame.Surface((200, 80))
+                self.image = pygame.Surface(size)
                 self.image.fill((128, 128, 128))
                 Logger.debug("ButtonView.__init__", "Using default button surface")
             except Exception as e:
@@ -72,3 +73,16 @@ class ButtonView:
             screen.blit(self.image, self.rect)
         except Exception as e:
             Logger.error("ButtonView.draw", e)
+    
+    def set_position(self, position):
+        """
+        Update the button position.
+        
+        Args:
+            position: Tuple (x, y) representing the new button center position
+        """
+        try:
+            self.rect.center = position
+            Logger.debug("ButtonView.set_position", "Button position updated", position=position)
+        except Exception as e:
+            Logger.error("ButtonView.set_position", e)

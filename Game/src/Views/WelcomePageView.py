@@ -56,11 +56,16 @@ class WelcomPageView(PageView):
             self.buttons = []
             self.buttons_controllers = []
             
-            # Play button (center-top)
+            # Play button (far right, vertically centered)
             try:
+                # Compute dynamic position: far right of window
+                play_size = (225, 82)  # reduced by 1/4
+                play_x = int(self.width * 0.82)
+                play_y = int(self.height * 0.45)
                 self.play_button = ButtonView(
                     image_path='Game/Assets/buttonPlay.png',
-                    position=(400, 500),
+                    position=(play_x, play_y),
+                    size=play_size,
                 )
                 self.buttons.append(self.play_button)
                 
@@ -71,11 +76,16 @@ class WelcomPageView(PageView):
                 Logger.error("WelcomPageView.__init__", e)
                 raise
             
-            # Quit button (bottom)
+            # Quit button (just below Play)
             try:
+                quit_size = (225, 82)  # same reduced size
+                quit_x = int(self.width * 0.82)
+                # place below play button with small gap
+                quit_y = play_y + play_size[1] // 2 + 5 + quit_size[1] // 2
                 self.quit_button = ButtonView(
                     image_path='Game/Assets/buttonQuit.png',
-                    position=(400, 700),
+                    position=(quit_x, quit_y),
+                    size=quit_size,
                 )
                 self.buttons.append(self.quit_button)
                 
@@ -93,6 +103,30 @@ class WelcomPageView(PageView):
         except Exception as e:
             Logger.error("WelcomPageView.__init__", e)
             raise
+    
+    # === BUTTON POSITION UPDATE ===
+    
+    def _update_button_positions(self):
+        """
+        Update button positions based on current window size.
+        Called after window resize to maintain proportional positioning.
+        """
+        try:
+            # Update Play button position
+            play_size = (225, 82)
+            play_x = int(self.width * 0.82)
+            play_y = int(self.height * 0.45)
+            self.play_button.set_position((play_x, play_y))
+            
+            # Update Quit button position
+            quit_size = (225, 82)
+            quit_x = int(self.width * 0.82)
+            quit_y = play_y + play_size[1] // 2 + 5 + quit_size[1] // 2
+            self.quit_button.set_position((quit_x, quit_y))
+            
+            Logger.debug("WelcomPageView._update_button_positions", "Button positions updated")
+        except Exception as e:
+            Logger.error("WelcomPageView._update_button_positions", e)
     # === GENERIC LOOP HOOKS (PageView) ===
 
     def handle_events(self, events):
@@ -114,6 +148,8 @@ class WelcomPageView(PageView):
                         new_width = event.w
                         new_height = event.h
                         self.set_window_size(new_width, new_height, self.resizable)
+                        # Update button positions after resize
+                        self._update_button_positions()
                         Logger.debug(
                             "WelcomPageView.handle_events",
                             "Window resized",
@@ -256,7 +292,7 @@ class WelcomPageView(PageView):
                 from Models.PlayerModel import PlayerModel
                 from Models.BottleModel import BottleModel
                 from Models.GuitarModel import GuitarFactory
-                from Models.CaracterModel import CaracterModel
+                from Models.BossModel import BossModel
                 
                 player = PlayerModel("Lola Coma", 60, 60)
                 player.setHealth(100)
@@ -264,6 +300,9 @@ class WelcomPageView(PageView):
                 player.setAccuracy(0.85)
                 player.setDrunkenness(0)
                 player.setComaRisk(10)
+                player.setLevel(0)  # Start at level 0
+                
+                # Stats only increase after defeating final boss (Manager Corrompu)
                 
                 # Equip with starting guitar
                 la_pelle = GuitarFactory.createLaPelle()
@@ -272,13 +311,28 @@ class WelcomPageView(PageView):
                 beer = BottleModel("Beer", 15, 3, 5)
                 player.setSelectedBottle(beer)
                 
-                # Create boss for rhythm combat
-                boss = CaracterModel("Le Manager Corrompu", 80, 80)
-                boss.setHealth(100)
-                boss.setDamage(10)
+                # Create final boss for rhythm combat - Manager Corrompu
+                manager_corrompu = BossModel("Manager Corrompu", 80, 80)
+                manager_corrompu.setHealth(3000)
+                manager_corrompu.setDamage(15)
+
+                # Act 1: Gros Bill
+                gros_bill = BossModel("Gros Bill", 80, 80)
+                gros_bill.setHealth(100)
+                gros_bill.setDamage(12)
+                gros_bill.setAccuracy(0.75)
+                self.boss = gros_bill
+                    
+                # Act 2: Chef de la Sécurité
+                chef_securite = BossModel("Chef de la Sécurité", 80, 80)
+                chef_securite.setHealth(500)
+                chef_securite.setDamage(14)
+                chef_securite.setAccuracy(0.80)
+                self.boss = chef_securite
                 
                 sequence_controller.set_player(player)
-                Logger.debug("WelcomPageView._startGameFlow", "Player and boss created and initialized")
+                
+                Logger.debug("WelcomPageView._startGameFlow", "Player and Manager Corrompu created for rhythm combat")
             except Exception as e:
                 Logger.error("WelcomPageView._startGameFlow", e)
                 raise
@@ -296,64 +350,85 @@ class WelcomPageView(PageView):
                     # === STAGE 1: Rhythm Page (Act 1 Practice) ===
                     if current_stage == 1:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             rhythm_view = RhythmPageView(screen, player, sequence_controller)
                             result = rhythm_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 2: Map (Before Act 1) ===
                     elif current_stage == 2:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             map_view = MapPageView(screen, 1, player, sequence_controller)
                             result = map_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 3: Act 1 ===
                     elif current_stage == 3:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
+                            sequence_controller.set_boss(gros_bill)
                             act1_view = Act1View(screen, player, sequence_controller)
                             result = act1_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 4: Map (Before Act 2) ===
                     elif current_stage == 4:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             map_view = MapPageView(screen, 2, player, sequence_controller)
                             result = map_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 5: Act 2 ===
                     elif current_stage == 5:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
+                            sequence_controller.set_boss(chef_securite)
                             act2_view = Act2View(screen, player, sequence_controller)
                             result = act2_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 6: Rhythm Page (Act 2 Practice) ===
                     elif current_stage == 6:
                         try:
-                            rhythm_view = RhythmPageView(screen, player, sequence_controller)
+                            # Views handle their own dimensioning (RESIZABLE)
+                            rhythm_view = RhythmPageView(screen, player, sequence_controller, context="act2")
                             result = rhythm_view.run()
+                            
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 7: Map (Final) ===
                     elif current_stage == 7:
                         try:
+                            # Views handle their own dimensioning (RESIZABLE)
                             map_view = MapPageView(screen, 3, player, sequence_controller)
                             result = map_view.run()
+                           
+                           
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     # === STAGE 8: Rhythm Combat (Boss Final) ===
                     elif current_stage == 8:
                         try:
-                            rhythm_combat_view = RhythmCombatPageView(screen, player, boss, sequence_controller)
+                            # Views handle their own dimensioning (RESIZABLE)
+                            sequence_controller.set_boss(manager_corrompu)
+                            rhythm_combat_view = RhythmCombatPageView(screen, player, manager_corrompu, sequence_controller)
                             result = rhythm_combat_view.run()
+                            
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
@@ -369,7 +444,7 @@ class WelcomPageView(PageView):
                     
                     elif result == GameState.MAIN_MENU.value:
                         Logger.debug("WelcomPageView._startGameFlow", "Main menu requested")
-                        return
+                        break
                     
                     elif result == GameState.GAME_OVER.value:
                         Logger.debug("WelcomPageView._startGameFlow", "Game over")

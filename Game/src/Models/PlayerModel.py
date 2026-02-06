@@ -37,6 +37,16 @@ class PlayerModel(CaracterModel):
             self._selected_bottle = ""
             self._drunkenness = 0
             self._level = 0
+            
+            # Initialize inventory for bottle management with default beer
+            from Models.InventoryModel import InventoryModel
+            self.inventory = InventoryModel()
+            
+            # Add default beer to inventory and select it
+            default_beer = BottleModel("Beer", alcohol_level=15, bonus_damage=3, accuracy_penalty=5)
+            self.inventory.add_item(default_beer)
+            # Beer is automatically selected since inventory was empty
+            
             Logger.debug("PlayerModel.__init__", "Player model initialized", name=name, x=x, y=y)
         except Exception as e:
             Logger.error("PlayerModel.__init__", e)
@@ -206,19 +216,26 @@ class PlayerModel(CaracterModel):
             # Update damage and accuracy
             try:
                 self.setDamage(self.getDamage() + selected_bottle.getBonusDamage())
+                # Interpret accuracy penalty: if >1 assume percentage points (e.g., 5 -> 0.05)
+                penalty = selected_bottle.getAccuracyPenalty()
+                try:
+                    if penalty > 1:
+                        penalty = penalty / 100.0
+                except Exception:
+                    pass
                 # Clamp accuracy to minimum 0.1 (10%) to prevent negative values
-                new_accuracy = self.getAccuracy() - selected_bottle.getAccuracyPenalty()
+                new_accuracy = self.getAccuracy() - penalty
                 self.setAccuracy(max(0.1, new_accuracy))
             except Exception as e:
                 Logger.error("PlayerModel.drink", e)
 
-            # Check for alcoholic coma
+            # Check for alcoholic coma: only possible if drunkenness >= 60
             try:
-                tirage = random.randint(1, 100)
-
-                if tirage <= self.getComaRisk():
-                    Logger.debug("PlayerModel.drink", "ALCOHOLIC COMA triggered", coma_risk=self.getComaRisk(), roll=tirage)
-                    self.setHealth(0)
+                if self.getDrunkenness() >= 60:
+                    tirage = random.randint(1, 100)
+                    if tirage <= self.getComaRisk():
+                        Logger.debug("PlayerModel.drink", "ALCOHOLIC COMA triggered", coma_risk=self.getComaRisk(), roll=tirage, drunkenness=self.getDrunkenness())
+                        self.setHealth(0)
             except Exception as e:
                 Logger.error("PlayerModel.drink", e)
                 
@@ -291,13 +308,24 @@ class PlayerModel(CaracterModel):
 
         
         self.setDamage(self.getDamage() + selected_bottle.getBonusDamage())
+        # Interpret accuracy penalty: if >1 assume percentage points (e.g., 5 -> 0.05)
+        penalty = selected_bottle.getAccuracyPenalty()
+        try:
+            if penalty > 1:
+                penalty = penalty / 100.0
+        except Exception:
+            pass
         # Clamp accuracy to minimum 0.1 (10%) to prevent negative values
-        new_accuracy = self.getAccuracy() - selected_bottle.getAccuracyPenalty()
+        new_accuracy = self.getAccuracy() - penalty
         self.setAccuracy(max(0.1, new_accuracy))
 
     
-        tirage = random.randint(1, 100)
-
-        if tirage <= self.getComaRisk():
-            Logger.debug("PlayerModel.drink", "ALCOHOLIC COMA triggered", coma_risk=self.getComaRisk(), roll=tirage)
-            self.setHealth(0)
+        # Coma only if drunkenness >= 60
+        try:
+            if self.getDrunkenness() >= 60:
+                tirage = random.randint(1, 100)
+                if tirage <= self.getComaRisk():
+                    Logger.debug("PlayerModel.drink", "ALCOHOLIC COMA triggered", coma_risk=self.getComaRisk(), roll=tirage, drunkenness=self.getDrunkenness())
+                    self.setHealth(0)
+        except Exception as e:
+            Logger.error("PlayerModel.drink", e)
