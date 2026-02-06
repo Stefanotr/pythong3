@@ -74,8 +74,8 @@ class ActView:
             except:
                 pass
             
-            # Create resizable window at full screen size
-            self.screen = pygame.display.set_mode((full_width, full_height), pygame.RESIZABLE)
+            # Create fullscreen window at full screen size
+            self.screen = pygame.display.set_mode((full_width, full_height), pygame.FULLSCREEN)
             self.screen_width = full_width
             self.screen_height = full_height
             
@@ -680,17 +680,17 @@ class ActView:
             except Exception as e:
                 Logger.error("ActView._draw_intro", e)
             
-            # Fonts
+            # Fonts (10% augmentation, storytelling +100%)
             try:
-                title_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.06), bold=True)
-                text_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.025))
-                small_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.02))
+                title_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.0462), bold=True)
+                text_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.0348))  # +100% for storytelling
+                small_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.0139))
             except Exception as e:
                 Logger.error("ActView._draw_intro", e)
                 # Use default fonts if SysFont fails
-                title_font = pygame.font.Font(None, 72)
-                text_font = pygame.font.Font(None, 30)
-                small_font = pygame.font.Font(None, 24)
+                title_font = pygame.font.Font(None, 48)
+                text_font = pygame.font.Font(None, 36)  # +100% for storytelling
+                small_font = pygame.font.Font(None, 14)
             
             # Title from config
             try:

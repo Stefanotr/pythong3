@@ -60,11 +60,11 @@ class MapPageView(PageView):
             # Create resizable window at full screen size
             self.screen = pygame.display.set_mode(
                 (screen_width, screen_height),
-                pygame.RESIZABLE
+                pygame.FULLSCREEN
             )
             
             # Initialize PageView without background image to avoid visual artifacts on the map
-            super().__init__("Map - Six-String Hangover", screen_width, screen_height, pygame.RESIZABLE, None)
+            super().__init__("Map - Six-String Hangover", screen_width, screen_height, pygame.FULLSCREEN, None)
             
             self.sequence_controller = sequence_controller
             Logger.debug("MapPageView.__init__", "Map view created with no background image to avoid visual bugs")

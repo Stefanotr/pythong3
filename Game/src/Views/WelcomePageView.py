@@ -48,7 +48,8 @@ class WelcomPageView(PageView):
                 Logger.error("WelcomPageView.__init__", e)
                 raise
 
-            super().__init__(name, width, height, RESIZABLE, background_image)
+            # Start in fullscreen mode by default
+            super().__init__(name, width, height, pygame.FULLSCREEN, background_image)
             Logger.debug("WelcomPageView.__init__", "Welcome page initialized", name=name, width=width, height=height)
             
             # === BUTTON INITIALIZATION ===
@@ -140,6 +141,37 @@ class WelcomPageView(PageView):
             Logger.debug("WelcomPageView._update_button_positions", "Button positions updated")
         except Exception as e:
             Logger.error("WelcomPageView._update_button_positions", e)
+    
+    # === FULLSCREEN TOGGLE ===
+    
+    def _toggle_fullscreen(self):
+        """Toggle between fullscreen and windowed modes with F11."""
+        try:
+            current_flags = self.screen.get_flags()
+            
+            if current_flags & pygame.FULLSCREEN:
+                # Currently fullscreen, switch to windowed
+                self.screen = pygame.display.set_mode(
+                    (self.width, self.height),
+                    pygame.RESIZABLE
+                )
+                Logger.debug("WelcomPageView._toggle_fullscreen", "Switched to WINDOWED mode")
+            else:
+                # Currently windowed, switch to fullscreen
+                screen_info = pygame.display.Info()
+                self.width = screen_info.current_w
+                self.height = screen_info.current_h
+                self.screen = pygame.display.set_mode(
+                    (self.width, self.height),
+                    pygame.FULLSCREEN
+                )
+                Logger.debug("WelcomPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
+            
+            # Update button positions for new screen size
+            self._update_button_positions()
+        except Exception as e:
+            Logger.error("WelcomPageView._toggle_fullscreen", e)
+    
     # === GENERIC LOOP HOOKS (PageView) ===
 
     def handle_events(self, events):
@@ -184,6 +216,14 @@ class WelcomPageView(PageView):
                             "Stage selected",
                             stage=self.selected_stage
                         )
+                        continue
+                    
+                    # === HANDLE F11 FOR FULLSCREEN TOGGLE ===
+                    if event.key == pygame.K_F11:
+                        try:
+                            self._toggle_fullscreen()
+                        except Exception as e:
+                            Logger.error("WelcomPageView.handle_events", f"Failed to toggle fullscreen: {e}")
                         continue
                 
                 # Delegate clicks/inputs to button controllers

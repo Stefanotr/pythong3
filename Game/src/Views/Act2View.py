@@ -43,7 +43,7 @@ if __name__ == "__main__":
                 os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
             except Exception as e:
                 Logger.error("Act2View.__main__", e)
-            screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h), pygame.RESIZABLE)
+            screen = pygame.display.set_mode((screen_info.current_w, screen_info.current_h), pygame.FULLSCREEN)
             pygame.display.set_caption("Act 2 - Wood-Stock-Option")
             Logger.debug("Act2View.__main__", "Display created", 
                        width=screen_info.current_w, height=screen_info.current_h)

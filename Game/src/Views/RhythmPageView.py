@@ -57,10 +57,10 @@ class RhythmPageView:
                 except:
                     pass
                 
-                # Create resizable window at full screen size
+                # Create fullscreen window at full screen size
                 self.screen = pygame.display.set_mode(
                     (self.screen_width, self.screen_height),
-                    pygame.RESIZABLE
+                    pygame.FULLSCREEN
                 )
                 
                 Logger.debug("RhythmPageView.__init__", "Screen dimensions set", 
@@ -539,13 +539,13 @@ class RhythmPageView:
             # Font setup
             try:
                 if countdown_text == "GO!":
-                    font_size = int(self.screen_height * 0.15)  # Larger for GO!
+                    font_size = int(self.screen_height * 0.105)  # 5% increase
                 else:
-                    font_size = int(self.screen_height * 0.2)  # Very large numbers
+                    font_size = int(self.screen_height * 0.126)  # 5% increase
                 countdown_font = pygame.font.SysFont("Arial", font_size, bold=True)
             except Exception as e:
                 Logger.error("RhythmPageView.drawCountdown", e)
-                countdown_font = pygame.font.Font(None, 150)
+                countdown_font = pygame.font.Font(None, 100)
             
             # Render countdown text
             try:
@@ -579,17 +579,17 @@ class RhythmPageView:
             except Exception as e:
                 Logger.error("RhythmPageView.draw_intro", e)
             
-            # Fonts
+            # Fonts (10% augmentation, storytelling +100%)
             try:
-                title_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.06), bold=True)
-                text_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.025))
-                small_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.02))
+                title_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.0462), bold=True)
+                text_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.0348))  # +100% for storytelling
+                small_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.0139))
             except Exception as e:
                 Logger.error("RhythmPageView.draw_intro", e)
                 # Use default fonts if SysFont fails
-                title_font = pygame.font.Font(None, 72)
-                text_font = pygame.font.Font(None, 30)
-                small_font = pygame.font.Font(None, 24)
+                title_font = pygame.font.Font(None, 48)
+                text_font = pygame.font.Font(None, 36)  # +100% for storytelling
+                small_font = pygame.font.Font(None, 14)
             
             # Title
             try:
