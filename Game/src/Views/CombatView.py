@@ -39,19 +39,19 @@ class CombatView:
             # === FONTS INITIALIZATION ===
             
             try:
-                # Slightly smaller fonts for better fit
-                self.title_font = pygame.font.SysFont("Arial", max(20, int(screen_height * 0.04)), bold=True)
-                self.font = pygame.font.SysFont("Arial", max(14, int(screen_height * 0.02)), bold=True)
-                self.small_font = pygame.font.SysFont("Arial", max(14, int(screen_height * 0.018)))
-                self.log_font = pygame.font.SysFont("Courier New", max(13, int(screen_height * 0.016)))
+                # Fonts for fullscreen (10% increase)
+                self.title_font = pygame.font.SysFont("Arial", max(20, int(screen_height * 0.0254)), bold=True)
+                self.font = pygame.font.SysFont("Arial", max(15, int(screen_height * 0.0153)), bold=True)
+                self.small_font = pygame.font.SysFont("Arial", max(12, int(screen_height * 0.0141)))
+                self.log_font = pygame.font.SysFont("Courier New", max(13, int(screen_height * 0.0128)))
                 Logger.debug("CombatView.__init__", "Fonts initialized")
             except Exception as e:
                 Logger.error("CombatView.__init__", e)
                 # Use default fonts if SysFont fails
-                self.title_font = pygame.font.Font(None, 48)
-                self.font = pygame.font.Font(None, 24)
-                self.small_font = pygame.font.Font(None, 20)
-                self.log_font = pygame.font.Font(None, 18)
+                self.title_font = pygame.font.Font(None, 40)
+                self.font = pygame.font.Font(None, 20)
+                self.small_font = pygame.font.Font(None, 18)
+                self.log_font = pygame.font.Font(None, 16)
             
             # === COLORS ===
             
@@ -247,9 +247,9 @@ class CombatView:
             enemy_y_center = 120
 
         # Place panels above the sprites (clamped to screen)
-        panel_width = 460
-        panel_height = 300
-        padding = 24
+        panel_width = 320  # Reduced from 460
+        panel_height = 220  # Reduced from 300
+        padding = 16  # Reduced from 24
 
         player_x = max(padding, min(player_x_center - panel_width // 2, self.screen_width - panel_width - padding))
         player_y = max(padding, player_y_center - panel_height - 40)
@@ -262,11 +262,11 @@ class CombatView:
 
         # Prepare content positions and center the block vertically in the panel
         name_h = self.title_font.get_height()
-        hp_h = 30
-        drunk_h = 25
+        hp_h = 20  # Reduced from 30
+        drunk_h = 18  # Reduced from 25
         stats_h = self.small_font.get_height()
-        effects_h = 20
-        spacing = 10
+        effects_h = 15  # Reduced from 20
+        spacing = 6  # Reduced from 10
 
         content_height = name_h + spacing + hp_h + spacing + drunk_h + spacing + stats_h + spacing + effects_h
         start_y = panel_y + (panel_height - content_height) // 2
@@ -307,11 +307,11 @@ class CombatView:
 
         # Center enemy content block vertically
         name_h = self.title_font.get_height()
-        hp_h = 30
+        hp_h = 20  # Reduced from 30
         drunk_h = 0  # enemy may not show drunkenness here
         stats_h = self.small_font.get_height()
-        effects_h = 20
-        spacing = 10
+        effects_h = 15  # Reduced from 20
+        spacing = 6  # Reduced from 10
 
         content_height = name_h + spacing + hp_h + spacing + stats_h + spacing + effects_h
         start_y = enemy_panel_y + (panel_height - content_height) // 2
@@ -406,23 +406,23 @@ class CombatView:
         Messages stay within the rectangle boundaries.
         """
         # Position log at bottom, centered
-        log_width = 900
+        log_width = 650  # Reduced from 900
         log_x = self.screen_width // 2 - log_width // 2
-        log_y = self.screen_height - 190
-        log_height = 170
+        log_y = self.screen_height - 140  # Reduced from 190
+        log_height = 120  # Reduced from 170
         
         # Draw panel background and border
         self.drawPanel(screen, log_x, log_y, log_width, log_height, (100, 150, 100))
         
         # Title
         title_surf = self.font.render("Battle Log", True, (150, 255, 150))
-        screen.blit(title_surf, (log_x + 15, log_y + 10))
+        screen.blit(title_surf, (log_x + 15, log_y + 8))
         
         # Messages with text wrapping, rendered into the log area using clipping
         messages = combat_model.getCombatLog() or []
         max_width = log_width - 40  # Leave padding on sides
-        line_height = 20
-        max_lines = 5
+        line_height = 15  # Reduced from 20
+        max_lines = 4  # Reduced from 5
 
         # Build list of lines (wrapped) from recent messages
         wrapped_all = []
@@ -498,22 +498,22 @@ class CombatView:
         Draw the action menu with better alignment and visual hierarchy.
         """
         # Position menu on right side, fairly close to center but not overlapping main UI
-        menu_width = 380
+        menu_width = 300  # Reduced from 380
         menu_x = max(40, self.screen_width - menu_width - 40)
-        menu_y = self.screen_height - 450  # Moved down further
-        menu_height = 320
+        menu_y = self.screen_height - 380  # Adjusted to fit reduced height
+        menu_height = 260  # Reduced from 320
         
         # Panel with player color accent
         self.drawPanel(screen, menu_x, menu_y, menu_width, menu_height, (100, 255, 100))
         
         # Title
         title_surf = self.font.render("ACTIONS", True, (150, 255, 150))
-        screen.blit(title_surf, (menu_x + 20, menu_y + 12))
+        screen.blit(title_surf, (menu_x + 20, menu_y + 10))
         
         # Divider line
         pygame.draw.line(screen, (100, 200, 100), 
-                        (menu_x + 15, menu_y + 45), 
-                        (menu_x + menu_width - 15, menu_y + 45), 3)
+                        (menu_x + 15, menu_y + 38), 
+                        (menu_x + menu_width - 15, menu_y + 38), 3)
         
         # Actions with better spacing and color-coded keys
         actions = [
@@ -523,7 +523,7 @@ class CombatView:
             ("B", "Drink", "Restore & boost stats", (100, 200, 255))
         ]
         
-        action_y = menu_y + 60
+        action_y = menu_y + 50
         for key, name, desc, key_color in actions:
             # Key with custom color
             key_surf = self.font.render(f"[{key}]", True, key_color)
@@ -531,18 +531,18 @@ class CombatView:
             
             # Name
             name_surf = self.small_font.render(name, True, (255, 255, 255))
-            screen.blit(name_surf, (menu_x + 70, action_y))
+            screen.blit(name_surf, (menu_x + 60, action_y))
             
             # Description
             desc_surf = self.log_font.render(desc, True, (200, 200, 200))
-            screen.blit(desc_surf, (menu_x + 70, action_y + 22))
+            screen.blit(desc_surf, (menu_x + 60, action_y + 18))
             
             # Divider between actions
             pygame.draw.line(screen, (80, 150, 80), 
-                            (menu_x + 15, action_y + 50), 
-                            (menu_x + menu_width - 15, action_y + 50), 1)
+                            (menu_x + 15, action_y + 42), 
+                            (menu_x + menu_width - 15, action_y + 42), 1)
             
-            action_y += 70  # Better spacing between actions
+            action_y += 55  # Reduced spacing from 70
         
         # Hint text below the action menu frame
         if combat_model.isPlayerTurn():

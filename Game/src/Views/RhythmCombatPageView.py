@@ -103,10 +103,10 @@ class RhythmCombatPageView:
                 except:
                     pass
                 
-                # Create resizable window at full screen size
+                # Create fullscreen window at full screen size
                 self.screen = pygame.display.set_mode(
                     (self.screen_width, self.screen_height),
-                    pygame.RESIZABLE
+                    pygame.FULLSCREEN
                 )
                 
                 Logger.debug("RhythmCombatPageView.__init__", "Screen dimensions set", 
