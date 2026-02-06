@@ -24,7 +24,7 @@ class RhythmCombatController:
         
         # --- 1. INITIALISATION DE LA MAP & AUDIO ---
         if song_loader is None:
-            song_loader = load_final_countdown
+            song_loader = load_final_countdown()
         
         self.current_song = song_loader()
         self.rhythm.notes = self.current_song.get_notes()

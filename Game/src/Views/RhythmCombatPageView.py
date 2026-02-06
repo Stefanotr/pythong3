@@ -133,7 +133,7 @@ class RhythmCombatPageView:
                     self.boss,
                     self.screen_height,
                     self.combat_view,
-                    load_final_countdown
+                    load_final_countdown()
 
                 )
                 Logger.debug("RhythmCombatPageView.__init__", "Rhythm combat controller created",

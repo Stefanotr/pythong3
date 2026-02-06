@@ -13,7 +13,7 @@ class RhythmController:
     """
     # 🆕 MODIFICATION : On ajoute 'song_data' dans les paramètres
     
-    def __init__(self, rhythm_model, character_model, screen_height, view,song_data=load_seven_nation_army, context="act1"):
+    def __init__(self, rhythm_model, character_model, screen_height, view,song_data=load_seven_nation_army(), context="act1"):
         self.rhythm = rhythm_model
         self.character = character_model 
         self.view = view
@@ -177,10 +177,10 @@ class RhythmController:
                     time_diff = note["time"] - fake_time
                     note["y"] = self.rhythm.hit_line_y - (time_diff * self.note_speed)
             
-            # Notes stay in place during countdown
-            # if remaining <= 0:
-            #     self.waiting_to_start = False
-            #     self.startMusic()
+            #Notes stay in place during countdown
+            if remaining <= 0:
+                self.waiting_to_start = False
+                self.startMusic()
             
             return
 
