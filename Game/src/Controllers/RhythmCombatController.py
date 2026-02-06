@@ -70,7 +70,7 @@ class RhythmCombatController:
         
         # --- 🕒 COMPTE À REBOURS ---
         self.waiting_to_start = True
-        self.countdown_duration = 5000
+        self.countdown_duration = 5000  # 5 secondes
         self.countdown_start_tick = pygame.time.get_ticks()
         self.current_countdown_val = 5
 
@@ -158,14 +158,7 @@ class RhythmCombatController:
             
             self.current_countdown_val = math.ceil(remaining / 1000)
             
-            # Les notes descendent pendant le décompte
-            fake_time = -remaining
-            
-            for note in self.rhythm.notes:
-                if note["active"]:
-                    time_diff = note["time"] - fake_time
-                    note["y"] = self.rhythm.hit_line_y - (time_diff * self.note_speed)
-            
+            # Notes stay in place during countdown
             if remaining <= 0:
                 self.waiting_to_start = False
                 self.start_music()

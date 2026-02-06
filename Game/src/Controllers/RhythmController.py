@@ -105,15 +105,7 @@ class RhythmController:
             # Calcul du chiffre à afficher (5, 4, 3...)
             self.current_countdown_val = math.ceil(remaining / 1000)
             
-            # NOUVEAU : Les notes descendent PENDANT le compte à rebours
-            # On simule un temps négatif pour qu'elles arrivent pile quand la musique démarre
-            fake_time = -remaining  # Ex: remaining=3000ms → fake_time=-3000ms
-            
-            for note in self.rhythm.notes:
-                if note["active"]:
-                    time_diff = note["time"] - fake_time
-                    note["y"] = self.rhythm.hit_line_y - (time_diff * self.note_speed)
-            
+            # Notes stay in place during countdown
             if remaining <= 0:
                 self.waiting_to_start = False
                 self.start_music() # GO !
