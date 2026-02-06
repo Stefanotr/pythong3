@@ -4,5 +4,10 @@ Game/logs/*.log
 Game/logs/*
 !Game/logs/.gitkeep
 
+# Ignore Python cache directories
+__pycache__/
+*.py[cod]
+*$py.class
+
 # VS Code config (local only)
 .vscode/launch.json
