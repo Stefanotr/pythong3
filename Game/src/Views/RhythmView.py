@@ -169,31 +169,28 @@ class RhythmView:
         # --- A.2 PERSONNAGE (MILIEU GAUCHE) ---
         if self.character_view and character_model:
             try:
-                # Update animation and sprite like in drawCaracter
-                self.character_view.animation_frame += 1
-                if self.character_view.base_name:
-                    self.character_view.updateCharacterSprite(character_model)
-                    character_model.updateActionTimer()
+                # Sauvegarder les positions originales
+                original_x = character_model.getX()
+                original_y = character_model.getY()
                 
-                # Position du personnage au milieu gauche de l'écran
-                player_x = int(self.screen_width * 0.15)  # 15% from left
-                player_y = self.screen_height // 2  # Middle vertically
+                # Positionner le personnage au milieu gauche de l'écran, identique à RhythmCombatView
+                player_x = int(self.screen_width * 0.15)  # 15% from left (middle-left position)
+                player_y = self.screen_height // 2  # Middle of screen
                 
-                # Draw character sprite
-                if self.character_view.sprite:
-                    sprite_w, sprite_h = self.character_view.sprite.get_size()
-                    draw_x = int(player_x - sprite_w // 2)
-                    draw_y = int(player_y - sprite_h // 2)
-                    screen.blit(self.character_view.sprite, (draw_x, draw_y))
-                    
-                    # Draw character name below sprite
-                    name = character_model.getName()
-                    name_surface = self.character_view.font.render(name, True, (255, 255, 255))
-                    name_x = draw_x + sprite_w // 2 - name_surface.get_width() // 2
-                    name_y = draw_y + sprite_h + 10
-                    screen.blit(name_surface, (name_x, name_y))
+                # Remplacer temporairement les coordonnées pour l'affichage
+                character_model.setX(0)
+                character_model.setY(0)
+                
+                # Afficher avec offset
+                self.character_view.drawCaracter(screen, character_model, offset=(player_x, player_y), is_map=False)
+                
+                # Restaurer les positions originales
+                character_model.setX(original_x)
+                character_model.setY(original_y)
             except Exception as e:
                 print(f"Erreur affichage personnage: {e}")
+                import traceback
+                traceback.print_exc()
 
         
         # --- B. MANCHE DE GUITARE ---
