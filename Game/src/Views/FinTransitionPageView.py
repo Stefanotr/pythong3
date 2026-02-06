@@ -64,16 +64,21 @@ class FinTransitionPageView(PageView):
             while running:
                 try:
                     # === EVENT HANDLING ===
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            Logger.debug("FinTransitionPageView.run", "QUIT event received")
-                            return GameState.QUIT.value
-                        
-                        elif event.type == pygame.KEYDOWN:
-                            # Skip with any key
-                            if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
-                                Logger.debug("FinTransitionPageView.run", "Transition skipped by key press")
-                                return ""
+                    try:
+                        for event in pygame.event.get():
+                            if event.type == pygame.QUIT:
+                                Logger.debug("FinTransitionPageView.run", "QUIT event received")
+                                return GameState.QUIT.value
+                            
+                            elif event.type == pygame.KEYDOWN:
+                                # Skip with SPACE, RETURN, or ESCAPE
+                                if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
+                                    Logger.debug("FinTransitionPageView.run", "Transition skipped by key press", key=pygame.key.name(event.key))
+                                    return ""
+                    except Exception as e:
+                        Logger.error("FinTransitionPageView.run - Event handling", e)
+                        # Continue if event handling fails
+                        pass
                     
                     # === INCREMENT TIMER ===
                     self.elapsed_frames += 1
@@ -93,72 +98,80 @@ class FinTransitionPageView(PageView):
                     # === RENDERING ===
                     try:
                         # Fill background with dark overlay
-                        self.screen.fill((20, 20, 30))
-                        
-                        # Calculate progress (0 to 1)
-                        progress = self.elapsed_frames / self.duration_frames
-                        
-                        # Log rendering start on first frame
-                        if self.elapsed_frames == 1:
-                            Logger.debug("FinTransitionPageView.run", "Starting render loop",
-                                        screen_width=self.screen.get_width(), screen_height=self.screen.get_height())
-                        
-                        # Fade in/out effect: alpha increases then decreases
-                        if progress < 0.5:
-                            alpha = int(255 * (progress * 2))  # Fade in for first half
-                        else:
-                            alpha = int(255 * ((1 - progress) * 2))  # Fade out for second half
-                        
-                        # Draw main message
-                        try:
-                            font_main = pygame.font.SysFont('Arial', 60, bold=True)
-                        except Exception:
-                            font_main = pygame.font.Font(None, 60)
-                        
-                        text_main = font_main.render(self.message, True, (100, 255, 100))
-                        # Create a surface with alpha for fade effect
-                        text_main.set_alpha(alpha)
-                        text_rect = text_main.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 - 60))
-                        self.screen.blit(text_main, text_rect)
-                        
-                        # Draw next stage info
-                        try:
-                            font_sub = pygame.font.SysFont('Arial', 32)
-                        except Exception:
-                            font_sub = pygame.font.Font(None, 32)
-                        
-                        text_sub = font_sub.render(f"Next: {self.next_stage_name}", True, (200, 200, 255))
-                        text_sub.set_alpha(alpha)
-                        sub_rect = text_sub.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 + 50))
-                        self.screen.blit(text_sub, sub_rect)
-                        
-                        # Draw skip hint (fade in/out)
-                        try:
-                            font_hint = pygame.font.SysFont('Arial', 18)
-                        except Exception:
-                            font_hint = pygame.font.Font(None, 18)
-                        
-                        time_remaining = max(0, self.duration_seconds - (self.elapsed_frames / 60))
-                        text_hint = font_hint.render(f"Auto-transition in {time_remaining:.1f}s (Press SPACE to skip)", True, (150, 150, 150))
-                        hint_rect = text_hint.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 50))
-                        self.screen.blit(text_hint, hint_rect)
-                        
-                        pygame.display.flip()
-                        
-                        # Log every 60 frames (1 second at 60 FPS)
-                        if self.elapsed_frames % 60 == 0:
-                            Logger.debug("FinTransitionPageView.run", "Rendering frame",
-                                        frame=self.elapsed_frames, progress=progress, alpha=alpha)
+                        if self.screen and pygame.display.get_surface():
+                            self.screen.fill((20, 20, 30))
+                            
+                            # Calculate progress (0 to 1)
+                            progress = self.elapsed_frames / self.duration_frames
+                            
+                            # Log rendering start on first frame
+                            if self.elapsed_frames == 1:
+                                Logger.debug("FinTransitionPageView.run", "Starting render loop",
+                                            screen_width=self.screen.get_width(), screen_height=self.screen.get_height())
+                            
+                            # Fade in/out effect: alpha increases then decreases
+                            if progress < 0.5:
+                                alpha = int(255 * (progress * 2))  # Fade in for first half
+                            else:
+                                alpha = int(255 * ((1 - progress) * 2))  # Fade out for second half
+                            
+                            # Draw main message
+                            try:
+                                font_main = pygame.font.SysFont('Arial', 60, bold=True)
+                            except Exception:
+                                font_main = pygame.font.Font(None, 60)
+                            
+                            text_main = font_main.render(self.message, True, (100, 255, 100))
+                            # Create a surface with alpha for fade effect
+                            text_main.set_alpha(alpha)
+                            text_rect = text_main.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 - 60))
+                            self.screen.blit(text_main, text_rect)
+                            
+                            # Draw next stage info
+                            try:
+                                font_sub = pygame.font.SysFont('Arial', 32)
+                            except Exception:
+                                font_sub = pygame.font.Font(None, 32)
+                            
+                            text_sub = font_sub.render(f"Next: {self.next_stage_name}", True, (200, 200, 255))
+                            text_sub.set_alpha(alpha)
+                            sub_rect = text_sub.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 + 50))
+                            self.screen.blit(text_sub, sub_rect)
+                            
+                            # Draw skip hint (fade in/out)
+                            try:
+                                font_hint = pygame.font.SysFont('Arial', 18)
+                            except Exception:
+                                font_hint = pygame.font.Font(None, 18)
+                            
+                            time_remaining = max(0, self.duration_seconds - (self.elapsed_frames / 60))
+                            text_hint = font_hint.render(f"Auto-transition in {time_remaining:.1f}s (Press SPACE to skip)", True, (150, 150, 150))
+                            hint_rect = text_hint.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 50))
+                            self.screen.blit(text_hint, hint_rect)
+                            
+                            pygame.display.flip()
+                            
+                            # Log every 60 frames (1 second at 60 FPS)
+                            if self.elapsed_frames % 60 == 0:
+                                Logger.debug("FinTransitionPageView.run", "Rendering frame",
+                                            frame=self.elapsed_frames, progress=progress, alpha=alpha)
                     except Exception as e:
-                        Logger.error("FinTransitionPageView.run", e)
+                        Logger.error("FinTransitionPageView.run - Rendering", e)
+                        # Continue even if rendering fails, don't crash
+                        pass
                     
-                    clock.tick(60)
+                    try:
+                        clock.tick(60)
+                    except Exception as e:
+                        Logger.error("FinTransitionPageView.run - Clock tick", e)
                     
                 except Exception as e:
-                    Logger.error("FinTransitionPageView.run", e)
+                    Logger.error("FinTransitionPageView.run - Inner loop", e)
+                    # Continue running if an error occurs
                     continue
             
             return ""
         except Exception as e:
             Logger.error("FinTransitionPageView.run", e)
-            return GameState.QUIT.value
+            # Return empty string on error instead of QUIT to avoid closing app
+            return ""
