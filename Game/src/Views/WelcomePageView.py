@@ -104,12 +104,12 @@ class WelcomPageView(PageView):
             self.music_playing = False
             try:
                 pygame.mixer.init()
-                music_path = "Game/Assets/FakeYouth.mp3"
+                music_path = "Game/Assets/Sounds/Fake Youth - What's Left Demo 11.01.25.mp3"
                 pygame.mixer.music.load(music_path)
                 pygame.mixer.music.set_volume(0.6)  # 60% volume
                 Logger.debug("WelcomPageView.__init__", "Welcome music loaded successfully from", path=music_path)
-            except FileNotFoundError:
-                Logger.error("WelcomPageView.__init__", "Welcome music file not found (Game/Assets/FakeYouth.mp3)")
+            except FileNotFoundError as e:
+                Logger.error("WelcomPageView.__init__", f"Welcome music file not found: {e}")
             except Exception as e:
                 Logger.error("WelcomPageView.__init__", f"Failed to load welcome music: {e}")
                 
