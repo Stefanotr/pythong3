@@ -4,10 +4,17 @@ Game/logs/*.log
 Game/logs/*
 !Game/logs/.gitkeep
 
-# Ignore Python cache directories
+# Python cache directories - all occurrences
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+*.egg-info/
 
-# VS Code config (local only)
+# IDE/Editor
 .vscode/launch.json
+
+# OS
+.DS_Store
+Thumbs.db
