@@ -83,7 +83,7 @@ class MapPageView(PageView):
             
             try:
                 # Use TMX map file if available
-                tmx_path = "Game/Assets/maps/sans titre.tmx"
+                tmx_path = "Game/Assets/maps/map.tmx"
                 try:
                     self.map = MapModel(tmx_path, [], None)
                     Logger.debug("MapPageView.__init__", "TMX Map loaded", path=tmx_path)
