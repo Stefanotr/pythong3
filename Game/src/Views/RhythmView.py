@@ -167,20 +167,34 @@ class RhythmView:
                 pygame.draw.line(screen, (shade, shade // 2, shade // 3), (0, y), (self.screen_width, y))
         
         # --- A.2 PERSONNAGE (MILIEU GAUCHE) ---
-        if self.character_view:
+        if self.character_view and character_model:
             try:
-                # Positionner le personnage au milieu gauche de l'écran
-                char_x = int(self.screen_width * 0.15)  # 15% from left
-                char_y = self.screen_height // 2  # Middle vertically
+                # Update animation and sprite like in drawCaracter
+                self.character_view.animation_frame += 1
+                if self.character_view.base_name:
+                    self.character_view.updateCharacterSprite(character_model)
+                    character_model.updateActionTimer()
                 
-                # Draw character sprite directly if it exists
+                # Position du personnage au milieu gauche de l'écran
+                player_x = int(self.screen_width * 0.15)  # 15% from left
+                player_y = self.screen_height // 2  # Middle vertically
+                
+                # Draw character sprite
                 if self.character_view.sprite:
                     sprite_w, sprite_h = self.character_view.sprite.get_size()
-                    draw_x = char_x - sprite_w // 2
-                    draw_y = char_y - sprite_h // 2
+                    draw_x = int(player_x - sprite_w // 2)
+                    draw_y = int(player_y - sprite_h // 2)
                     screen.blit(self.character_view.sprite, (draw_x, draw_y))
+                    
+                    # Draw character name below sprite
+                    name = character_model.getName()
+                    name_surface = self.character_view.font.render(name, True, (255, 255, 255))
+                    name_x = draw_x + sprite_w // 2 - name_surface.get_width() // 2
+                    name_y = draw_y + sprite_h + 10
+                    screen.blit(name_surface, (name_x, name_y))
             except Exception as e:
                 print(f"Erreur affichage personnage: {e}")
+
         
         # --- B. MANCHE DE GUITARE ---
         guitar_rect = pygame.Rect(self.guitar_start - 15, 0, self.guitar_width + 30, self.screen_height)
