@@ -3,6 +3,7 @@ import random
 import math
 from Songs.SevenNationArmy import load_seven_nation_army
 
+
 # ❌ PLUS D'IMPORT DE CHANSON ICI (Le contrôleur attend qu'on lui donne la musique)
 
 class RhythmController:
@@ -129,7 +130,7 @@ class RhythmController:
         except Exception as e:
             print(f"Erreur en reprenant les audios: {e}")
 
-    def start_music(self):
+    def startMusic(self):
         """Lance vraiment la musique après le décompte"""
         self.start_time = pygame.time.get_ticks()
         self.track_backing.play()

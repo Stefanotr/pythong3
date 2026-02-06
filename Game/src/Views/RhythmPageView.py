@@ -18,6 +18,7 @@ from Views.FinTransitionPageView import FinTransitionPageView
 from Utils.Logger import Logger
 from Controllers.GameSequenceController import GameSequenceController
 from Songs.SevenNationArmy import load_seven_nation_army
+from Songs.AnotherOneBitesTheDust import load_another_one
 
 # === RHYTHM PAGE VIEW CLASS ===
 
@@ -122,12 +123,14 @@ class RhythmPageView:
                 rhythm_boss.setDamage(10)  # Stronger boss for final sequence
                 
                 # Create rhythm controller
+                # Load appropriate song based on context
+                song = load_another_one() if self.context == "act2" else load_seven_nation_army()
                 self.rhythm_controller = RhythmController(
                     self.rhythm_model, 
                     self.johnny, 
                     self.screen_height, 
                     self.rhythm_view,
-                    load_seven_nation_army(),
+                    song,
                     context=self.context
                 )
                 

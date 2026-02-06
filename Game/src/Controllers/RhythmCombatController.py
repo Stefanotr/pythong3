@@ -12,7 +12,7 @@ class RhythmCombatController:
     - Mauvaises notes / Miss → Dégâts au JOUEUR + Vie du boss augmente
     - Game Over si le boss a encore de la vie à la fin OU si le joueur meurt
     """
-    def __init__(self, rhythm_model, player_model, boss_model, screen_height, view, song_loader=None):
+    def __init__(self, rhythm_model, player_model, boss_model, screen_height, view, song_loader=load_final_countdown()):
         self.rhythm = rhythm_model
         self.player = player_model
         self.boss = boss_model
@@ -26,7 +26,7 @@ class RhythmCombatController:
         if song_loader is None:
             song_loader = load_final_countdown()
         
-        self.current_song = song_loader()
+        self.current_song = song_loader
         self.rhythm.notes = self.current_song.get_notes()
         
         # Initialiser les positions Y des notes
