@@ -166,31 +166,7 @@ class RhythmView:
                 shade = int(20 + y * 0.02)
                 pygame.draw.line(screen, (shade, shade // 2, shade // 3), (0, y), (self.screen_width, y))
         
-        # --- A.2 PERSONNAGE (MILIEU GAUCHE) ---
-        if self.character_view and character_model:
-            try:
-                # Sauvegarder les positions originales
-                original_x = character_model.getX()
-                original_y = character_model.getY()
-                
-                # Positionner le personnage au milieu gauche de l'écran, identique à RhythmCombatView
-                player_x = int(self.screen_width * 0.15)  # 15% from left (middle-left position)
-                player_y = self.screen_height // 2  # Middle of screen
-                
-                # Remplacer temporairement les coordonnées pour l'affichage
-                character_model.setX(0)
-                character_model.setY(0)
-                
-                # Afficher avec offset
-                self.character_view.drawCaracter(screen, character_model, offset=(player_x, player_y), is_map=False)
-                
-                # Restaurer les positions originales
-                character_model.setX(original_x)
-                character_model.setY(original_y)
-            except Exception as e:
-                print(f"Erreur affichage personnage: {e}")
-                import traceback
-                traceback.print_exc()
+        # Personnage affichage géré par RhythmPageView
 
         
         # --- B. MANCHE DE GUITARE ---
