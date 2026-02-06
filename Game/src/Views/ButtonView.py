@@ -73,3 +73,16 @@ class ButtonView:
             screen.blit(self.image, self.rect)
         except Exception as e:
             Logger.error("ButtonView.draw", e)
+    
+    def set_position(self, position):
+        """
+        Update the button position.
+        
+        Args:
+            position: Tuple (x, y) representing the new button center position
+        """
+        try:
+            self.rect.center = position
+            Logger.debug("ButtonView.set_position", "Button position updated", position=position)
+        except Exception as e:
+            Logger.error("ButtonView.set_position", e)

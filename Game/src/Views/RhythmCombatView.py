@@ -1,14 +1,13 @@
 import pygame
 import math
 from Views.CaracterView import CaracterView
-from Views.InventoryView import InventoryView
 
 class RhythmCombatView:
     """
     Vue pour le MODE COMBAT RHYTHM
     Affiche le jeu de rythme + les HP du joueur et du boss
     """
-    def __init__(self, screen_width, screen_height, boss_max_health=3000, player_max_health=100):
+    def __init__(self, screen_width, screen_height, boss_max_health=3000, player_max_health=100, background_image_path="Game/Assets/managerevade.png"):
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.boss_max_health = boss_max_health  # Store boss max health for health bar display
@@ -26,7 +25,7 @@ class RhythmCombatView:
         self.background_image = None
         self.overlay = None
         
-        image_path = "Game/Assets/stage.png"
+        image_path = background_image_path
         try:
             loaded_img = pygame.image.load(image_path).convert()
             # Background scales to actual screen size
@@ -49,9 +48,6 @@ class RhythmCombatView:
         # For RhythmCombat: use normal size (200x200) without deformation
         self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(200, 200))
         self.boss_view = None  # Will be set when boss is known
-        
-        # Inventory view for displaying bottles
-        self.inventory_view = InventoryView(screen_width, screen_height)
         
         # Couleurs des lanes
         self.lane_colors = [
@@ -135,7 +131,7 @@ class RhythmCombatView:
         hp_text = self.font.render(f"{int(current)}/{int(maximum)}", True, (255, 255, 255))
         screen.blit(hp_text, (x + width//2 - hp_text.get_width()//2, y + height//2 - hp_text.get_height()//2))
 
-    def draw(self, screen, rhythm_model, player_model, boss_model, note_speed=0.5, countdown_val=0, inventory_model=None):
+    def draw(self, screen, rhythm_model, player_model, boss_model, note_speed=0.5, countdown_val=0):
         """
         Dessine l'interface du combat rhythm avec inventaire
         
@@ -224,6 +220,26 @@ class RhythmCombatView:
         # Titre du combat
         combat_title = self.title_font.render("COMBAT RHYTHM", True, (255, 215, 0))
         screen.blit(combat_title, (self.screen_width//2 - combat_title.get_width()//2, 10))
+        
+        # Cash sous le titre
+        try:
+            level = player_model.getLevel() if hasattr(player_model, 'getLevel') else 1
+            total_hits = getattr(rhythm_model, 'total_hits', 0)
+            base_hit_cash = total_hits * 2  # 2$ per hit for boss combat
+            display_cash = base_hit_cash * (level + 1)
+            cash_text = self.font.render(f"CASH: ${display_cash}", True, (100, 200, 255))
+            screen.blit(cash_text, (self.screen_width//2 - cash_text.get_width()//2, 40))
+        except Exception as e:
+            pass
+        
+        # Update player max health dynamically (in case player gained HP from leveling)
+        try:
+            current_player_health = player_model.getHealth()
+            if current_player_health > self.player_max_health:
+                # Player gained health (leveled up), update max_health
+                self.player_max_health = current_player_health
+        except Exception:
+            pass
         
         # HP JOUEUR (Gauche)
         player_hp_width = int(self.screen_width * 0.3)
@@ -349,13 +365,6 @@ class RhythmCombatView:
             screen.blit(alcohol_text, (self.screen_width - alcohol_text.get_width() - 20, self.screen_height - 50))
         except Exception as e:
             pass
-        
-        # --- INVENTORY DISPLAY (au-dessus de l'alcool) ---
-        if inventory_model:
-            try:
-                self.inventory_view.draw_inventory_display(screen, inventory_model, self.screen_width // 2, self.screen_height - 200)
-            except Exception as e:
-                pass
 
         # --- COMPTE À REBOURS ---
         if countdown_val > 0:

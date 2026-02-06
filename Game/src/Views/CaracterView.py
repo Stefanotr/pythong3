@@ -37,6 +37,10 @@ class CaracterView:
             self.sprite = None
             self.action_sprites = {}  # Cache for action-based sprites
             
+            # Animation system
+            self.animation_frame = 0  # Compteur pour les animations
+            self.animation_speed = 8  # Nombre de frames avant de changer d'image (ajustable)
+            
             # Load base sprite
             self._loadSprite(image_path)
             
@@ -88,10 +92,10 @@ class CaracterView:
         
         Args:
             base_name: Base character name (lola, agent, manager, motard)
-            action: Action type (idle, attacking, drinking, dodging)
+            action: Action type (idle, attacking, drinking, dodging, moving_left, moving_right)
         
         Returns:
-            Path to the action image, or None if not found
+            Path to the action image, or list of paths for animated actions, or None if not found
         """
         action_map = {
             # Lola
@@ -99,7 +103,17 @@ class CaracterView:
                 "idle": "Game/Assets/lola.png",
                 "drinking": "Game/Assets/lolaquiboit (1).png",
                 "attacking": "Game/Assets/lolaquilancesabasse (1).png",
-                "dodging": "Game/Assets/lolaquisebaisse (2).png"
+                "dodging": "Game/Assets/lolaquisebaisse (2).png",
+                # Animation de mouvement gauche : 2 frames
+                "moving_left": [
+                    "Game/Assets/lolacoursgauche.png",
+                    "Game/Assets/lolagaucheframe1.png"
+                ],
+                # Animation de mouvement droite : 2 frames
+                "moving_right": [
+                    "Game/Assets/lolacoursdroite.png",
+                    "Game/Assets/lola.png"
+                ]
             },
             # Agent de Sécurité
             "agent": {
@@ -128,6 +142,7 @@ class CaracterView:
     def updateCharacterSprite(self, character):
         """
         Update the displayed sprite based on the character's current action.
+        Handles both static sprites and animated sprites.
         
         Args:
             character: CaracterModel instance
@@ -136,7 +151,24 @@ class CaracterView:
             return  # No base name set, can't update actions
         
         action = character.getCurrentAction()
-        cache_key = f"{self.base_name}_{action}"
+        
+        # Get action image path(s)
+        action_paths = self._getActionImagePath(self.base_name, action)
+        if not action_paths:
+            # Fallback to base sprite if action image not found
+            self.sprite = self._loadSpriteForPath(self.base_image_path)
+            return
+        
+        # Handle animated actions (list of frames)
+        if isinstance(action_paths, list):
+            # Animation: select frame based on animation_frame counter
+            frame_index = (self.animation_frame // self.animation_speed) % len(action_paths)
+            action_path = action_paths[frame_index]
+            cache_key = f"{self.base_name}_{action}_{frame_index}"
+        else:
+            # Static action: single sprite
+            action_path = action_paths
+            cache_key = f"{self.base_name}_{action}"
         
         # Check if we already have this sprite cached
         if cache_key in self.action_sprites:
@@ -144,7 +176,6 @@ class CaracterView:
             return
         
         # Load the action-specific image
-        action_path = self._getActionImagePath(self.base_name, action)
         if action_path:
             try:
                 original_image = pygame.image.load(action_path).convert_alpha()
@@ -183,6 +214,9 @@ class CaracterView:
             is_map: Whether this is drawing on the map (affects text size and positioning)
         """
         try:
+            # Update animation frame counter
+            self.animation_frame += 1
+            
             # Update sprite based on current action
             if self.base_name:
                 self.updateCharacterSprite(caracter)

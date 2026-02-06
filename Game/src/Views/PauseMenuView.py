@@ -44,14 +44,15 @@ class PauseMenuView:
             self.buttons_controllers = []
             
             # Calculate button positions (centered vertically)
-            button_y_start = self.screen_height // 2 - 100
-            button_spacing = 120
+            button_y_start = self.screen_height // 2 - 80
+            button_spacing = 130
             
             # Continue button
             try:
                 self.continue_button = ButtonView(
                     image_path='Game/Assets/buttonPlay.png',  # Reuse play button image
                     position=(self.screen_width // 2, button_y_start),
+                    size=(188, 75)
                 )
                 self.buttons.append(self.continue_button)
                 
@@ -68,6 +69,7 @@ class PauseMenuView:
                 self.menu_button = ButtonView(
                     image_path='Game/Assets/buttonMainMenu.png',  # Reuse play button image
                     position=(self.screen_width // 2, button_y_start + button_spacing),
+                    size=(188, 75)
                 )
                 self.buttons.append(self.menu_button)
                 
@@ -83,6 +85,7 @@ class PauseMenuView:
                 self.quit_button = ButtonView(
                     image_path='Game/Assets/buttonQuit.png',
                     position=(self.screen_width // 2, button_y_start + button_spacing * 2),
+                    size=(188, 75)
                 )
                 self.buttons.append(self.quit_button)
                 
@@ -183,14 +186,14 @@ class PauseMenuView:
             # Draw semi-transparent overlay
             try:
                 overlay = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
-                overlay.fill((0, 0, 0, 180))  # Black with 180 alpha
+                overlay.fill((0, 0, 0, 100))  # Black with 100 alpha (60% transparent, 40% opaque)
                 self.screen.blit(overlay, (0, 0))
             except Exception as e:
                 Logger.error("PauseMenuView.draw", e)
             
             # Draw title
             try:
-                title_text = "⏸️ PAUSED ⏸️"
+                title_text = "PAUSED"
                 title_surf = self.title_font.render(title_text, True, (255, 215, 0))  # Gold color
                 title_shadow = self.title_font.render(title_text, True, (0, 0, 0))
                 
@@ -214,16 +217,7 @@ class PauseMenuView:
             except Exception as e:
                 Logger.error("PauseMenuView.draw", e)
             
-            # Draw instructions
-            try:
-                instruction_text = "↑↓ Navigate | ENTER/SPACE Select | ESC Continue"
-                instruction_font = pygame.font.Font(None, 24)
-                instruction_surf = instruction_font.render(instruction_text, True, (200, 200, 200))
-                instruction_x = self.screen_width // 2 - instruction_surf.get_width() // 2
-                instruction_y = self.screen_height - 50
-                self.screen.blit(instruction_surf, (instruction_x, instruction_y))
-            except Exception as e:
-                Logger.error("PauseMenuView.draw", e)
+            
                 
         except Exception as e:
             Logger.error("PauseMenuView.draw", e)

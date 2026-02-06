@@ -211,7 +211,13 @@ class CombatController(BaseController):
 
     def playerDrink(self):
         try:
-            selected_bottle = self.player.getSelectedBottle()
+            # Check if player has inventory and items
+            if not hasattr(self.player, 'inventory') or not self.player.inventory:
+                self.combat.addToCombatLog("No inventory available!")
+                return
+
+            # Get selected bottle from inventory
+            selected_bottle = self.player.inventory.get_selected_item()
             if not selected_bottle:
                 self.combat.addToCombatLog("No bottle selected!")
                 return
@@ -220,6 +226,13 @@ class CombatController(BaseController):
             self.player.drink(selected_bottle)
             drunkenness = self.player.getDrunkenness()
             self.combat.addToCombatLog(f"{self.player.getName()} drinks {selected_bottle.getName()}! (Drunkenness: {drunkenness}%)")
+            
+            # Remove the bottle from inventory after drinking
+            self.player.inventory.consume_selected()
+            
+            # Update selected bottle to the new selected item (or None if inventory is empty)
+            self.player.setSelectedBottle(self.player.inventory.get_selected_item())
+            
             Logger.debug("CombatController.playerDrink", "Player drank", bottle=selected_bottle.getName(), drunkenness=drunkenness)
 
             if self.player.getHealth() <= 0:

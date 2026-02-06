@@ -67,7 +67,7 @@ class InventoryView:
             screen.blit(damage_txt, (x - damage_txt.get_width()//2, y + 100))
             
             # Navigation arrows
-            nav_txt = self.font.render(f"◀ {selected_index + 1}/{total_items} ▶", True, (255, 255, 255))
+            nav_txt = self.font.render(f"<- {selected_index + 1}/{total_items} ->", True, (255, 255, 255))
             screen.blit(nav_txt, (x - nav_txt.get_width()//2, y + 125))
             
         except Exception as e:
@@ -89,25 +89,34 @@ class InventoryView:
             if not unique_bottles:
                 return
             
+            # Smaller font for inventory
+            small_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.018), bold=True)
+            small_title_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.022), bold=True)
+            
             # Draw background
-            box_width = 250
-            box_height = 30 + (len(unique_bottles) * 30)
-            pygame.draw.rect(screen, (20, 20, 40), (x - box_width, y - box_height, box_width, box_height), border_radius=10)
-            pygame.draw.rect(screen, (100, 100, 150), (x - box_width, y - box_height, box_width, box_height), 2, border_radius=10)
+            box_width = 220
+            box_height = 25 + (len(unique_bottles) * 22)
+            
+            # Shift left and up from bottom right
+            adjusted_x = x - box_width - 50  # Decal vers la gauche
+            adjusted_y = y - box_height - 80  # Remonter
+            
+            pygame.draw.rect(screen, (20, 20, 40), (adjusted_x, adjusted_y, box_width, box_height), border_radius=10)
+            pygame.draw.rect(screen, (100, 100, 150), (adjusted_x, adjusted_y, box_width, box_height), 2, border_radius=10)
             
             # Title
-            title_surf = self.font.render("ALCOHOL INVENTORY", True, (200, 200, 255))
-            screen.blit(title_surf, (x - box_width + 10, y - box_height + 5))
+            title_surf = small_title_font.render("INVENTORY", True, (200, 200, 255))
+            screen.blit(title_surf, (adjusted_x + 10, adjusted_y + 3))
             
             # List each bottle type
-            current_y = y - box_height + 35
+            current_y = adjusted_y + 28
             for bottle_info in unique_bottles:
                 bottle_name = bottle_info['name']
                 count = bottle_info['count']
                 
-                text_surf = self.font.render(f"{bottle_name}: x{count}", True, (255, 215, 0))
-                screen.blit(text_surf, (x - box_width + 15, current_y))
-                current_y += 30
+                text_surf = small_font.render(f"{bottle_name}: x{count}", True, (255, 215, 0))
+                screen.blit(text_surf, (adjusted_x + 12, current_y))
+                current_y += 22
         
         except Exception as e:
             pass

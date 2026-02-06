@@ -1,6 +1,8 @@
 import pygame
 import random
 import math
+from Songs.SevenNationArmy import load_seven_nation_army
+
 
 # ❌ PLUS D'IMPORT DE CHANSON ICI (Le contrôleur attend qu'on lui donne la musique)
 
@@ -11,10 +13,12 @@ class RhythmController:
     Plus tu es précis, plus tu gagnes de points.
     """
     # 🆕 MODIFICATION : On ajoute 'song_data' dans les paramètres
-    def __init__(self, rhythm_model, character_model, screen_height, view, song_data):
+    
+    def __init__(self, rhythm_model, character_model, screen_height, view,song_data=load_seven_nation_army(), context="act1"):
         self.rhythm = rhythm_model
         self.character = character_model 
         self.view = view
+        self.context = context  # "act1", "act2", or "rhythm_combat"
         
         # --- 1. INITIALISATION DE LA MAP & AUDIO ---
         # On utilise la chanson reçue en paramètre
@@ -53,6 +57,7 @@ class RhythmController:
 
         self.start_time = 0
         self.is_playing = False
+        self.is_paused = False  # Flag pour pause menu
         self.game_over = False
         
         # --- 🎵 FIN DE CHANSON & ÉCRAN DE FIN ---
@@ -89,8 +94,44 @@ class RhythmController:
             sound = random.choice(self.fail_sounds)
             sound.play()
 
+    def stop_all_audio(self):
+        """Arrête tous les sons du jeu"""
+        try:
+            self.guitar_channel.stop()
+            self.track_backing.stop()
+            self.track_guitar.stop()
+            # Arrêter tous les fail_sounds
+            for sound in self.fail_sounds:
+                sound.stop()
+        except Exception as e:
+            print(f"Erreur en arrêtant les audios: {e}")
+
+    def pause_audio(self):
+        """Met en pause tous les sons du jeu"""
+        try:
+            # Store current volume for resume
+            self.stored_guitar_volume = self.guitar_channel.get_volume()
+            self.guitar_channel.set_volume(0)
+            if self.track_backing:
+                self.track_backing.set_volume(0)
+        except Exception as e:
+            print(f"Erreur en mettant en pause les audios: {e}")
+
+    def resume_audio(self):
+        """Reprend tous les sons du jeu"""
+        try:
+            # Restore volume
+            if hasattr(self, 'stored_guitar_volume'):
+                self.guitar_channel.set_volume(self.stored_guitar_volume)
+            else:
+                self.guitar_channel.set_volume(1.0)
+            if self.track_backing:
+                self.track_backing.set_volume(1.0)
+        except Exception as e:
+            print(f"Erreur en reprenant les audios: {e}")
+
     def startMusic(self):
-        """Start playing the backing and guitar tracks after countdown."""
+        """Lance vraiment la musique après le décompte"""
         self.start_time = pygame.time.get_ticks()
         self.track_backing.play()
         self.guitar_channel.play(self.track_guitar)
@@ -117,7 +158,7 @@ class RhythmController:
                 pygame.mixer.unpause()
                 pause_duration = pygame.time.get_ticks() - self.pause_time
                 self.start_time += pause_duration  # Décaler start_time de la durée de la pause
-                print("▶️ Reprise!")
+                print("Reprise!")
             return
 
         # --- 1. GESTION DU COMPTE À REBOURS ---
@@ -129,7 +170,7 @@ class RhythmController:
             # Calcul du chiffre à afficher (5, 4, 3...)
             self.current_countdown_val = math.ceil(remaining / 1000)
             
-            # 🎵 Les notes descendent PENDANT le compte à rebours
+            #🎵 Les notes descendent PENDANT le compte à rebours (logic a garder voir si mieuxou pas)
             fake_time = -remaining
             
             for note in self.rhythm.notes:
@@ -137,6 +178,7 @@ class RhythmController:
                     time_diff = note["time"] - fake_time
                     note["y"] = self.rhythm.hit_line_y - (time_diff * self.note_speed)
             
+            #Notes stay in place during countdown
             if remaining <= 0:
                 self.waiting_to_start = False
                 self.startMusic()
@@ -200,9 +242,8 @@ class RhythmController:
         # GAME OVER
         if self.rhythm.crowd_satisfaction <= 0:
             self.game_over = True
-            print("💀 GAME OVER : Le public vous a dégagé !")
-            self.guitar_channel.stop()
-            self.track_backing.stop()
+            print("GAME OVER : Le public vous a dégagé !")
+            self.stop_all_audio()
 
     def handleInput(self, event):
         # Gestion de la pause (ESC) - disponible même si le jeu a commencé
@@ -340,6 +381,7 @@ class RhythmController:
         self.rhythm.feedback = text
         self.rhythm.feedback_timer = 20
         self.rhythm.combo += 1
+        self.rhythm.total_hits += 1  # Incrémenter le compteur de bonnes notes
         
         # Multiplicateur de score basé sur le combo
         # Ex: Combo 10 = x1.5, Combo 20 = x2.0
@@ -410,26 +452,64 @@ class RhythmController:
         return remaining_s
     def end_concert(self):
         """
-        💰 ÉCONOMIE RADINE : Calcul du gain final
+        Calculate and award cash based on context, player level, and performance.
+        
+        Base rewards per hit:
+        - Act 1: 1$ per hit
+        - Act 2: 1$ per hit (same as Act 1)
+        - Rhythm Combat: 2$ per hit (2x multiplier)
+        
+        All scale by (player_level + 1)
         """
-        # On divise le score par 250 pour être radin
-        raw_cash = int(self.rhythm.score / 250)
-        
-        # On plafonne à 100$ MAX
-        cash = min(100, raw_cash)
-        
-        # Petit bonus si public en feu
-        if self.rhythm.crowd_satisfaction > 90:
-            cash += 20
-            print("🌟 Bonus Star : +20$")
+        try:
+            player_level = self.character.getLevel() if self.character else 0
+            level_multiplier = player_level + 1  # Level 0 = 1x, Level 1 = 2x, etc.
             
-        self.rhythm.cash_earned = cash
-        print(f"💰 FIN DU CONCERT - Gains : {cash}$ (Plafonné)")
-        print(f"📊 Stats finales:")
-        print(f"   Score: {self.rhythm.score}")
-        print(f"   Max Combo: {self.rhythm.max_combo}")
-        print(f"   Hype finale: {self.rhythm.crowd_satisfaction}%")
-        return cash
+            # Determine cash per hit by context
+            if self.context == "rhythm_combat":
+                cash_per_hit = 2  # Boss combat pays 2$ per hit
+            else:  # "act1" or "act2"
+                cash_per_hit = 1  # Regular concerts pay 1$ per hit
+            
+            # Calculate total cash based on total hits
+            total_hits = getattr(self.rhythm, 'total_hits', 0)
+            base_cash = total_hits * cash_per_hit * level_multiplier
+            
+            # Bonus for excellent performance (satisfaction > 90)
+            bonus_cash = 0
+            if self.rhythm.crowd_satisfaction > 90:
+                # 20% bonus for really good crowd
+                bonus_cash = int(base_cash * 0.20)
+            
+            # Final cash
+            cash = base_cash + bonus_cash
+            
+            self.rhythm.cash_earned = cash
+            
+            # Award currency to player
+            if self.character:
+                self.character.addCurrency(cash)
+            
+            # Debug output
+            print(f"=== CONCERT COMPLETE ===")
+            print(f"Context: {self.context} | Player Level: {player_level}")
+            print(f"Total Hits: {total_hits} × ${cash_per_hit} × {level_multiplier} (level multiplier) = ${base_cash}")
+            print(f"Crowd Satisfaction: {self.rhythm.crowd_satisfaction}%")
+            if bonus_cash > 0:
+                print(f"Performance Bonus: +${bonus_cash} (20% for satisfaction > 90%)")
+            print(f"Total Earnings: ${cash}")
+            if self.character:
+                print(f"Player Total Currency: ${self.character.getCurrency()}")
+            print(f"Stats:")
+            print(f"   Score: {self.rhythm.score}")
+            print(f"   Max Combo: {self.rhythm.max_combo}")
+            print(f"   Final Hype: {self.rhythm.crowd_satisfaction}%")
+            
+            return cash
+        except Exception as e:
+            print(f"ERROR in end_concert: {e}")
+            self.rhythm.cash_earned = 0
+            return 0
 
     # Backward compatible aliases for old function names
     def play_random_fail(self):

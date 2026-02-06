@@ -90,7 +90,7 @@ class MapPageView(PageView):
                         TileModel("road", "Game/Assets/road3_carre.png", False),
                         TileModel("road2", "Game/Assets/road3_carre.png", False)
                     ]
-                    self.map = MapModel("Game/Assets/maps/map.map", tile_kinds, 106)
+                    self.map = MapModel("Game/Assets/maps/map.map", tile_kinds, 16)
                     Logger.debug("MapPageView.__init__", "Fallback map loaded")
             except Exception as e:
                 Logger.error("MapPageView.__init__", e)
@@ -187,8 +187,13 @@ class MapPageView(PageView):
                     # TMX object y is top coordinate; use as-is
                     self.shop_left = sx
                     self.shop_top = sy
-                    self.shop_width = sw
-                    self.shop_height = sh
+                    self.shop_tile_x = self.shop_left // self.map.tile_size
+                    self.shop_tile_y = self.shop_top // self.map.tile_size
+                    self.shop_tile_width = 3  # 3x3 collision hitbox
+                    self.shop_tile_height = 3  # 3x3 collision hitbox
+                    # Recalculate pixel dimensions based on 3x3 tile collision
+                    self.shop_width = self.shop_tile_width * self.map.tile_size
+                    self.shop_height = self.shop_tile_height * self.map.tile_size
                     self.shop_rect_world = pygame.Rect(self.shop_left, self.shop_top, self.shop_width, self.shop_height)
                     # door at bottom center unless door property specified
                     door_w = max(8, self.map.tile_size // 2)
@@ -196,10 +201,6 @@ class MapPageView(PageView):
                     door_x = self.shop_left + (self.shop_width - door_w) // 2
                     door_y = self.shop_top + self.shop_height - door_h
                     self.shop_door_rect = pygame.Rect(door_x, door_y, door_w, door_h)
-                    self.shop_tile_x = self.shop_left // self.map.tile_size
-                    self.shop_tile_y = self.shop_top // self.map.tile_size
-                    self.shop_tile_width = max(1, self.shop_width // self.map.tile_size)
-                    self.shop_tile_height = max(1, self.shop_height // self.map.tile_size)
                     self.chosen_building = (self.shop_tile_x, self.shop_tile_y, self.shop_tile_x + self.shop_tile_width - 1, self.shop_tile_y + self.shop_tile_height -1)
                     Logger.debug('MapPageView.__init__', 'Using shop object from TMX', shop=self.chosen_building, obj=shop_obj)
                 else:
@@ -452,6 +453,14 @@ class MapPageView(PageView):
                                     Logger.error("MapPageView.run", e)
                                 except Exception as e:
                                     Logger.error("MapPageView.run", e)
+                            
+                            # Launch act if transition is ready and press SPACE
+                            elif event.key == pygame.K_SPACE:
+                                if self.transition_ready:
+                                    Logger.debug("MapPageView.run", "Transition triggered by SPACE", next_act=self.current_act)
+                                    transition_triggered = True
+                                    running = False
+                                    break
 
                         # Handle mouse click on transition prompt or shop
                         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -488,28 +497,28 @@ class MapPageView(PageView):
                                             shop_model = ShopModel(self.johnny)
                                             shop_view = ShopPageView(self.screen, shop_model)
                                             shop_controller = ShopController(shop_model, shop_view)
-                                        
-                                        # Shop loop
-                                        shop_running = True
-                                        shop_clock = pygame.time.Clock()
-                                        
-                                        while shop_running:
-                                            for shop_event in pygame.event.get():
-                                                if shop_event.type == pygame.QUIT:
-                                                    shop_running = False
-                                                    return GameState.QUIT.value
-                                                
-                                                result = shop_controller.handleInput(shop_event)
-                                                if result == "exit":
-                                                    shop_running = False
-                                                    Logger.debug("MapPageView.run", "Shop closed")
                                             
-                                            shop_controller.update()
-                                            shop_view.draw(self.johnny)
-                                            pygame.display.flip()
-                                            shop_clock.tick(60)
-                                        
-                                        Logger.debug("MapPageView.run", "Returned from shop")
+                                            # Shop loop
+                                            shop_running = True
+                                            shop_clock = pygame.time.Clock()
+                                            
+                                            while shop_running:
+                                                for shop_event in pygame.event.get():
+                                                    if shop_event.type == pygame.QUIT:
+                                                        shop_running = False
+                                                        return GameState.QUIT.value
+                                                    
+                                                    result = shop_controller.handleInput(shop_event)
+                                                    if result == "exit":
+                                                        shop_running = False
+                                                        Logger.debug("MapPageView.run", "Shop closed")
+                                                
+                                                shop_controller.update()
+                                                shop_view.draw(self.johnny)
+                                                pygame.display.flip()
+                                                shop_clock.tick(60)
+                                            
+                                            Logger.debug("MapPageView.run", "Returned from shop")
                                     except Exception as e:
                                         Logger.error("MapPageView.run", e)
 

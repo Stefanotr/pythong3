@@ -13,6 +13,7 @@ from Controllers.GameState import GameState
 from Controllers.GameSequenceController import GameSequenceController
 from Models.RhythmModel import RhythmModel
 from Utils.Logger import Logger
+from Songs.TheFinalCountdown import load_final_countdown
 
 
 class RhythmCombatPageView:
@@ -45,15 +46,29 @@ class RhythmCombatPageView:
                 raise ValueError("Boss instance is required for rhythm combat")
             
             # === BOSS HEALTH MANAGEMENT ===
-            # Ensure boss has 3000 HP once and only once per battle
+            # Scale boss health based on player level, but only once
             if not hasattr(self.boss, '_rhythm_combat_max_health'):
-                # First time in rhythm combat - set and lock max health
-                Logger.debug("RhythmCombatPageView.__init__", f"Setting boss health to 3000 (current: {self.boss.getHealth()})")
-                self.boss.setHealth(3000)
-                Logger.debug("RhythmCombatPageView.__init__", f"Boss health set, verification: {self.boss.getHealth()}")
-                self.boss._rhythm_combat_max_health = 3000
-                Logger.debug("RhythmCombatPageView.__init__", "Boss initialized with 3000 HP for rhythm combat",
-                           boss_name=self.boss.getName(), confirmed_health=self.boss.getHealth())
+                # First time in rhythm combat - scale health based on player level
+                try:
+                    player_level = self.player.getLevel() if self.player else 0
+                    base_health = 3000
+                    # Add HP progression: +50 HP per level (more aggressive for final boss)
+                    scaled_health = int(base_health + (player_level * 50))
+                    self.boss.setHealth(scaled_health)
+                    self.boss._rhythm_combat_max_health = scaled_health
+                    
+                    # Also scale damage: +1 damage per level
+                    base_damage = 15
+                    scaled_damage = int(base_damage + (player_level * 1))
+                    self.boss.setDamage(scaled_damage)
+                    
+                    Logger.debug("RhythmCombatPageView.__init__", "Boss initialized for rhythm combat",
+                               boss_name=self.boss.getName(), level=player_level, health=scaled_health, damage=scaled_damage)
+                except Exception as e:
+                    Logger.error("RhythmCombatPageView.__init__", f"Error scaling boss health: {e}")
+                    self.boss.setHealth(3000)
+                    self.boss.setDamage(15)
+                    self.boss._rhythm_combat_max_health = 3000
             else:
                 Logger.debug("RhythmCombatPageView.__init__", "Boss already initialized, current health",
                            boss_name=self.boss.getName(), current_health=self.boss.getHealth())
@@ -63,12 +78,17 @@ class RhythmCombatPageView:
             Logger.debug("RhythmCombatPageView.__init__", f"Boss max health stored as {self.boss_max_health}, actual health: {self.boss.getHealth()}")
             
             # === PLAYER HEALTH MANAGEMENT ===
-            self.player_max_health = 100  # Default player max health
+            # Use player's current health as the base max health
+            # This will be updated dynamically during gameplay
+            self.player_max_health = 100  # Default fallback
             if self.player:
                 try:
-                    self.player_max_health = self.player.getHealth()  # Use current health as max since player doesn't scale much
-                except Exception:
-                    pass
+                    # Use current player health as max (will update if player gains HP from leveling)
+                    self.player_max_health = self.player.getHealth()
+                    Logger.debug("RhythmCombatPageView.__init__", "Player max health set",
+                               max_health=self.player_max_health)
+                except Exception as e:
+                    Logger.error("RhythmCombatPageView.__init__", "Error setting player max health", error=str(e))
             
             # Get screen dimensions and create resizable window
             try:
@@ -99,7 +119,7 @@ class RhythmCombatPageView:
             # Create rhythm model and view
             try:
                 self.rhythm_model = RhythmModel()
-                self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health)
+                self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path="Game/Assets/managerevade.png")
                 Logger.debug("RhythmCombatPageView.__init__", "Rhythm and combat views created")
             except Exception as e:
                 Logger.error("RhythmCombatPageView.__init__", e)
@@ -112,7 +132,9 @@ class RhythmCombatPageView:
                     self.player,
                     self.boss,
                     self.screen_height,
-                    self.combat_view
+                    self.combat_view,
+                    load_final_countdown()
+
                 )
                 Logger.debug("RhythmCombatPageView.__init__", "Rhythm combat controller created",
                            boss_health=self.boss.getHealth())
@@ -153,15 +175,6 @@ class RhythmCombatPageView:
                                 except Exception as e:
                                     Logger.error("RhythmCombatPageView.run", e)
                             
-                            # === HANDLE INVENTORY NAVIGATION (LEFT/RIGHT) ===
-                            elif event.key == pygame.K_LEFT or event.key == pygame.K_UP:
-                                if self.player and hasattr(self.player, 'inventory'):
-                                    self.player.inventory.select_previous()
-                            
-                            elif event.key == pygame.K_RIGHT or event.key == pygame.K_DOWN:
-                                if self.player and hasattr(self.player, 'inventory'):
-                                    self.player.inventory.select_next()
-                            
                             # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
                             elif self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
                                 stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
@@ -176,7 +189,7 @@ class RhythmCombatPageView:
                             self.screen_width = event.w
                             self.screen_height = event.h
                             # Recreate combat view with new dimensions
-                            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health)
+                            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path="Game/Assets/managerevade.png")
                             Logger.debug("RhythmCombatPageView.run", "Window resized", width=self.screen_width, height=self.screen_height)
                         
                         
@@ -223,9 +236,6 @@ class RhythmCombatPageView:
                         # Get note speed if available
                         note_speed = getattr(self.controller, 'note_speed', 0.5)
                         
-                        # Get inventory if available
-                        inventory = getattr(self.player, 'inventory', None)
-                        
                         # Draw the combat view
                         if self.combat_view and self.rhythm_model:
                             self.combat_view.draw(
@@ -234,8 +244,7 @@ class RhythmCombatPageView:
                                 self.player,
                                 self.boss,
                                 note_speed,
-                                countdown_val,
-                                inventory
+                                countdown_val
                             )
                         
                         pygame.display.flip()
@@ -252,12 +261,28 @@ class RhythmCombatPageView:
             try:
                 if hasattr(self.controller, 'victory') and self.controller.victory:
                     Logger.debug("RhythmCombatPageView.run", "Rhythm combat completed successfully - showing victory transition")
-                    # Increment player level
+                    
+                    # Calculate and apply victory rewards
+                    self.controller.end_combat()
+                    
+                    # Increment player level and apply stat progression
                     if self.player:
                         current_level = self.player.getLevel()
-                        self.player.setLevel(current_level + 1)
-                        Logger.debug("RhythmCombatPageView.run", "Player level incremented", 
-                                   old_level=current_level, new_level=current_level + 1)
+                        new_level = current_level + 1
+                        self.player.setLevel(new_level)
+                        
+                        # Apply progression: +1 damage and +25 HP per level
+                        current_damage = self.player.getDamage()
+                        new_damage = current_damage + 1
+                        self.player.setDamage(new_damage)
+                        
+                        current_health = self.player.getHealth()
+                        new_health = current_health + 25
+                        self.player.setHealth(new_health)
+                        
+                        Logger.debug("RhythmCombatPageView.run", "Player level incremented and stats increased", 
+                                   old_level=current_level, new_level=new_level,
+                                   new_damage=new_damage, new_health=new_health)
                         
                         # Check if this is the last stage (stage 8 - RHYTHM_COMBAT)
                         is_last_stage = (self.sequence_controller and 
@@ -340,7 +365,7 @@ class RhythmCombatPageView:
                 Logger.debug("RhythmCombatPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
             
             # Recreate combat view with new dimensions
-            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health)
+            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path="Game/Assets/managerevade.png")
             
             # Update controller's screen height reference if available
             if self.controller and hasattr(self.controller, 'screen_height'):

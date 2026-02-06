@@ -2,15 +2,16 @@ import pygame
 import math
 
 class RhythmView:
-    def __init__(self, screen_width, screen_height):
+    def __init__(self, screen_width, screen_height, background_image_path="Game/Assets/stage.png", character_view=None):
         self.screen_width = screen_width
         self.screen_height = screen_height
+        self.character_view = character_view  # Optional character view
         
         # --- 1. CHARGEMENT DU BACKGROUND ---
         self.background_image = None
         self.overlay = None
         
-        image_path = "Game/Assets/stage.png"
+        image_path = background_image_path
 
         try:
             loaded_img = pygame.image.load(image_path).convert()
@@ -165,6 +166,22 @@ class RhythmView:
                 shade = int(20 + y * 0.02)
                 pygame.draw.line(screen, (shade, shade // 2, shade // 3), (0, y), (self.screen_width, y))
         
+        # --- A.2 PERSONNAGE (MILIEU GAUCHE) ---
+        if self.character_view:
+            try:
+                # Positionner le personnage au milieu gauche de l'écran
+                char_x = int(self.screen_width * 0.15)  # 15% from left
+                char_y = self.screen_height // 2  # Middle vertically
+                
+                # Draw character sprite directly if it exists
+                if self.character_view.sprite:
+                    sprite_w, sprite_h = self.character_view.sprite.get_size()
+                    draw_x = char_x - sprite_w // 2
+                    draw_y = char_y - sprite_h // 2
+                    screen.blit(self.character_view.sprite, (draw_x, draw_y))
+            except Exception as e:
+                print(f"Erreur affichage personnage: {e}")
+        
         # --- B. MANCHE DE GUITARE ---
         guitar_rect = pygame.Rect(self.guitar_start - 15, 0, self.guitar_width + 30, self.screen_height)
         guitar_surf = pygame.Surface((guitar_rect.width, guitar_rect.height), pygame.SRCALPHA)
@@ -260,8 +277,24 @@ class RhythmView:
         score_label = self.font.render("SCORE", True, (200, 200, 200))
         screen.blit(score_label, (self.screen_width//2 - score_label.get_width()//2, int(hud_h*0.1)))
         
-        cash_est = min(100, int(rhythm_model.score / 250))
-        cash_txt = self.score_font.render(f"{cash_est}$", True, (100, 255, 100))
+        # Display earned cash - calculate in real-time based on current performance
+        # If cash_earned was set (end of game), use that; otherwise estimate from current hits
+        if hasattr(rhythm_model, 'cash_earned') and rhythm_model.cash_earned > 0:
+            # Use actual final cash amount
+            display_cash = rhythm_model.cash_earned
+        else:
+            # Calculate cash based on total hits and player level
+            # 1$ per hit × (player_level + 1)
+            try:
+                player_level = character_model.getLevel() if hasattr(character_model, 'getLevel') else 0
+            except:
+                player_level = 0
+            
+            total_hits = getattr(rhythm_model, 'total_hits', 0)
+            base_hit_cash = total_hits * 1  # 1$ per hit
+            display_cash = base_hit_cash * (player_level + 1)
+        
+        cash_txt = self.score_font.render(f"{display_cash}$", True, (100, 255, 100))
         screen.blit(cash_txt, (self.screen_width - cash_txt.get_width() - 20, hud_h//2 - 20))
 
         # Feedback & Combo

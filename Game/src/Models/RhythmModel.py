@@ -8,6 +8,7 @@ class RhythmModel:
         self.score = 0
         self.combo = 0
         self.max_combo = 0
+        self.total_hits = 0  # Nombre total de bonnes notes touchées
         
         # --- 2. SYSTÈME DE CONCERT (HYPE) ---
         # Remplace la barre de vie classique.
@@ -52,6 +53,7 @@ class RhythmModel:
         self.score = 0
         self.combo = 0
         self.max_combo = 0
+        self.total_hits = 0
         self.crowd_satisfaction = 50
         self.cash_earned = 0
         self.feedback = ""

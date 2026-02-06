@@ -38,9 +38,14 @@ class PlayerModel(CaracterModel):
             self._drunkenness = 0
             self._level = 0
             
-            # Initialize inventory for bottle management
+            # Initialize inventory for bottle management with default beer
             from Models.InventoryModel import InventoryModel
             self.inventory = InventoryModel()
+            
+            # Add default beer to inventory and select it
+            default_beer = BottleModel("Beer", alcohol_level=15, bonus_damage=3, accuracy_penalty=5)
+            self.inventory.add_item(default_beer)
+            # Beer is automatically selected since inventory was empty
             
             Logger.debug("PlayerModel.__init__", "Player model initialized", name=name, x=x, y=y)
         except Exception as e:

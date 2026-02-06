@@ -9,6 +9,7 @@ Supports optional rhythm phase for Act 2.
 import pygame
 import os
 from Models.CaracterModel import CaracterModel
+from Models.BossModel import BossModel
 from Models.PlayerModel import PlayerModel
 from Models.BottleModel import BottleModel
 from Models.GuitarModel import GuitarFactory
@@ -23,6 +24,9 @@ from Views.PauseMenuView import PauseMenuView
 from Views.CaracterView import CaracterView
 from Utils.Logger import Logger
 from Controllers.GameState import GameState
+from Songs.SevenNationArmy import load_seven_nation_army
+from Songs.AnotherOneBitesTheDust import load_another_one
+from Songs.TheFinalCountdown import load_final_countdown
 
 
 # === ACT VIEW CLASS (Generic) ===
@@ -108,9 +112,11 @@ class ActView:
                     except Exception:
                         guitar = GuitarFactory.createLaPelle()
                     
+                    # Add second beer to inventory (first one is added in PlayerModel.__init__)
                     beer = BottleModel("Beer", 15, 3, 5)
-                    self.johnny.setSelectedBottle(beer)
-                    Logger.debug("ActView.__init__", "New player created")
+                    self.johnny.inventory.add_item(beer)
+                    self.johnny.setSelectedBottle(self.johnny.inventory.get_selected_item())
+                    Logger.debug("ActView.__init__", "New player created with 2 beers")
             except Exception as e:
                 Logger.error("ActView.__init__", e)
                 raise
@@ -123,26 +129,52 @@ class ActView:
                 if self.sequence_controller:
                     self.boss = self.sequence_controller.get_boss()
                 
-                # If no boss yet (shouldn't happen), create one
+                # If no boss yet (shouldn't happen), create one based on act_num
                 if not self.boss:
-                    boss_name = act_config.get('boss_name', 'Boss')
-                    boss_health = act_config.get('boss_health', 150)
-                    boss_damage = act_config.get('boss_damage', 12)
-                    boss_accuracy = act_config.get('boss_accuracy', 0.75)
+                    act_num = act_config.get('act_num', 1)
                     
-                    self.boss = CaracterModel(boss_name, 80, 80)
-                    self.boss.setHealth(boss_health)
-                    self.boss.setDamage(boss_damage)
-                    self.boss.setAccuracy(boss_accuracy)
+                    if act_num == 1:
+                        # Act 1: Gros Bill
+                        gros_bill = BossModel("Gros Bill", 80, 80)
+                        gros_bill.setHealth(100)
+                        gros_bill.setDamage(12)
+                        gros_bill.setAccuracy(0.75)
+                        self.boss = gros_bill
+                    elif act_num == 2:
+                        # Act 2: Chef de la Sécurité
+                        chef_securite = BossModel("Chef de la Sécurité", 80, 80)
+                        chef_securite.setHealth(500)
+                        chef_securite.setDamage(14)
+                        chef_securite.setAccuracy(0.80)
+                        self.boss = chef_securite
+                    else:
+                        # Fallback
+                        boss_name = act_config.get('boss_name', 'Boss')
+                        boss_health = act_config.get('boss_health', 150)
+                        boss_damage = act_config.get('boss_damage', 12)
+                        boss_accuracy = act_config.get('boss_accuracy', 0.75)
+                        self.boss = BossModel(boss_name, 80, 80)
+                        self.boss.setHealth(boss_health)
+                        self.boss.setDamage(boss_damage)
+                        self.boss.setAccuracy(boss_accuracy)
                     
                     if self.sequence_controller:
                         self.sequence_controller.set_boss(self.boss)
                 
                 # Update boss stats based on player level (scale difficulty)
-                player_level = self.johnny.getLevel() if self.johnny else 1
-                if player_level > 1:
+                try:
+                    player_level = self.johnny.getLevel() if self.johnny else 0
                     current_health = self.boss.getHealth()
-                    self.boss.setHealth(int(current_health * player_level))
+                    # Add HP progression: +50 HP per level
+                    scaled_health = int(current_health + (player_level * 50))
+                    self.boss.setHealth(scaled_health)
+                    
+                    # Also scale damage: +1 damage per level
+                    current_damage = self.boss.getDamage()
+                    scaled_damage = int(current_damage + (player_level * 1))
+                    self.boss.setDamage(scaled_damage)
+                except Exception as e:
+                    Logger.error("ActView.__init__", "Error scaling boss stats", error=str(e))
                 
                 Logger.debug("ActView.__init__", f"Boss: {self.boss.getName()}",
                            health=self.boss.getHealth(), damage=self.boss.getDamage())
@@ -155,7 +187,9 @@ class ActView:
             try:
                 self.combat_model = CombatModel(self.johnny, self.boss)
                 self.combat_controller = CombatController(self.combat_model)
-                self.combat_view = CombatView(self.screen_width, self.screen_height)
+                # Pass appropriate background image based on act
+                bg_image = act_config.get('background_image', 'Game/Assets/grosbillfight.png')
+                self.combat_view = CombatView(self.screen_width, self.screen_height, background_image_path=bg_image)
                 Logger.debug("ActView.__init__", "Combat system initialized")
             except Exception as e:
                 Logger.error("ActView.__init__", e)
@@ -217,11 +251,12 @@ class ActView:
             'boss_name': "Gros Bill",
             'boss_asset': "Game/Assets/chefdesmotards.png",
             'boss_base': "motard",
-            'boss_health': 150,
+            'boss_health': 100,
             'boss_damage': 12,
             'boss_accuracy': 0.75,
             'guitar_factory_method': 'createLaPelle',
-            'has_rhythm_phase': False
+            'has_rhythm_phase': False,
+            'background_image': 'Game/Assets/grosbillfight.png'
         }
     
     def _get_act2_config(self):
@@ -243,11 +278,12 @@ class ActView:
             'boss_name': "Chef de la Sécurité",
             'boss_asset': "Game/Assets/Agentdesecurité.png",
             'boss_base': "agent",
-            'boss_health': 130,
+            'boss_health': 500,
             'boss_damage': 14,
             'boss_accuracy': 0.80,
             'guitar_factory_method': 'createGuitareGonflable',
-            'has_rhythm_phase': True
+            'has_rhythm_phase': True,
+            'background_image': 'Game/Assets/chefsecuritefight.png'
         }
     
     @staticmethod
@@ -299,7 +335,8 @@ class ActView:
                                 
                                 # Update combat view with new dimensions
                                 try:
-                                    self.combat_view = CombatView(self.screen_width, self.screen_height)
+                                    bg_image = self.act_config.get('background_image', 'Game/Assets/grosbillfight.png')
+                                    self.combat_view = CombatView(self.screen_width, self.screen_height, background_image_path=bg_image)
                                 except Exception as e:
                                     Logger.error("ActView.run", e)
                                 
@@ -325,15 +362,46 @@ class ActView:
                             # === HANDLE ESCAPE KEY (GLOBAL) ===
                             elif event.key == pygame.K_ESCAPE:
                                 try:
+                                    # Pause all audio and notes before showing menu
+                                    if self.combat_controller and hasattr(self.combat_controller, 'is_paused'):
+                                        self.combat_controller.is_paused = True
+                                        if hasattr(self.combat_controller, 'pause_audio'):
+                                            self.combat_controller.pause_audio()
+                                    if self.rhythm_controller and hasattr(self.rhythm_controller, 'is_paused'):
+                                        self.rhythm_controller.is_paused = True
+                                        if hasattr(self.rhythm_controller, 'pause_audio'):
+                                            self.rhythm_controller.pause_audio()
+                                    
                                     pause_menu = PauseMenuView(self.screen)
                                     pause_result = pause_menu.run()
+                                    
                                     if pause_result == GameState.QUIT.value:
                                         Logger.debug("ActView.run", "Quit requested from pause menu")
+                                        # Stop all audio before quitting
+                                        if self.combat_controller and hasattr(self.combat_controller, 'stop_all_audio'):
+                                            self.combat_controller.stop_all_audio()
+                                        if self.rhythm_controller and hasattr(self.rhythm_controller, 'stop_all_audio'):
+                                            self.rhythm_controller.stop_all_audio()
                                         return GameState.QUIT.value
                                     elif pause_result == GameState.MAIN_MENU.value:
                                         Logger.debug("ActView.run", "Main menu requested from pause menu")
+                                        # Stop all audio before returning to main menu
+                                        if self.combat_controller and hasattr(self.combat_controller, 'stop_all_audio'):
+                                            self.combat_controller.stop_all_audio()
+                                        if self.rhythm_controller and hasattr(self.rhythm_controller, 'stop_all_audio'):
+                                            self.rhythm_controller.stop_all_audio()
                                         return GameState.MAIN_MENU.value
-                                    Logger.debug("ActView.run", "Resuming from pause menu")
+                                    else:  # CONTINUE or anything else
+                                        # Resume all audio and notes when continuing
+                                        if self.combat_controller and hasattr(self.combat_controller, 'is_paused'):
+                                            self.combat_controller.is_paused = False
+                                            if hasattr(self.combat_controller, 'resume_audio'):
+                                                self.combat_controller.resume_audio()
+                                        if self.rhythm_controller and hasattr(self.rhythm_controller, 'is_paused'):
+                                            self.rhythm_controller.is_paused = False
+                                            if hasattr(self.rhythm_controller, 'resume_audio'):
+                                                self.rhythm_controller.resume_audio()
+                                        Logger.debug("ActView.run", "Resuming from pause menu")
                                 except Exception as e:
                                     Logger.error("ActView.run", e)
                             
@@ -352,11 +420,21 @@ class ActView:
                                 self.show_intro = False
                                 Logger.debug("ActView.run", "Intro skipped by user")
                             
-                            # === COMBAT PHASE (A, P, D, B) OR COMPLETION (SPACE) ===
+                            # === COMBAT PHASE (A, P, D, B) OR INVENTORY NAVIGATION (LEFT/RIGHT/UP/DOWN) OR COMPLETION (SPACE) ===
                             elif self.phase == "combat":
                                 Logger.debug("ActView.run", "Combat key received", key=pygame.key.name(event.key))
                                 
-                                if not self.combat_model.isCombatFinished():
+                                # === INVENTORY NAVIGATION (LEFT/RIGHT/UP/DOWN) ===
+                                if event.key == pygame.K_LEFT or event.key == pygame.K_UP:
+                                    if hasattr(self.johnny, 'inventory') and self.johnny.inventory:
+                                        self.johnny.inventory.select_previous()
+                                        Logger.debug("ActView.run", "Inventory previous selected")
+                                elif event.key == pygame.K_RIGHT or event.key == pygame.K_DOWN:
+                                    if hasattr(self.johnny, 'inventory') and self.johnny.inventory:
+                                        self.johnny.inventory.select_next()
+                                        Logger.debug("ActView.run", "Inventory next selected")
+                                
+                                elif not self.combat_model.isCombatFinished():
                                     try:
                                         self.combat_controller.handle_input(event)
                                     except Exception as e:
@@ -484,6 +562,8 @@ class ActView:
             try:
                 if self.combat_model.getWinner() == "PLAYER":
                     Logger.debug("ActView.run", f"Act {self.act_config.get('act_num')} completed - VICTORY")
+                    # Player stats are only increased after defeating the final boss (Manager Corrompu)
+                    # Not after individual acts
                     return "NEXT"  # Proceed to next stage
                 else:
                     Logger.debug("ActView.run", f"Act {self.act_config.get('act_num')} completed - DEFEAT")
@@ -537,15 +617,17 @@ class ActView:
             # Create rhythm model
             self.rhythm_model = RhythmModel()
             
-            # Create rhythm view
-            self.rhythm_view = RhythmView(self.screen_width, self.screen_height)
+            # Create rhythm view with Act 2 background (woodstock)
+            self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path="Game/Assets/woodstock.png")
             
             # Create rhythm controller with boss for attack simulation
             self.rhythm_controller = RhythmController(
                 self.rhythm_model, 
                 self.johnny, 
                 self.screen_height, 
-                self.rhythm_view
+                self.rhythm_view,
+                load_another_one(),
+                context="act2"  # Rhythm phase is only in Act 2
             )
             
             # Transition to rhythm phase
@@ -688,9 +770,11 @@ class ActView:
     def _draw_level_display(self):
         """
         Draw the level and alcohol display in the bottom left corner (map style).
+        Note: Inventory is now drawn by CombatView when in combat phase.
         """
         try:
             import pygame
+            
             font = pygame.font.Font(None, 36)
             
             # Draw Level
