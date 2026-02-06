@@ -301,6 +301,8 @@ class RhythmCombatController:
             hit_found = True
             best_note["active"] = False
             self.notes_hit += 1
+            # Update model total_hits for display
+            self.rhythm.total_hits = self.notes_hit
             
             self.guitar_channel.set_volume(1.0)
             self.last_hit_time = pygame.time.get_ticks()
