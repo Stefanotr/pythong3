@@ -99,6 +99,19 @@ class WelcomPageView(PageView):
             # === STAGE SELECTION ===
             self.selected_stage = 1  # Default to stage 1
             Logger.debug("WelcomPageView.__init__", "Stage selector initialized", default_stage=self.selected_stage)
+            
+            # === WELCOME MUSIC ===
+            self.music_playing = False
+            try:
+                pygame.mixer.init()
+                music_path = "Game/Assets/FakeYouth.mp3"
+                pygame.mixer.music.load(music_path)
+                pygame.mixer.music.set_volume(0.6)  # 60% volume
+                Logger.debug("WelcomPageView.__init__", "Welcome music loaded successfully from", path=music_path)
+            except FileNotFoundError:
+                Logger.error("WelcomPageView.__init__", "Welcome music file not found (Game/Assets/FakeYouth.mp3)")
+            except Exception as e:
+                Logger.error("WelcomPageView.__init__", f"Failed to load welcome music: {e}")
                 
         except Exception as e:
             Logger.error("WelcomPageView.__init__", e)
@@ -209,8 +222,20 @@ class WelcomPageView(PageView):
     def update(self):
         """
         Update welcome page state.
-        Currently no per-frame state to update.
+        Handles welcome music playback.
         """
+        try:
+            # Start playing welcome music if it's not already playing
+            if not self.music_playing:
+                try:
+                    pygame.mixer.music.play(-1)  # -1 means loop infinitely
+                    self.music_playing = True
+                    Logger.debug("WelcomPageView.update", "Welcome music started playing")
+                except Exception as e:
+                    Logger.error("WelcomPageView.update", f"Failed to play welcome music: {e}")
+        except Exception as e:
+            Logger.error("WelcomPageView.update", e)
+        
         return None
 
     def render(self):
@@ -221,6 +246,17 @@ class WelcomPageView(PageView):
             self.draw()
             for button in self.buttons:
                 button.draw(self.screen)
+            
+            # Display health warning at the top
+            try:
+                small_font = pygame.font.SysFont("Arial", int(self.height * 0.02), italic=True)
+                warning_text = "L'abus d'alcool est dangereux pour la santé"
+                warning_surf = small_font.render(warning_text, True, (200, 100, 100))
+                warning_x = self.width // 2 - warning_surf.get_width() // 2
+                warning_y = 10
+                self.screen.blit(warning_surf, (warning_x, warning_y))
+            except Exception as e:
+                Logger.error("WelcomPageView.render - warning text", e)
         except Exception as e:
             Logger.error("WelcomPageView.render", e)
     
@@ -244,6 +280,15 @@ class WelcomPageView(PageView):
             starting_stage: The stage to start from (1-8, default 1)
         """
         try:
+            # Stop welcome music when game starts
+            if self.music_playing:
+                try:
+                    pygame.mixer.music.stop()
+                    self.music_playing = False
+                    Logger.debug("WelcomPageView._startGameFlow", "Welcome music stopped")
+                except Exception as e:
+                    Logger.error("WelcomPageView._startGameFlow", f"Failed to stop welcome music: {e}")
+            
             Logger.debug("WelcomPageView._startGameFlow", "Starting game flow with sequence controller")
             
             # Initialize sequence controller
@@ -492,6 +537,18 @@ class WelcomPageView(PageView):
             Logger.error("WelcomPageView._startGameFlow", e)
             raise
         finally:
+            # Restart welcome music when returning to menu
+            try:
+                if not self.music_playing:
+                    try:
+                        pygame.mixer.music.play(-1)  # Resume looping music
+                        self.music_playing = True
+                        Logger.debug("WelcomPageView._startGameFlow", "Welcome music resumed on return to menu")
+                    except Exception as e:
+                        Logger.error("WelcomPageView._startGameFlow", f"Failed to resume welcome music: {e}")
+            except Exception:
+                pass
+            
             # Restore the menu window size if it was saved
             try:
                 if menu_size:
