@@ -45,7 +45,7 @@ class PauseMenuView:
             
             # Calculate button positions (centered vertically)
             button_y_start = self.screen_height // 2 - 80
-            button_spacing = 100
+            button_spacing = 130
             
             # Continue button
             try:
