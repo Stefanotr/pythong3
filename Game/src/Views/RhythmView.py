@@ -2,9 +2,10 @@ import pygame
 import math
 
 class RhythmView:
-    def __init__(self, screen_width, screen_height, background_image_path="Game/Assets/stage.png"):
+    def __init__(self, screen_width, screen_height, background_image_path="Game/Assets/stage.png", character_view=None):
         self.screen_width = screen_width
         self.screen_height = screen_height
+        self.character_view = character_view  # Optional character view
         
         # --- 1. CHARGEMENT DU BACKGROUND ---
         self.background_image = None
@@ -164,6 +165,19 @@ class RhythmView:
             for y in range(self.screen_height):
                 shade = int(20 + y * 0.02)
                 pygame.draw.line(screen, (shade, shade // 2, shade // 3), (0, y), (self.screen_width, y))
+        
+        # --- A.2 PERSONNAGE (MILIEU GAUCHE) ---
+        if self.character_view:
+            try:
+                # Positionner le personnage au milieu gauche de l'écran
+                char_x = int(self.screen_width * 0.15)  # 15% from left
+                char_y = self.screen_height // 2  # Middle vertically
+                # Draw character sprite at the calculated position
+                if self.character_view.sprite:
+                    sprite_rect = self.character_view.sprite.get_rect(center=(char_x, char_y))
+                    screen.blit(self.character_view.sprite, sprite_rect)
+            except Exception as e:
+                print(f"Erreur affichage personnage: {e}")
         
         # --- B. MANCHE DE GUITARE ---
         guitar_rect = pygame.Rect(self.guitar_start - 15, 0, self.guitar_width + 30, self.screen_height)

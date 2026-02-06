@@ -12,6 +12,7 @@ from Controllers.GameState import GameState
 from Models.RhythmModel import RhythmModel
 from Controllers.RhythmController import RhythmController
 from Views.RhythmView import RhythmView
+from Views.CaracterView import CaracterView
 from Views.PauseMenuView import PauseMenuView
 from Views.FinTransitionPageView import FinTransitionPageView
 from Utils.Logger import Logger
@@ -99,9 +100,17 @@ class RhythmPageView:
                 # Create rhythm model
                 self.rhythm_model = RhythmModel()
                 
-                # Create rhythm view with context-specific background
+                # Create character view for displaying the player
+                try:
+                    character_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(200, 200))
+                    Logger.debug("RhythmPageView.__init__", "Character view created for rhythm display")
+                except Exception as e:
+                    Logger.error("RhythmPageView.__init__", f"Failed to create character view: {e}")
+                    character_view = None
+                
+                # Create rhythm view with context-specific background and character
                 bg_image = "Game/Assets/barconcert.png" if context == "act1" else "Game/Assets/woodstock.png"
-                self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image)
+                self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image, character_view=character_view)
                 
                 # Create a boss for attack simulation on missed notes
                 from Models.CaracterModel import CaracterModel
@@ -203,35 +212,34 @@ class RhythmPageView:
                                 # Open pause menu (only if countdown is finished)
                                 if not self.countdown_active:
                                     try:
+                                        # Pause all audio and notes before showing menu
+                                        if self.rhythm_controller:
+                                            self.rhythm_controller.is_paused = True
+                                            self.rhythm_controller.pause_audio()
+                                        
                                         pause_menu = PauseMenuView(self.screen)
                                         pause_result = pause_menu.run()
 
                                         if pause_result == GameState.QUIT.value:
                                             Logger.debug("RhythmPageView.run", "Quit requested from pause menu")
+                                            # Stop all audio before quitting
+                                            if self.rhythm_controller:
+                                                self.rhythm_controller.stop_all_audio()
                                             return GameState.QUIT.value
                                         elif pause_result == GameState.MAIN_MENU.value:
                                             Logger.debug("RhythmPageView.run", "Main menu requested from pause menu")
+                                            # Stop all audio before returning to main menu
+                                            if self.rhythm_controller:
+                                                self.rhythm_controller.stop_all_audio()
                                             return GameState.MAIN_MENU.value
-
-                                        # If CONTINUE or anything else, just resume the game loop
-                                        Logger.debug("RhythmPageView.run", "Resuming from pause menu")
+                                        else:  # CONTINUE or anything else
+                                            # Resume audio and notes when continuing
+                                            if self.rhythm_controller:
+                                                self.rhythm_controller.is_paused = False
+                                                self.rhythm_controller.resume_audio()
+                                            Logger.debug("RhythmPageView.run", "Resuming from pause menu")
                                     except Exception as e:
                                         Logger.error("RhythmPageView.run", e)
-                                try:
-                                    pause_menu = PauseMenuView(self.screen)
-                                    pause_result = pause_menu.run()
-
-                                    if pause_result == GameState.QUIT.value:
-                                        Logger.debug("RhythmPageView.run", "Quit requested from pause menu")
-                                        return GameState.QUIT.value
-                                    elif pause_result == GameState.MAIN_MENU.value:
-                                        Logger.debug("RhythmPageView.run", "Main menu requested from pause menu")
-                                        return GameState.MAIN_MENU.value
-
-                                    # If CONTINUE or anything else, just resume the game loop
-                                    Logger.debug("RhythmPageView.run", "Resuming from pause menu")
-                                except Exception as e:
-                                    Logger.error("RhythmPageView.run", e)
                         
                         elif event.type == pygame.VIDEORESIZE:
                             # Handle window resize

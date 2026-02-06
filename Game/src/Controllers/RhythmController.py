@@ -55,6 +55,7 @@ class RhythmController:
 
         self.start_time = 0
         self.is_playing = False
+        self.is_paused = False  # Flag pour pause menu
         self.game_over = False
         
         # --- 🎵 FIN DE CHANSON & ÉCRAN DE FIN ---
@@ -103,6 +104,30 @@ class RhythmController:
         except Exception as e:
             print(f"Erreur en arrêtant les audios: {e}")
 
+    def pause_audio(self):
+        """Met en pause tous les sons du jeu"""
+        try:
+            # Store current volume for resume
+            self.stored_guitar_volume = self.guitar_channel.get_volume()
+            self.guitar_channel.set_volume(0)
+            if self.track_backing:
+                self.track_backing.set_volume(0)
+        except Exception as e:
+            print(f"Erreur en mettant en pause les audios: {e}")
+
+    def resume_audio(self):
+        """Reprend tous les sons du jeu"""
+        try:
+            # Restore volume
+            if hasattr(self, 'stored_guitar_volume'):
+                self.guitar_channel.set_volume(self.stored_guitar_volume)
+            else:
+                self.guitar_channel.set_volume(1.0)
+            if self.track_backing:
+                self.track_backing.set_volume(1.0)
+        except Exception as e:
+            print(f"Erreur en reprenant les audios: {e}")
+
     def start_music(self):
         """Lance vraiment la musique après le décompte"""
         self.start_time = pygame.time.get_ticks()
@@ -131,7 +156,7 @@ class RhythmController:
                 pygame.mixer.unpause()
                 pause_duration = pygame.time.get_ticks() - self.pause_time
                 self.start_time += pause_duration  # Décaler start_time de la durée de la pause
-                print("▶️ Reprise!")
+                print("Reprise!")
             return
 
         # --- 1. GESTION DU COMPTE À REBOURS ---
@@ -143,18 +168,18 @@ class RhythmController:
             # Calcul du chiffre à afficher (5, 4, 3...)
             self.current_countdown_val = math.ceil(remaining / 1000)
             
-            # 🎵 Les notes descendent PENDANT le compte à rebours (logic a garder voir si mieuxou pas)
-            # fake_time = -remaining
+            🎵 Les notes descendent PENDANT le compte à rebours (logic a garder voir si mieuxou pas)
+            fake_time = -remaining
             
-            # for note in self.rhythm.notes:
-            #     if note["active"]:
-            #         time_diff = note["time"] - fake_time
-            #         note["y"] = self.rhythm.hit_line_y - (time_diff * self.note_speed)
+            for note in self.rhythm.notes:
+                if note["active"]:
+                    time_diff = note["time"] - fake_time
+                    note["y"] = self.rhythm.hit_line_y - (time_diff * self.note_speed)
             
             # Notes stay in place during countdown
-            if remaining <= 0:
-                self.waiting_to_start = False
-                self.startMusic()
+            # if remaining <= 0:
+            #     self.waiting_to_start = False
+            #     self.startMusic()
             
             return
 
