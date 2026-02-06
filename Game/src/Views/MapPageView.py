@@ -66,6 +66,10 @@ class MapPageView(PageView):
             # Initialize PageView without background image to avoid visual artifacts on the map
             super().__init__("Map - Six-String Hangover", screen_width, screen_height, pygame.FULLSCREEN, None)
             
+            # Store screen dimensions for camera calculations
+            self.screen_width = screen_width
+            self.screen_height = screen_height
+            
             self.sequence_controller = sequence_controller
             Logger.debug("MapPageView.__init__", "Map view created with no background image to avoid visual bugs")
             self.current_act = current_act
@@ -607,11 +611,37 @@ class MapPageView(PageView):
                         # Draw background first
                         self.draw()
 
-                        # Draw map and objects at world coordinates (no camera offset)
+                        # Calculate camera position to follow player
                         try:
-                            self.map_view.draw(self.screen, (0, 0))
-                            self._drawShopBuilding((0, 0))
-                            self.player_view.drawCaracter(self.screen, self.johnny, offset=(0, 0), is_map=True)
+                            player_x = int(self.johnny.getX())
+                            player_y = int(self.johnny.getY())
+                            
+                            screen_w = self.screen.get_width()
+                            screen_h = self.screen.get_height()
+                            
+                            # Center camera on player
+                            camera_x = player_x - screen_w // 2
+                            camera_y = player_y - screen_h // 2
+                            
+                            # Clamp camera to map boundaries
+                            if hasattr(self.map, 'tiles') and self.map.tiles:
+                                map_width = len(self.map.tiles[0]) * self.map.tile_size if len(self.map.tiles) > 0 else 0
+                                map_height = len(self.map.tiles) * self.map.tile_size
+                                
+                                camera_x = max(0, min(camera_x, map_width - screen_w))
+                                camera_y = max(0, min(camera_y, map_height - screen_h))
+                            
+                            # Apply camera offset (negative to translate the world towards screen origin)
+                            camera_offset = (-camera_x, -camera_y)
+                        except Exception as e:
+                            Logger.error("MapPageView.camera", e)
+                            camera_offset = (0, 0)
+                        
+                        # Draw map and objects with camera following player
+                        try:
+                            self.map_view.draw(self.screen, camera_offset)
+                            self._drawShopBuilding(camera_offset)
+                            self.player_view.drawCaracter(self.screen, self.johnny, offset=camera_offset, is_map=True)
                         except Exception as e:
                             Logger.error("MapPageView.render.draw", e)
 
@@ -619,23 +649,29 @@ class MapPageView(PageView):
                         try:
                             shop_left = self.shop_left if hasattr(self, 'shop_left') else self.shop_tile_x * self.map.tile_size
                             shop_top = self.shop_top if hasattr(self, 'shop_top') else self.shop_tile_y * self.map.tile_size
-                            shop_center = (int(shop_left + self.shop_width // 2), int(shop_top + self.shop_height // 2))
-                            try:
-                                pygame.draw.circle(self.screen, (220, 40, 40), shop_center, 6)  # small red marker
+                            # Apply camera offset to shop center
+                            shop_center_world_x = int(shop_left + self.shop_width // 2)
+                            shop_center_world_y = int(shop_top + self.shop_height // 2)
+                            shop_center = (shop_center_world_x + camera_offset[0], shop_center_world_y + camera_offset[1])
+                            
+                            # Only draw if visible on screen
+                            if -50 < shop_center[0] < screen_w + 50 and -50 < shop_center[1] < screen_h + 50:
                                 try:
-                                    font = pygame.font.SysFont('Arial', 14, bold=True)
+                                    pygame.draw.circle(self.screen, (220, 40, 40), shop_center, 6)  # small red marker
+                                    try:
+                                        font = pygame.font.SysFont('Arial', 14, bold=True)
+                                    except Exception:
+                                        font = pygame.font.Font(None, 14)
+                                    label = font.render('SHOP', True, (100, 255, 100))  # Green color
+                                    # Draw black background behind label for readability
+                                    lbl_x = shop_center[0] - label.get_width()//2
+                                    lbl_y = shop_center[1] - self.shop_height//2 - label.get_height() - 4
+                                    padding = 6
+                                    bg_rect = pygame.Rect(lbl_x - padding//2, lbl_y - padding//2, label.get_width() + padding, label.get_height() + padding)
+                                    pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
+                                    self.screen.blit(label, (lbl_x, lbl_y))
                                 except Exception:
-                                    font = pygame.font.Font(None, 14)
-                                label = font.render('SHOP', True, (100, 255, 100))  # Green color
-                                # Draw black background behind label for readability
-                                lbl_x = shop_center[0] - label.get_width()//2
-                                lbl_y = shop_center[1] - self.shop_height//2 - label.get_height() - 4
-                                padding = 6
-                                bg_rect = pygame.Rect(lbl_x - padding//2, lbl_y - padding//2, label.get_width() + padding, label.get_height() + padding)
-                                pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
-                                self.screen.blit(label, (lbl_x, lbl_y))
-                            except Exception:
-                                pass
+                                    pass
                             Logger.debug("MapPageView.run", "Shop marker", shop_center=shop_center)
                         except Exception as e:
                             Logger.error("MapPageView.debugPositions", e)
