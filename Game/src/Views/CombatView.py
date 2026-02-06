@@ -21,13 +21,14 @@ class CombatView:
     
     # === INITIALIZATION ===
     
-    def __init__(self, screen_width, screen_height):
+    def __init__(self, screen_width, screen_height, background_image_path="Game/Assets/grosbillfight.png"):
         """
         Initialize the combat view with screen dimensions.
         
         Args:
             screen_width: Width of the screen in pixels
             screen_height: Height of the screen in pixels
+            background_image_path: Path to background image (default: grosbillfight.png)
         """
         try:
             self.screen_width = screen_width
@@ -66,6 +67,19 @@ class CombatView:
             self.time = 0
             self.shake_offset = 0
             self.flash_alpha = 0
+            
+            # === BACKGROUND IMAGE ===
+            
+            self.background_image = None
+            try:
+                bg_img = pygame.image.load(background_image_path).convert()
+                self.background_image = pygame.transform.scale(bg_img, (screen_width, screen_height))
+                Logger.debug("CombatView.__init__", "Background image loaded", path=background_image_path)
+            except FileNotFoundError:
+                Logger.debug("CombatView.__init__", "Background image not found, using gradient", path=background_image_path)
+            except Exception as e:
+                Logger.error("CombatView.__init__", e)
+                Logger.debug("CombatView.__init__", "Using gradient background")
             
             # === INVENTORY VIEW ===
             
@@ -172,22 +186,26 @@ class CombatView:
     
     def drawBackground(self, screen):
         """
-        Draw animated gradient background.
+        Draw background (either image or gradient).
         
         Args:
             screen: Pygame surface to draw on
         """
         try:
-            for y in range(self.screen_height):
-                try:
-                    ratio = y / self.screen_height
-                    r = int(20 + math.sin(self.time * 0.01 + ratio * 2) * 10)
-                    g = int(15 + math.cos(self.time * 0.015 + ratio * 1.5) * 8)
-                    b = int(30 + math.sin(self.time * 0.008 + ratio) * 15)
-                    pygame.draw.line(screen, (r, g, b), (0, y), (self.screen_width, y))
-                except Exception as e:
-                    Logger.error("CombatView.drawBackground", e)
-                    continue
+            if self.background_image:
+                screen.blit(self.background_image, (0, 0))
+            else:
+                # Fallback to gradient if no image
+                for y in range(self.screen_height):
+                    try:
+                        ratio = y / self.screen_height
+                        r = int(20 + math.sin(self.time * 0.01 + ratio * 2) * 10)
+                        g = int(15 + math.cos(self.time * 0.015 + ratio * 1.5) * 8)
+                        b = int(30 + math.sin(self.time * 0.008 + ratio) * 15)
+                        pygame.draw.line(screen, (r, g, b), (0, y), (self.screen_width, y))
+                    except Exception as e:
+                        Logger.error("CombatView.drawBackground", e)
+                        continue
         except Exception as e:
             Logger.error("CombatView.drawBackground", e)
     

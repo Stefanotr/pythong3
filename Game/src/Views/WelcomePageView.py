@@ -377,7 +377,7 @@ class WelcomPageView(PageView):
                     elif current_stage == 6:
                         try:
                             # Views handle their own dimensioning (RESIZABLE)
-                            rhythm_view = RhythmPageView(screen, player, sequence_controller)
+                            rhythm_view = RhythmPageView(screen, player, sequence_controller, context="act2")
                             result = rhythm_view.run()
                             
                             
