@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+from Songs.SevenNationArmy import load_seven_nation_army
 
 # ❌ PLUS D'IMPORT DE CHANSON ICI (Le contrôleur attend qu'on lui donne la musique)
 
@@ -12,7 +13,7 @@ class RhythmController:
     """
     # 🆕 MODIFICATION : On ajoute 'song_data' dans les paramètres
     
-    def __init__(self, rhythm_model, character_model, screen_height, view,song_data, context="act1"):
+    def __init__(self, rhythm_model, character_model, screen_height, view,song_data=load_seven_nation_army, context="act1"):
         self.rhythm = rhythm_model
         self.character = character_model 
         self.view = view

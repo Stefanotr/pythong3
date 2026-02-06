@@ -17,7 +17,7 @@ from Views.PauseMenuView import PauseMenuView
 from Views.FinTransitionPageView import FinTransitionPageView
 from Utils.Logger import Logger
 from Controllers.GameSequenceController import GameSequenceController
-
+from Songs.SevenNationArmy import load_seven_nation_army
 
 # === RHYTHM PAGE VIEW CLASS ===
 
@@ -127,6 +127,7 @@ class RhythmPageView:
                     self.johnny, 
                     self.screen_height, 
                     self.rhythm_view,
+                    load_seven_nation_army,
                     context=self.context
                 )
                 

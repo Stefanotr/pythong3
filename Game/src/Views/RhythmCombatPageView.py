@@ -13,6 +13,7 @@ from Controllers.GameState import GameState
 from Controllers.GameSequenceController import GameSequenceController
 from Models.RhythmModel import RhythmModel
 from Utils.Logger import Logger
+from Songs.TheFinalCountdown import load_final_countdown
 
 
 class RhythmCombatPageView:
@@ -131,7 +132,9 @@ class RhythmCombatPageView:
                     self.player,
                     self.boss,
                     self.screen_height,
-                    self.combat_view
+                    self.combat_view,
+                    load_final_countdown
+
                 )
                 Logger.debug("RhythmCombatPageView.__init__", "Rhythm combat controller created",
                            boss_health=self.boss.getHealth())

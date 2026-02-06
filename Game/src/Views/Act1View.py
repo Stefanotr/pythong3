@@ -24,6 +24,9 @@ from Views.PauseMenuView import PauseMenuView
 from Views.CaracterView import CaracterView
 from Utils.Logger import Logger
 from Controllers.GameState import GameState
+from Songs.SevenNationArmy import load_seven_nation_army
+from Songs.AnotherOneBitesTheDust import load_another_one
+from Songs.TheFinalCountdown import load_final_countdown
 
 
 # === ACT VIEW CLASS (Generic) ===
@@ -623,6 +626,7 @@ class ActView:
                 self.johnny, 
                 self.screen_height, 
                 self.rhythm_view,
+                load_another_one(),
                 context="act2"  # Rhythm phase is only in Act 2
             )
             

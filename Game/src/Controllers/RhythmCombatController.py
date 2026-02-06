@@ -1,7 +1,7 @@
 import pygame
 import random
 import math
-from Songs.SevenNationArmy import load_seven_nation_army
+from Songs.TheFinalCountdown import load_final_countdown
 
 class RhythmCombatController:
     """
@@ -24,7 +24,7 @@ class RhythmCombatController:
         
         # --- 1. INITIALISATION DE LA MAP & AUDIO ---
         if song_loader is None:
-            song_loader = load_seven_nation_army
+            song_loader = load_final_countdown
         
         self.current_song = song_loader()
         self.rhythm.notes = self.current_song.get_notes()
