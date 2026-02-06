@@ -51,6 +51,7 @@ class RhythmController:
 
         self.start_time = 0
         self.is_playing = False
+        self.is_paused = False  # Flag pour pause menu
         self.game_over = False
         
         # --- 🛡️ PROTECTION AUDIO ---
@@ -84,6 +85,30 @@ class RhythmController:
         except Exception as e:
             print(f"Erreur en arrêtant les audios: {e}")
 
+    def pause_audio(self):
+        """Met en pause tous les sons du jeu"""
+        try:
+            # Store current volume for resume
+            self.stored_guitar_volume = self.guitar_channel.get_volume()
+            self.guitar_channel.set_volume(0)
+            if self.track_backing:
+                self.track_backing.set_volume(0)
+        except Exception as e:
+            print(f"Erreur en mettant en pause les audios: {e}")
+
+    def resume_audio(self):
+        """Reprend tous les sons du jeu"""
+        try:
+            # Restore volume
+            if hasattr(self, 'stored_guitar_volume'):
+                self.guitar_channel.set_volume(self.stored_guitar_volume)
+            else:
+                self.guitar_channel.set_volume(1.0)
+            if self.track_backing:
+                self.track_backing.set_volume(1.0)
+        except Exception as e:
+            print(f"Erreur en reprenant les audios: {e}")
+
     def start_music(self):
         """Lance vraiment la musique après le décompte"""
         self.start_time = pygame.time.get_ticks()
@@ -93,8 +118,8 @@ class RhythmController:
 
     def update(self):
         """Boucle principale"""
-        if self.game_over:
-            return 
+        if self.game_over or self.is_paused:
+            return
 
         # --- 1. GESTION DU COMPTE À REBOURS ---
         if self.waiting_to_start:

@@ -73,6 +73,7 @@ class RhythmCombatController:
         self.countdown_duration = 5000  # 5 secondes
         self.countdown_start_tick = pygame.time.get_ticks()
         self.current_countdown_val = 5
+        self.is_paused = False  # Flag pour pause menu
 
         self.start_time = 0
         self.is_playing = False
@@ -129,6 +130,30 @@ class RhythmCombatController:
         except Exception as e:
             print(f"Erreur en arrêtant les audios: {e}")
 
+    def pause_audio(self):
+        """Met en pause tous les sons du jeu"""
+        try:
+            # Store current volume for resume
+            self.stored_guitar_volume = self.guitar_channel.get_volume()
+            self.guitar_channel.set_volume(0)
+            if self.track_backing:
+                self.track_backing.set_volume(0)
+        except Exception as e:
+            print(f"Erreur en mettant en pause les audios: {e}")
+
+    def resume_audio(self):
+        """Reprend tous les sons du jeu"""
+        try:
+            # Restore volume
+            if hasattr(self, 'stored_guitar_volume'):
+                self.guitar_channel.set_volume(self.stored_guitar_volume)
+            else:
+                self.guitar_channel.set_volume(1.0)
+            if self.track_backing:
+                self.track_backing.set_volume(1.0)
+        except Exception as e:
+            print(f"Erreur en reprenant les audios: {e}")
+
     def start_music(self):
         """Lance la musique"""
         self.start_time = pygame.time.get_ticks()
@@ -139,7 +164,7 @@ class RhythmCombatController:
 
     def update(self):
         """Boucle principale"""
-        if self.game_over:
+        if self.game_over or self.is_paused:
             return
         
         # === CHECK PLAYER DEATH AT START ===

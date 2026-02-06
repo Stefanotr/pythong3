@@ -359,15 +359,46 @@ class ActView:
                             # === HANDLE ESCAPE KEY (GLOBAL) ===
                             elif event.key == pygame.K_ESCAPE:
                                 try:
+                                    # Pause all audio and notes before showing menu
+                                    if self.combat_controller and hasattr(self.combat_controller, 'is_paused'):
+                                        self.combat_controller.is_paused = True
+                                        if hasattr(self.combat_controller, 'pause_audio'):
+                                            self.combat_controller.pause_audio()
+                                    if self.rhythm_controller and hasattr(self.rhythm_controller, 'is_paused'):
+                                        self.rhythm_controller.is_paused = True
+                                        if hasattr(self.rhythm_controller, 'pause_audio'):
+                                            self.rhythm_controller.pause_audio()
+                                    
                                     pause_menu = PauseMenuView(self.screen)
                                     pause_result = pause_menu.run()
+                                    
                                     if pause_result == GameState.QUIT.value:
                                         Logger.debug("ActView.run", "Quit requested from pause menu")
+                                        # Stop all audio before quitting
+                                        if self.combat_controller and hasattr(self.combat_controller, 'stop_all_audio'):
+                                            self.combat_controller.stop_all_audio()
+                                        if self.rhythm_controller and hasattr(self.rhythm_controller, 'stop_all_audio'):
+                                            self.rhythm_controller.stop_all_audio()
                                         return GameState.QUIT.value
                                     elif pause_result == GameState.MAIN_MENU.value:
                                         Logger.debug("ActView.run", "Main menu requested from pause menu")
+                                        # Stop all audio before returning to main menu
+                                        if self.combat_controller and hasattr(self.combat_controller, 'stop_all_audio'):
+                                            self.combat_controller.stop_all_audio()
+                                        if self.rhythm_controller and hasattr(self.rhythm_controller, 'stop_all_audio'):
+                                            self.rhythm_controller.stop_all_audio()
                                         return GameState.MAIN_MENU.value
-                                    Logger.debug("ActView.run", "Resuming from pause menu")
+                                    else:  # CONTINUE or anything else
+                                        # Resume all audio and notes when continuing
+                                        if self.combat_controller and hasattr(self.combat_controller, 'is_paused'):
+                                            self.combat_controller.is_paused = False
+                                            if hasattr(self.combat_controller, 'resume_audio'):
+                                                self.combat_controller.resume_audio()
+                                        if self.rhythm_controller and hasattr(self.rhythm_controller, 'is_paused'):
+                                            self.rhythm_controller.is_paused = False
+                                            if hasattr(self.rhythm_controller, 'resume_audio'):
+                                                self.rhythm_controller.resume_audio()
+                                        Logger.debug("ActView.run", "Resuming from pause menu")
                                 except Exception as e:
                                     Logger.error("ActView.run", e)
                             

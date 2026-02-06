@@ -56,11 +56,11 @@ class WelcomPageView(PageView):
             self.buttons = []
             self.buttons_controllers = []
             
-            # Play button (center-right, slightly larger)
+            # Play button (far right, vertically centered)
             try:
-                # Compute dynamic position: center-right of window
-                play_size = (260, 100)  # slightly larger
-                play_x = int(self.width * 0.75)
+                # Compute dynamic position: far right of window
+                play_size = (225, 82)  # reduced by 1/4
+                play_x = int(self.width * 0.82)
                 play_y = int(self.height * 0.45)
                 self.play_button = ButtonView(
                     image_path='Game/Assets/buttonPlay.png',
@@ -78,10 +78,10 @@ class WelcomPageView(PageView):
             
             # Quit button (just below Play)
             try:
-                quit_size = (220, 80)
-                quit_x = int(self.width * 0.75)
+                quit_size = (225, 82)  # same reduced size
+                quit_x = int(self.width * 0.82)
                 # place below play button with small gap
-                quit_y = play_y + play_size[1] // 2 + 20 + quit_size[1] // 2
+                quit_y = play_y + play_size[1] // 2 + 5 + quit_size[1] // 2
                 self.quit_button = ButtonView(
                     image_path='Game/Assets/buttonQuit.png',
                     position=(quit_x, quit_y),
@@ -103,6 +103,30 @@ class WelcomPageView(PageView):
         except Exception as e:
             Logger.error("WelcomPageView.__init__", e)
             raise
+    
+    # === BUTTON POSITION UPDATE ===
+    
+    def _update_button_positions(self):
+        """
+        Update button positions based on current window size.
+        Called after window resize to maintain proportional positioning.
+        """
+        try:
+            # Update Play button position
+            play_size = (225, 82)
+            play_x = int(self.width * 0.82)
+            play_y = int(self.height * 0.45)
+            self.play_button.set_position((play_x, play_y))
+            
+            # Update Quit button position
+            quit_size = (225, 82)
+            quit_x = int(self.width * 0.82)
+            quit_y = play_y + play_size[1] // 2 + 5 + quit_size[1] // 2
+            self.quit_button.set_position((quit_x, quit_y))
+            
+            Logger.debug("WelcomPageView._update_button_positions", "Button positions updated")
+        except Exception as e:
+            Logger.error("WelcomPageView._update_button_positions", e)
     # === GENERIC LOOP HOOKS (PageView) ===
 
     def handle_events(self, events):
@@ -124,6 +148,8 @@ class WelcomPageView(PageView):
                         new_width = event.w
                         new_height = event.h
                         self.set_window_size(new_width, new_height, self.resizable)
+                        # Update button positions after resize
+                        self._update_button_positions()
                         Logger.debug(
                             "WelcomPageView.handle_events",
                             "Window resized",
@@ -418,7 +444,7 @@ class WelcomPageView(PageView):
                     
                     elif result == GameState.MAIN_MENU.value:
                         Logger.debug("WelcomPageView._startGameFlow", "Main menu requested")
-                        return
+                        break
                     
                     elif result == GameState.GAME_OVER.value:
                         Logger.debug("WelcomPageView._startGameFlow", "Game over")
