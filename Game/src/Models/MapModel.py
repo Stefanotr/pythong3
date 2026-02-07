@@ -463,3 +463,49 @@ class MapModel:
                 Logger.error("MapModel.setTiles", ValueError("Tiles must be a list"))
         except Exception as e:
             Logger.error("MapModel.setTiles", e)
+
+    def get_spawn_points(self, layer_name="spawn"):
+        """
+        Get all spawn points from a specific object layer.
+        Looks for objects in a layer named 'spawn' OR objects with type='spawn'.
+        
+        Args:
+            layer_name: Name of the object layer to search (default: 'spawn')
+        
+        Returns:
+            list: List of spawn point objects with 'x', 'y', 'width', 'height', 'name', etc.
+                  Returns empty list if no spawn points found.
+        """
+        try:
+            # Look for objects in the specified layer
+            if not hasattr(self, 'object_layers'):
+                Logger.debug("MapModel.get_spawn_points", "No object_layers found in map")
+                return []
+            
+            # First priority: get ALL objects from "spawn" layer (regardless of type)
+            if layer_name in self.object_layers:
+                spawn_objects = self.object_layers[layer_name]
+                
+                if spawn_objects:
+                    Logger.debug("MapModel.get_spawn_points", 
+                               f"Found {len(spawn_objects)} spawn points in layer '{layer_name}'")
+                    return spawn_objects
+            
+            # Fallback: search all layers for objects with type='spawn'
+            all_spawn_points = []
+            for layer, objects in self.object_layers.items():
+                for obj in objects:
+                    if obj.get('type', '').lower() == 'spawn':
+                        all_spawn_points.append(obj)
+            
+            if all_spawn_points:
+                Logger.debug("MapModel.get_spawn_points", 
+                           f"Found {len(all_spawn_points)} spawn points across all layers")
+                return all_spawn_points
+            
+            Logger.debug("MapModel.get_spawn_points", "No spawn points found in any layer")
+            return []
+            
+        except Exception as e:
+            Logger.error("MapModel.get_spawn_points", e)
+            return []

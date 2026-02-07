@@ -1,0 +1,192 @@
+{
+    "bosses": [
+        {
+            "id": "gros_bill",
+            "name": "Gros Bill",
+            "act": 1,
+            "description": "The biker leader controlling the stage at The Dry Throat bar",
+            "image_path": "Game/Assets/chefdesmotards.png",
+            "base_name": "motard",
+            "sizes": {
+                "map": {
+                    "width": 64,
+                    "height": 64
+                },
+                "dialogue": {
+                    "width": 150,
+                    "height": 150
+                },
+                "combat": {
+                    "width": 200,
+                    "height": 200
+                },
+                "rhythm": {
+                    "width": 200,
+                    "height": 200
+                },
+                "rhythm_combat": {
+                    "width": 200,
+                    "height": 200
+                }
+            },
+            "actions": {
+                "idle": "Game/Assets/chefdesmotards.png",
+                "attacking": "Game/Assets/motardquidonnedescoupsdepieds (1).png",
+                "dodging": "Game/Assets/motardquisebaisse (1).png"
+            },
+            "attributes": {
+                "base_health": 100,
+                "base_damage": 12,
+                "base_accuracy": 0.75
+            },
+            "backgrounds": {
+                "combat": "Game/Assets/grosbillfight.png",
+                "rhythm_combat": "Game/Assets/grosbillfight.png"
+            },
+            "positions": {
+                "map": {
+                    "horizontal_offset": 50,
+                    "vertical_offset": 50
+                },
+                "dialogue": {
+                    "horizontal_offset": 50,
+                    "vertical_offset": 40
+                },
+                "combat": {
+                    "horizontal_offset": 75,
+                    "vertical_offset": 50
+                },
+                "rhythm_combat": {
+                    "horizontal_offset": 80,
+                    "vertical_offset": 50
+                }
+            }
+        },
+        {
+            "id": "chef_securite",
+            "name": "Chef de la Sécurité",
+            "act": 2,
+            "description": "The strict security chief at the Wood-Stock-Option Festival",
+            "image_path": "Game/Assets/Agentdesecurité.png",
+            "base_name": "agent",
+            "sizes": {
+                "map": {
+                    "width": 64,
+                    "height": 64
+                },
+                "dialogue": {
+                    "width": 150,
+                    "height": 150
+                },
+                "combat": {
+                    "width": 200,
+                    "height": 200
+                },
+                "rhythm": {
+                    "width": 200,
+                    "height": 200
+                },
+                "rhythm_combat": {
+                    "width": 200,
+                    "height": 200
+                }
+            },
+            "actions": {
+                "idle": "Game/Assets/Agentdesecurité.png",
+                "attacking": "Game/Assets/agentdesecuritquitape (1).png",
+                "dodging": "Game/Assets/agentdesecuritequisebaisse (1).png"
+            },
+            "attributes": {
+                "base_health": 500,
+                "base_damage": 14,
+                "base_accuracy": 0.80
+            },
+            "backgrounds": {
+                "combat": "Game/Assets/chefsecuritefight.png",
+                "rhythm_combat": "Game/Assets/chefsecuritefight.png"
+            },
+            "positions": {
+                "map": {
+                    "horizontal_offset": 50,
+                    "vertical_offset": 50
+                },
+                "dialogue": {
+                    "horizontal_offset": 50,
+                    "vertical_offset": 40
+                },
+                "combat": {
+                    "horizontal_offset": 75,
+                    "vertical_offset": 50
+                },
+                "rhythm_combat": {
+                    "horizontal_offset": 80,
+                    "vertical_offset": 50
+                }
+            }
+        },
+        {
+            "id": "manager_corrompu",
+            "name": "Manager Corrompu",
+            "act": 3,
+            "description": "The corrupt manager who controls the final rhythm combat",
+            "image_path": "Game/Assets/ManagerCorrompu.png",
+            "base_name": "manager",
+            "sizes": {
+                "map": {
+                    "width": 64,
+                    "height": 64
+                },
+                "dialogue": {
+                    "width": 150,
+                    "height": 150
+                },
+                "combat": {
+                    "width": 200,
+                    "height": 200
+                },
+                "rhythm": {
+                    "width": 200,
+                    "height": 200
+                },
+                "rhythm_combat": {
+                    "width": 200,
+                    "height": 200
+                }
+            },
+            "actions": {
+                "idle": "Game/Assets/ManagerCorrompu.png",
+                "attacking": "Game/Assets/managerquitape (1).png",
+                "dodging": "Game/Assets/managercorrompuquisebaisse (1).png",
+                "evading": "Game/Assets/managerevade.png"
+            },
+            "attributes": {
+                "base_health": 3000,
+                "base_damage": 15,
+                "base_accuracy": 0.85
+            },
+            "backgrounds": {
+                "combat": "Game/Assets/managerevade.png",
+                "rhythm_combat": "Game/Assets/stage.png"
+            },
+            "positions": {
+                "map": {
+                    "horizontal_offset": 50,
+                    "vertical_offset": 50
+                },
+                "dialogue": {
+                    "horizontal_offset": 50,
+                    "vertical_offset": 40
+                },
+                "combat": {
+                    "horizontal_offset": 75,
+                    "vertical_offset": 50
+                },
+                "rhythm_combat": {
+                    "horizontal_offset": 80,
+                    "vertical_offset": 50
+                }
+            },
+            "is_final_boss": true
+        }
+    ]
+}

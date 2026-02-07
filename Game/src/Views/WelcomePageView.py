@@ -7,6 +7,7 @@ Handles the transition to the main game view when play button is clicked.
 
 import pygame
 from Utils.Logger import Logger
+from Utils.AssetManager import AssetManager
 from Controllers.ButtonController import ButtonController
 from Controllers.GameState import GameState
 from Controllers.GameSequenceController import GameSequenceController
@@ -379,6 +380,9 @@ class WelcomPageView(PageView):
                 from Models.GuitarModel import GuitarFactory
                 from Models.BossModel import BossModel
                 
+                # Initialize AssetManager for loading boss configurations
+                asset_manager = AssetManager("Game")
+                
                 player = PlayerModel("Lola Coma", 60, 60)
                 player.setHealth(100)
                 player.setDamage(10)
@@ -396,28 +400,62 @@ class WelcomPageView(PageView):
                 beer = BottleModel("Beer", 15, 3, 5)
                 player.setSelectedBottle(beer)
                 
-                # Create final boss for rhythm combat - Manager Corrompu
-                manager_corrompu = BossModel("Manager Corrompu", 80, 80)
-                manager_corrompu.setHealth(3000)
-                manager_corrompu.setDamage(15)
-
-                # Act 1: Gros Bill
-                gros_bill = BossModel("Gros Bill", 80, 80)
-                gros_bill.setHealth(100)
-                gros_bill.setDamage(12)
-                gros_bill.setAccuracy(0.75)
-                self.boss = gros_bill
+                # Load bosses from asset configuration
+                try:
+                    # Load boss configurations
+                    manager_corrompu_config = asset_manager.get_boss_by_name("Manager Corrompu")
+                    gros_bill_config = asset_manager.get_boss_by_name("Gros Bill")
+                    chef_securite_config = asset_manager.get_boss_by_name("Chef de la Sécurité")
                     
-                # Act 2: Chef de la Sécurité
-                chef_securite = BossModel("Chef de la Sécurité", 80, 80)
-                chef_securite.setHealth(500)
-                chef_securite.setDamage(14)
-                chef_securite.setAccuracy(0.80)
-                self.boss = chef_securite
+                    # Create boss instances from configurations
+                    if manager_corrompu_config:
+                        manager_corrompu = BossModel.from_config(manager_corrompu_config, 80, 80)
+                    else:
+                        # Fallback if config not found
+                        manager_corrompu = BossModel("Manager Corrompu", 80, 80)
+                        manager_corrompu.setHealth(3000)
+                        manager_corrompu.setDamage(15)
+                        Logger.warn("WelcomPageView._startGameFlow", "Manager Corrompu config not found, using fallback")
+                    
+                    if gros_bill_config:
+                        gros_bill = BossModel.from_config(gros_bill_config, 80, 80)
+                    else:
+                        gros_bill = BossModel("Gros Bill", 80, 80)
+                        gros_bill.setHealth(100)
+                        gros_bill.setDamage(12)
+                        gros_bill.setAccuracy(0.75)
+                        Logger.warn("WelcomPageView._startGameFlow", "Gros Bill config not found, using fallback")
+                    
+                    if chef_securite_config:
+                        chef_securite = BossModel.from_config(chef_securite_config, 80, 80)
+                    else:
+                        chef_securite = BossModel("Chef de la Sécurité", 80, 80)
+                        chef_securite.setHealth(500)
+                        chef_securite.setDamage(14)
+                        chef_securite.setAccuracy(0.80)
+                        Logger.warn("WelcomPageView._startGameFlow", "Chef de la Sécurité config not found, using fallback")
+                    
+                    Logger.debug("WelcomPageView._startGameFlow", "Bosses loaded from asset configurations")
+                except Exception as e:
+                    Logger.error("WelcomPageView._startGameFlow", f"Failed to load boss configs: {e}")
+                    # Create fallback bosses
+                    manager_corrompu = BossModel("Manager Corrompu", 80, 80)
+                    manager_corrompu.setHealth(3000)
+                    manager_corrompu.setDamage(15)
+
+                    gros_bill = BossModel("Gros Bill", 80, 80)
+                    gros_bill.setHealth(100)
+                    gros_bill.setDamage(12)
+                    gros_bill.setAccuracy(0.75)
+                    
+                    chef_securite = BossModel("Chef de la Sécurité", 80, 80)
+                    chef_securite.setHealth(500)
+                    chef_securite.setDamage(14)
+                    chef_securite.setAccuracy(0.80)
                 
                 sequence_controller.set_player(player)
                 
-                Logger.debug("WelcomPageView._startGameFlow", "Player and Manager Corrompu created for rhythm combat")
+                Logger.debug("WelcomPageView._startGameFlow", "Player and bosses created successfully")
             except Exception as e:
                 Logger.error("WelcomPageView._startGameFlow", e)
                 raise

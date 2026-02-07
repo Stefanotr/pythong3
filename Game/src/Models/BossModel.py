@@ -36,6 +36,53 @@ class BossModel(CaracterModel):
             Logger.error("BossModel.__init__", e)
             raise
 
+    # === CLASS METHODS ===
+    
+    @classmethod
+    def from_config(cls, boss_config, x=175, y=175):
+        """
+        Create a BossModel instance from a configuration dictionary.
+        Typically loaded from JSON via AssetManager.
+        
+        Args:
+            boss_config: Boss configuration dictionary containing:
+                - name: Boss name
+                - attributes: dict with base_health, base_damage, base_accuracy
+            x: Initial X position
+            y: Initial Y position
+            
+        Returns:
+            BossModel: Configured boss instance
+        """
+        try:
+            # Extract boss name from config
+            boss_name = boss_config.get("name", "Unknown Boss")
+            
+            # Create boss instance
+            boss = cls(boss_name, x, y)
+            
+            # Apply attributes if present
+            attributes = boss_config.get("attributes", {})
+            if attributes:
+                health = attributes.get("base_health")
+                damage = attributes.get("base_damage")
+                accuracy = attributes.get("base_accuracy")
+                
+                if health is not None:
+                    boss.setHealth(health)
+                if damage is not None:
+                    boss.setDamage(damage)
+                if accuracy is not None:
+                    boss.setAccuracy(accuracy)
+                
+                Logger.debug("BossModel.from_config", "Boss created from config",
+                           name=boss_name, health=health, damage=damage, accuracy=accuracy)
+            
+            return boss
+        except Exception as e:
+            Logger.error("BossModel.from_config", e)
+            raise
+    
     # === SCALING METHODS ===
     
     def scale(self, player):

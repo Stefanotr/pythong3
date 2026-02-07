@@ -1,6 +1,7 @@
 import pygame
 import math
 from Views.CaracterView import CaracterView
+from Utils.AssetManager import AssetManager
 
 class RhythmCombatView:
     """
@@ -46,7 +47,20 @@ class RhythmCombatView:
         # Character views for player and boss animations
         # Use DIFFERENT sizes for Lola: smaller for map, larger for combat
         # For RhythmCombat: use normal size (200x200) without deformation
-        self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(200, 200))
+        
+        # Load player config
+        try:
+            asset_manager = AssetManager()
+            player_config = asset_manager.load_player_config()
+            print(f"[INFO] RhythmCombatView: Successfully loaded player_config with {len(player_config.get('actions', {}))} actions")
+        except Exception as e:
+            print(f"[ERROR] RhythmCombatView: Failed to load player_config: {e}")
+            player_config = None
+        
+        self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", 
+                                       sprite_size=(200, 200),
+                                       character_config=player_config,
+                                       game_mode="rhythm_combat")
         self.boss_view = None  # Will be set when boss is known
         
         # Couleurs des lanes
@@ -343,7 +357,20 @@ class RhythmCombatView:
                 # Use ManagerCorrompu.png for the boss (assuming it's the manager boss)
                 boss_asset = "Game/Assets/ManagerCorrompu.png"
                 boss_base_name = "manager"
-                self.boss_view = CaracterView(boss_asset, base_name=boss_base_name, sprite_size=(200, 200))
+                
+                # Try to load boss config
+                try:
+                    asset_manager = AssetManager()
+                    boss_config = asset_manager.get_boss_by_name("Manager Corrompu")
+                    print(f"[INFO] RhythmCombatView: Successfully loaded boss_config for Manager Corrompu")
+                except Exception as e:
+                    print(f"[ERROR] RhythmCombatView: Failed to load boss_config: {e}")
+                    boss_config = None
+                
+                self.boss_view = CaracterView(boss_asset, base_name=boss_base_name, 
+                                             sprite_size=(200, 200),
+                                             character_config=boss_config,
+                                             game_mode="rhythm_combat")
             
             if self.boss_view:
                 boss_x = self.screen_width - int(self.screen_width * 0.15)  # Mirror position on right

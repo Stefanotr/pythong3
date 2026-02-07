@@ -16,6 +16,7 @@ from Views.CaracterView import CaracterView
 from Views.PauseMenuView import PauseMenuView
 from Views.FinTransitionPageView import FinTransitionPageView
 from Utils.Logger import Logger
+from Utils.AssetManager import AssetManager
 from Controllers.GameSequenceController import GameSequenceController
 from Songs.SevenNationArmy import load_seven_nation_army
 from Songs.AnotherOneBitesTheDust import load_another_one
@@ -101,10 +102,22 @@ class RhythmPageView:
                 # Create rhythm model
                 self.rhythm_model = RhythmModel()
                 
+                # Load player config for character view
+                asset_manager = AssetManager()
+                try:
+                    player_config = asset_manager.load_player_config()
+                    Logger.debug("RhythmPageView.__init__", f"Successfully loaded player_config with {len(player_config.get('actions', {}))} actions")
+                except Exception as e:
+                    Logger.error("RhythmPageView.__init__", f"Failed to load player_config: {e}")
+                    player_config = None
+                
                 # Create character view for displaying the player
                 self.character_view = None
                 try:
-                    self.character_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(200, 200))
+                    self.character_view = CaracterView("Game/Assets/lola.png", base_name="lola", 
+                                                       sprite_size=(200, 200), 
+                                                       character_config=player_config,
+                                                       game_mode="rhythm")
                     print(f"[DEBUG] CaracterView created successfully, sprite: {self.character_view.sprite}")
                     Logger.debug("RhythmPageView.__init__", "Character view created for rhythm display")
                 except Exception as e:
