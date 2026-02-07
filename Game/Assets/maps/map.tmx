@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-up" width="120" height="67" tilewidth="16" tileheight="16" infinite="0" nextlayerid="20" nextobjectid="284">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-up" width="120" height="67" tilewidth="16" tileheight="16" infinite="0" nextlayerid="21" nextobjectid="289">
  <tileset firstgid="1" source="ville.tsx"/>
  <tileset firstgid="4097" source="SL001.tsx"/>
  <layer id="1" name="Calque de Tuiles 1" width="120" height="67">
@@ -590,6 +590,23 @@
   <object id="279" x="626.667" y="300" width="16" height="21.3333"/>
   <object id="280" x="752" y="780" width="16" height="21.3333"/>
   <object id="283" x="785.333" y="624" width="16" height="21.3333"/>
+ </objectgroup>
+ <objectgroup id="20" name="spawn">
+  <object id="284" x="205.333" y="397.333">
+   <point/>
+  </object>
+  <object id="285" x="1622.67" y="378.667">
+   <point/>
+  </object>
+  <object id="286" x="440" y="710.667">
+   <point/>
+  </object>
+  <object id="287" x="1630.67" y="717.333">
+   <point/>
+  </object>
+  <object id="288" x="1000" y="545.333">
+   <point/>
+  </object>
  </objectgroup>
  <layer id="9" name="rivereitem" width="120" height="67">
   <data encoding="csv">

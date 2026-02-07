@@ -13,6 +13,7 @@ from Controllers.GameState import GameState
 from Controllers.GameSequenceController import GameSequenceController
 from Models.RhythmModel import RhythmModel
 from Utils.Logger import Logger
+from Utils.AssetManager import AssetManager
 from Songs.TheFinalCountdown import load_final_countdown
 
 
@@ -118,9 +119,22 @@ class RhythmCombatPageView:
             
             # Create rhythm model and view
             try:
+                # Load boss configuration to get rhythm combat background
+                asset_manager = AssetManager("Game")
+                boss_config = asset_manager.get_boss_by_name(self.boss.getName())
+                
+                # Get background from boss config or use default fallback
+                bg_image = "Game/Assets/managerevade.png"  # Default fallback
+                if boss_config:
+                    boss_backgrounds = boss_config.get('backgrounds', {})
+                    bg_image = boss_backgrounds.get('rhythm_combat', "Game/Assets/managerevade.png")
+                
+                # Store background for use during window resize
+                self.bg_image = bg_image
+                
                 self.rhythm_model = RhythmModel()
-                self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path="Game/Assets/managerevade.png")
-                Logger.debug("RhythmCombatPageView.__init__", "Rhythm and combat views created")
+                self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path=bg_image)
+                Logger.debug("RhythmCombatPageView.__init__", "Rhythm and combat views created", background=bg_image)
             except Exception as e:
                 Logger.error("RhythmCombatPageView.__init__", e)
                 raise
@@ -189,7 +203,7 @@ class RhythmCombatPageView:
                             self.screen_width = event.w
                             self.screen_height = event.h
                             # Recreate combat view with new dimensions
-                            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path="Game/Assets/managerevade.png")
+                            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path=self.bg_image)
                             Logger.debug("RhythmCombatPageView.run", "Window resized", width=self.screen_width, height=self.screen_height)
                         
                         
@@ -365,7 +379,7 @@ class RhythmCombatPageView:
                 Logger.debug("RhythmCombatPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
             
             # Recreate combat view with new dimensions
-            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path="Game/Assets/managerevade.png")
+            self.combat_view = RhythmCombatView(self.screen_width, self.screen_height, self.boss_max_health, self.player_max_health, background_image_path=self.bg_image)
             
             # Update controller's screen height reference if available
             if self.controller and hasattr(self.controller, 'screen_height'):

@@ -1,0 +1,81 @@
+{
+    "player": {
+        "id": "lola",
+        "name": "Lola Coma",
+        "description": "A rockstar on the decline, the main player character",
+        "default_image_path": "Game/Assets/lola.png",
+        "base_name": "lola",
+        "sizes": {
+            "map": {
+                "width": 64,
+                "height": 64
+            },
+            "dialogue": {
+                "width": 150,
+                "height": 150
+            },
+            "combat": {
+                "width": 200,
+                "height": 200
+            },
+            "rhythm": {
+                "width": 200,
+                "height": 200
+            },
+            "rhythm_combat": {
+                "width": 200,
+                "height": 200
+            }
+        },
+        "actions": {
+            "idle": "Game/Assets/lola.png",
+            "drinking": "Game/Assets/lolaquiboit (1).png",
+            "attacking": "Game/Assets/lolaquilancesabasse (1).png",
+            "dodging": "Game/Assets/lolaquisebaisse (2).png",
+            "moving_left": [
+                "Game/Assets/lolacoursgauche.png",
+                "Game/Assets/lolagaucheframe1.png"
+            ],
+            "moving_right": [
+                "Game/Assets/lolacoursdroite.png",
+                "Game/Assets/lola.png"
+            ],
+            "musique": [
+                "Game/Assets/lolamusique1.png",
+                "Game/Assets/lolamusique2.png",
+                "Game/Assets/lolamusique3.png"
+            ]
+        },
+        "default_attributes": {
+            "health": 100,
+            "damage": 10,
+            "accuracy": 0.85,
+            "drunkenness": 0,
+            "coma_risk": 10,
+            "level": 0,
+            "currency": 0
+        },
+        "positions": {
+            "map": {
+                "horizontal_offset": 50,
+                "vertical_offset": 50
+            },
+            "dialogue": {
+                "horizontal_offset": 50,
+                "vertical_offset": 60
+            },
+            "combat": {
+                "horizontal_offset": 25,
+                "vertical_offset": 50
+            },
+            "rhythm": {
+                "horizontal_offset": 50,
+                "vertical_offset": 50
+            },
+            "rhythm_combat": {
+                "horizontal_offset": 20,
+                "vertical_offset": 50
+            }
+        }
+    }
+}

@@ -21,19 +21,35 @@ class CaracterView:
     
     # === INITIALIZATION ===
     
-    def __init__(self, image_path, base_name="", sprite_size=None):
+    def __init__(self, image_path, base_name="", sprite_size=None, character_config=None, game_mode="combat"):
         """
         Initialize the character view with a sprite image.
         
         Args:
             image_path: Path to the character sprite image file
             base_name: Base name for action-based images (e.g., "lola" for lolaquiboit.png)
-            sprite_size: Tuple (width, height) for sprite size. Default is (200, 200) for combat, (64, 64) for map
+            sprite_size: Tuple (width, height) for sprite size. If None, uses config or default
+            character_config: Optional dict with character configuration (sizes, actions, positions)
+            game_mode: Game mode for loading correct sprite size from config ('map', 'combat', 'rhythm_combat', etc.)
         """
         try:
             self.base_image_path = image_path
-            self.base_name = base_name  # For Lola: "lola", for enemies: "agent", "manager", etc.
-            self.sprite_size = sprite_size or (200, 200)  # Default size for combat
+            self.base_name = base_name
+            self.character_config = character_config  # Store config for later use
+            self.game_mode = game_mode
+            
+            # Determine sprite size: use passed size, config, or default
+            if sprite_size:
+                self.sprite_size = sprite_size
+            elif character_config and 'sizes' in character_config:
+                mode_sizes = character_config['sizes'].get(game_mode, {})
+                if mode_sizes:
+                    self.sprite_size = (mode_sizes.get('width', 200), mode_sizes.get('height', 200))
+                else:
+                    self.sprite_size = (200, 200)  # Default
+            else:
+                self.sprite_size = sprite_size or (200, 200)  # Default size for combat
+            
             self.sprite = None
             self.action_sprites = {}  # Cache for action-based sprites
             
@@ -89,6 +105,7 @@ class CaracterView:
     def _getActionImagePath(self, base_name, action):
         """
         Get the image path for a specific action.
+        Loads from character config (JSON) first, then falls back to hardcoded defaults.
         
         Args:
             base_name: Base character name (lola, agent, manager, motard)
@@ -97,6 +114,55 @@ class CaracterView:
         Returns:
             Path to the action image, or list of paths for animated actions, or None if not found
         """
+        # === TRY LOADING FROM CHARACTER CONFIG (JSON) FIRST ===
+        if self.character_config and 'actions' in self.character_config:
+            actions_config = self.character_config['actions']
+            if action in actions_config:
+                image_path = actions_config[action]
+                Logger.debug("CaracterView._getActionImagePath", 
+                            f"Loaded from JSON config: {base_name}.{action} = {image_path}")
+                return image_path
+            else:
+                Logger.debug("CaracterView._getActionImagePath",
+                            f"Action '{action}' not found in JSON config for {base_name}")
+        else:
+            Logger.debug("CaracterView._getActionImagePath",
+                        f"No character_config available for {base_name} (config is {'None' if not self.character_config else 'missing actions'})")
+        
+        # === IF NOT IN CONFIG, TRY LOADING FROM BOSS CONFIG VIA ASSETMANAGER ===
+        # (For boss characters, they might have separate boss configs)
+        try:
+            from Utils.AssetManager import AssetManager
+            
+            # Check if this is a boss character (agent, manager, motard, etc.)
+            if base_name in ["agent", "manager", "motard", "gros_bill"]:
+                asset_manager = AssetManager()
+                
+                # Try to get boss by common name mappings
+                boss_names = {
+                    "agent": "Security Agent",
+                    "manager": "Manager Corrompu",
+                    "motard": "Gros Bill",
+                    "gros_bill": "Gros Bill"
+                }
+                
+                boss_name = boss_names.get(base_name, base_name)
+                try:
+                    boss_config = asset_manager.get_boss_by_name(boss_name)
+                    if boss_config and 'actions' in boss_config:
+                        if action in boss_config['actions']:
+                            image_path = boss_config['actions'][action]
+                            Logger.debug("CaracterView._getActionImagePath",
+                                        f"Loaded from boss config: {boss_name}.{action} = {image_path}")
+                            return image_path
+                except Exception as e:
+                    Logger.debug("CaracterView._getActionImagePath",
+                                f"Failed to load from boss config: {e}")
+        except ImportError as e:
+            Logger.debug("CaracterView._getActionImagePath",
+                        f"AssetManager not available: {e}")
+        
+        # === FALLBACK TO HARDCODED DEFAULTS ===
         action_map = {
             # Lola
             "lola": {

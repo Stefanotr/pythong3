@@ -21,6 +21,7 @@ from Models.MapModel import MapModel
 from Models.TileModel import TileModel
 from Models.BottleModel import BottleModel
 from Utils.Logger import Logger
+from Utils.AssetManager import AssetManager
 from Controllers.GameState import GameState
 import random
 
@@ -103,33 +104,85 @@ class MapPageView(PageView):
             # === PLAYER INITIALIZATION ===
             
             try:
-                # Calculate map center for player spawn
+                # Load player config first
+                player_config = None
+                try:
+                    asset_manager = AssetManager()
+                    player_config = asset_manager.load_player_config()
+                    Logger.debug("MapPageView.__init__", f"Successfully loaded player_config with {len(player_config.get('actions', {}))} actions")
+                except Exception as e:
+                    Logger.debug("MapPageView.__init__", f"Failed to load player_config: {e}")
+                    player_config = None
+                
+                # Get map dimensions
                 map_width = len(self.map.tiles[0]) * self.map.tile_size if self.map.tiles else screen_width
                 map_height = len(self.map.tiles) * self.map.tile_size if self.map.tiles else screen_height
-                center_x = map_width // 2
-                center_y = map_height // 2
+                
+                # Try to get spawn point from map TMX (if spawn objects are defined)
+                spawn_x, spawn_y = None, None
+                try:
+                    spawn_points = self.map.get_spawn_points()
+                    if spawn_points:
+                        chosen_spawn = random.choice(spawn_points)
+                        # Use center of spawn object, or top-left if no size
+                        spawn_x = chosen_spawn.get('x', 0) + chosen_spawn.get('width', 0) // 2
+                        spawn_y = chosen_spawn.get('y', 0) + chosen_spawn.get('height', 0) // 2
+                        Logger.debug("MapPageView.__init__", 
+                                   f"Using spawn point from TMX: ({spawn_x}, {spawn_y})", 
+                                   spawn_name=chosen_spawn.get('name', 'unnamed'))
+                except Exception as e:
+                    Logger.debug("MapPageView.__init__", f"No valid spawn points in TMX: {e}")
+                    spawn_x, spawn_y = None, None
+                
+                # Fallback: use position from player_config.json or map center
+                if spawn_x is None or spawn_y is None:
+                    try:
+                        # Try to use position from player config
+                        if player_config and 'positions' in player_config:
+                            map_pos = player_config['positions'].get('map', {})
+                            h_offset = map_pos.get('horizontal_offset', 50)  # percentage
+                            v_offset = map_pos.get('vertical_offset', 50)   # percentage
+                            spawn_x = int(map_width * h_offset / 100)
+                            spawn_y = int(map_height * v_offset / 100)
+                            Logger.debug("MapPageView.__init__", 
+                                       f"Using player_config fallback position: ({spawn_x}, {spawn_y})")
+                        else:
+                            # Final fallback: center of map
+                            spawn_x = map_width // 2
+                            spawn_y = map_height // 2
+                            Logger.debug("MapPageView.__init__", 
+                                       f"No spawn config found, using map center: ({spawn_x}, {spawn_y})")
+                    except Exception as e:
+                        spawn_x = map_width // 2
+                        spawn_y = map_height // 2
+                        Logger.debug("MapPageView.__init__", f"Error getting spawn position: {e}")
                 
                 if player is not None:
                     # Use provided player to preserve state (drunkenness, etc.)
                     self.johnny = player
-                    # Set position to map center
-                    self.johnny.setX(center_x)
-                    self.johnny.setY(center_y)
+                    # Set position to calculated spawn point
+                    self.johnny.setX(spawn_x)
+                    self.johnny.setY(spawn_y)
                     Logger.debug("MapPageView.__init__", "Using provided player", 
                                name=self.johnny.getName(), 
                                drunkenness=self.johnny.getDrunkenness(),
-                               position=(center_x, center_y))
+                               position=(spawn_x, spawn_y))
                 else:
                     # Create new player if none provided
-                    self.johnny = PlayerModel("Lola Coma", center_x, center_y)
+                    self.johnny = PlayerModel("Lola Coma", spawn_x, spawn_y)
                     beer = BottleModel("Beer", 15, 3, 5)
                     self.johnny.setSelectedBottle(beer)
                     Logger.debug("MapPageView.__init__", "New player created", 
                                name=self.johnny.getName(),
-                               position=(center_x, center_y))
+                               position=(spawn_x, spawn_y))
             except Exception as e:
                 Logger.error("MapPageView.__init__", e)
-                raise
+                # Don't re-raise - continue with defaults
+                # Create minimal player if all else fails
+                if not hasattr(self, 'johnny'):
+                    self.johnny = PlayerModel("Lola Coma", screen_width // 2, screen_height // 2)
+                    beer = BottleModel("Beer", 15, 3, 5)
+                    self.johnny.setSelectedBottle(beer)
             
             # === CONTROLLER INITIALIZATION ===
             
@@ -144,8 +197,20 @@ class MapPageView(PageView):
             # === VIEW INITIALIZATION ===
             
             try:
+                # Load player config
+                try:
+                    asset_manager = AssetManager()
+                    player_config = asset_manager.load_player_config()
+                    Logger.debug("MapPageView.__init__", f"Successfully loaded player_config with {len(player_config.get('actions', {}))} actions")
+                except Exception as e:
+                    Logger.error("MapPageView.__init__", f"Failed to load player_config: {e}")
+                    player_config = None
+                
                 # Lola in map: small size (2 tiles = 64x64)
-                self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", sprite_size=(64, 64))
+                self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", 
+                                               sprite_size=(64, 64),
+                                               character_config=player_config,
+                                               game_mode="map")
                 self.map_view = MapView(self.map)
                 
                 Logger.debug("MapPageView.__init__", "Character and map views created")
@@ -396,6 +461,8 @@ class MapPageView(PageView):
             except Exception as e:
                 Logger.error("MapPageView.__init__", e)
                 # Fallback
+                self.world_collision_rects = []  # Initialize collision rects list
+                self.shops = []  # Initialize shops list
                 self.shop_tile_x = 18
                 self.shop_tile_y = 8
                 self.shop_tile_width = 3

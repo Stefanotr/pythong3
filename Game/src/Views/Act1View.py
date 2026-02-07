@@ -23,6 +23,7 @@ from Views.RhythmView import RhythmView
 from Views.PauseMenuView import PauseMenuView
 from Views.CaracterView import CaracterView
 from Utils.Logger import Logger
+from Utils.AssetManager import AssetManager
 from Controllers.GameState import GameState
 from Songs.SevenNationArmy import load_seven_nation_army
 from Songs.AnotherOneBitesTheDust import load_another_one
@@ -124,8 +125,12 @@ class ActView:
             # === CREATE BOSS ===
             
             try:
+                # Initialize AssetManager for loading configurations
+                asset_manager = AssetManager("Game")
+                
                 # Get boss from sequence controller if available, otherwise create new one
                 self.boss = None
+                self.boss_config = None  # Store boss config for later use
                 if self.sequence_controller:
                     self.boss = self.sequence_controller.get_boss()
                 
@@ -133,30 +138,49 @@ class ActView:
                 if not self.boss:
                     act_num = act_config.get('act_num', 1)
                     
-                    if act_num == 1:
-                        # Act 1: Gros Bill
-                        gros_bill = BossModel("Gros Bill", 80, 80)
-                        gros_bill.setHealth(100)
-                        gros_bill.setDamage(12)
-                        gros_bill.setAccuracy(0.75)
-                        self.boss = gros_bill
-                    elif act_num == 2:
-                        # Act 2: Chef de la Sécurité
-                        chef_securite = BossModel("Chef de la Sécurité", 80, 80)
-                        chef_securite.setHealth(500)
-                        chef_securite.setDamage(14)
-                        chef_securite.setAccuracy(0.80)
-                        self.boss = chef_securite
-                    else:
-                        # Fallback
-                        boss_name = act_config.get('boss_name', 'Boss')
-                        boss_health = act_config.get('boss_health', 150)
-                        boss_damage = act_config.get('boss_damage', 12)
-                        boss_accuracy = act_config.get('boss_accuracy', 0.75)
-                        self.boss = BossModel(boss_name, 80, 80)
-                        self.boss.setHealth(boss_health)
-                        self.boss.setDamage(boss_damage)
-                        self.boss.setAccuracy(boss_accuracy)
+                    try:
+                        # Try loading boss from configuration
+                        boss_config = asset_manager.get_boss_by_act(act_num)
+                        if boss_config:
+                            self.boss = BossModel.from_config(boss_config, 80, 80)
+                            self.boss_config = boss_config  # Store config for backgrounds
+                            Logger.debug("ActView.__init__", f"Boss loaded from config for Act {act_num}")
+                        else:
+                            raise ValueError(f"No config found for Act {act_num}")
+                    except Exception as e:
+                        Logger.warn("ActView.__init__", f"Failed to load boss from config: {e}, using fallback")
+                        
+                        # Fallback: create boss based on act_num
+                        if act_num == 1:
+                            # Act 1: Gros Bill
+                            gros_bill = BossModel("Gros Bill", 80, 80)
+                            gros_bill.setHealth(100)
+                            gros_bill.setDamage(12)
+                            gros_bill.setAccuracy(0.75)
+                            self.boss = gros_bill
+                            # Try to load config even in fallback
+                            self.boss_config = asset_manager.get_boss_by_name("Gros Bill")
+                        elif act_num == 2:
+                            # Act 2: Chef de la Sécurité
+                            chef_securite = BossModel("Chef de la Sécurité", 80, 80)
+                            chef_securite.setHealth(500)
+                            chef_securite.setDamage(14)
+                            chef_securite.setAccuracy(0.80)
+                            self.boss = chef_securite
+                            # Try to load config even in fallback
+                            self.boss_config = asset_manager.get_boss_by_name("Chef de la Sécurité")
+                        else:
+                            # Fallback for unknown acts
+                            boss_name = act_config.get('boss_name', 'Boss')
+                            boss_health = act_config.get('boss_health', 150)
+                            boss_damage = act_config.get('boss_damage', 12)
+                            boss_accuracy = act_config.get('boss_accuracy', 0.75)
+                            self.boss = BossModel(boss_name, 80, 80)
+                            self.boss.setHealth(boss_health)
+                            self.boss.setDamage(boss_damage)
+                            self.boss.setAccuracy(boss_accuracy)
+                            # Try to load config
+                            self.boss_config = asset_manager.get_boss_by_name(boss_name)
                     
                     if self.sequence_controller:
                         self.sequence_controller.set_boss(self.boss)
@@ -187,10 +211,15 @@ class ActView:
             try:
                 self.combat_model = CombatModel(self.johnny, self.boss)
                 self.combat_controller = CombatController(self.combat_model)
-                # Pass appropriate background image based on act
-                bg_image = act_config.get('background_image', 'Game/Assets/grosbillfight.png')
+                
+                # Get background from boss configuration (stored during init)
+                bg_image = 'Game/Assets/grosbillfight.png'  # Default fallback
+                if hasattr(self, 'boss_config') and self.boss_config:
+                    boss_backgrounds = self.boss_config.get('backgrounds', {})
+                    bg_image = boss_backgrounds.get('combat', 'Game/Assets/grosbillfight.png')
+                
                 self.combat_view = CombatView(self.screen_width, self.screen_height, background_image_path=bg_image)
-                Logger.debug("ActView.__init__", "Combat system initialized")
+                Logger.debug("ActView.__init__", "Combat system initialized", background=bg_image)
             except Exception as e:
                 Logger.error("ActView.__init__", e)
                 raise
@@ -201,8 +230,27 @@ class ActView:
                 boss_asset = act_config.get('boss_asset', 'Game/Assets/chefdesmotards.png')
                 boss_base = act_config.get('boss_base', 'motard')
                 
-                self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola")
-                self.boss_view = CaracterView(boss_asset, base_name=boss_base)
+                # Load configs from AssetManager
+                try:
+                    player_config = self.asset_manager.load_player_config()
+                    Logger.debug("ActView.__init__", f"Successfully loaded player_config with {len(player_config.get('actions', {}))} actions")
+                except Exception as e:
+                    Logger.error("ActView.__init__", f"Failed to load player_config: {e}")
+                    player_config = None
+                
+                try:
+                    boss_config = self.asset_manager.get_boss_by_name(self.boss_name) if self.boss_name else None
+                    if boss_config:
+                        Logger.debug("ActView.__init__", f"Successfully loaded boss_config for {self.boss_name}")
+                except Exception as e:
+                    Logger.error("ActView.__init__", f"Failed to load boss_config: {e}")
+                    boss_config = None
+                
+                # Create character views with configs
+                self.player_view = CaracterView("Game/Assets/lola.png", base_name="lola", 
+                                               character_config=player_config, game_mode="combat")
+                self.boss_view = CaracterView(boss_asset, base_name=boss_base,
+                                             character_config=boss_config, game_mode="combat")
                 
                 self._position_characters()
                 Logger.debug("ActView.__init__", "Character views created")
