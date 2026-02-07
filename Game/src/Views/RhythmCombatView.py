@@ -347,10 +347,10 @@ class RhythmCombatView:
         
         # --- CHARACTER ANIMATIONS (Joueur à gauche, Boss à droite) ---
         try:
-            # Player on the left (Lola) - centered vertically at middle of screen, positioned more left
-            player_x = int(self.screen_width * 0.08)  # 8% from left (more left position)
+            # Player on the left (Lola) - centered vertically at middle of screen
+            player_x = int(self.screen_width * 0.25)  # 25% from left
             player_y = self.screen_height // 2  # Middle of screen
-            self.player_view.drawCaracter(screen, player_model, offset=(player_x, player_y), is_map=False)
+            self.player_view.drawCaracter(screen, player_model, offset=(player_x, player_y), is_map=True)
             
             # Boss on the right - same vertical height
             if self.boss_view is None and boss_model:
@@ -373,9 +373,9 @@ class RhythmCombatView:
                                              game_mode="rhythm_combat")
             
             if self.boss_view:
-                boss_x = self.screen_width - int(self.screen_width * 0.15)  # Mirror position on right
+                boss_x = int(self.screen_width * 0.75)  # 75% from left (mirror position on right)
                 boss_y = self.screen_height // 2  # Same vertical position as player
-                self.boss_view.drawCaracter(screen, boss_model, offset=(boss_x, boss_y), is_map=False)
+                self.boss_view.drawCaracter(screen, boss_model, offset=(boss_x, boss_y), is_map=True)
         except Exception as e:
             pass
         

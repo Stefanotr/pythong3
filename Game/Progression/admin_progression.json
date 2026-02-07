@@ -1,0 +1,97 @@
+{
+  "current_stage": 8,
+  "level": 0,
+  "hp": 100,
+  "max_hp": 100,
+  "damage": 10,
+  "drunkenness": 0,
+  "coma_risk": 0,
+  "currency": 2652,
+  "position": {
+    "x": 404,
+    "y": 432
+  },
+  "inventory": [
+    {
+      "name": "Beer",
+      "alcohol_level": 15,
+      "bonus_damage": 3,
+      "accuracy_penalty": 5
+    },
+    {
+      "name": "Beer",
+      "alcohol_level": 15,
+      "bonus_damage": 3,
+      "accuracy_penalty": 5
+    },
+    {
+      "name": "Beer",
+      "alcohol_level": 15,
+      "bonus_damage": 3,
+      "accuracy_penalty": 5
+    },
+    {
+      "name": "Margarita",
+      "alcohol_level": 25,
+      "bonus_damage": 4,
+      "accuracy_penalty": 8
+    },
+    {
+      "name": "Margarita",
+      "alcohol_level": 25,
+      "bonus_damage": 4,
+      "accuracy_penalty": 8
+    },
+    {
+      "name": "Margarita",
+      "alcohol_level": 25,
+      "bonus_damage": 4,
+      "accuracy_penalty": 8
+    },
+    {
+      "name": "Margarita",
+      "alcohol_level": 25,
+      "bonus_damage": 4,
+      "accuracy_penalty": 8
+    },
+    {
+      "name": "Margarita",
+      "alcohol_level": 25,
+      "bonus_damage": 4,
+      "accuracy_penalty": 8
+    },
+    {
+      "name": "Piña Colada",
+      "alcohol_level": 12,
+      "bonus_damage": 2,
+      "accuracy_penalty": 3
+    },
+    {
+      "name": "Piña Colada",
+      "alcohol_level": 12,
+      "bonus_damage": 2,
+      "accuracy_penalty": 3
+    },
+    {
+      "name": "Piña Colada",
+      "alcohol_level": 12,
+      "bonus_damage": 2,
+      "accuracy_penalty": 3
+    },
+    {
+      "name": "Piña Colada",
+      "alcohol_level": 12,
+      "bonus_damage": 2,
+      "accuracy_penalty": 3
+    },
+    {
+      "name": "Piña Colada",
+      "alcohol_level": 12,
+      "bonus_damage": 2,
+      "accuracy_penalty": 3
+    }
+  ],
+  "completed_acts": [],
+  "completed_rhythms": [],
+  "last_save": "2026-02-08T00:46:29.446103"
+}

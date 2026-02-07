@@ -44,15 +44,26 @@ class PauseMenuView:
             self.buttons_controllers = []
             
             # Calculate button positions (centered vertically)
-            button_y_start = self.screen_height // 2 - 80
-            button_spacing = 130
+            button_y_start = self.screen_height // 2 - 120
+            button_spacing = 100
+            
+            # Pre-calculate sizes and positions
+            continue_size = (188, 75)
+            menu_size = (188, 75)
+            quit_size = (188, 75)
+            logout_size = (188, 75)
+            
+            continue_y = button_y_start
+            menu_y = button_y_start + button_spacing
+            quit_y = button_y_start + button_spacing * 2
+            logout_y = button_y_start + button_spacing * 3
             
             # Continue button
             try:
                 self.continue_button = ButtonView(
                     image_path='Game/Assets/buttonPlay.png',  # Reuse play button image
-                    position=(self.screen_width // 2, button_y_start),
-                    size=(188, 75)
+                    position=(self.screen_width // 2, continue_y),
+                    size=continue_size
                 )
                 self.buttons.append(self.continue_button)
                 
@@ -61,15 +72,14 @@ class PauseMenuView:
                 Logger.debug("PauseMenuView.__init__", "Continue button created")
             except Exception as e:
                 Logger.error("PauseMenuView.__init__", e)
-                # Create a simple text button if image fails
                 self.continue_button = None
             
             # Main Menu button (should return to WelcomeView)
             try:
                 self.menu_button = ButtonView(
-                    image_path='Game/Assets/buttonMainMenu.png',  # Reuse play button image
-                    position=(self.screen_width // 2, button_y_start + button_spacing),
-                    size=(188, 75)
+                    image_path='Game/Assets/buttonMainMenu.png',
+                    position=(self.screen_width // 2, menu_y),
+                    size=menu_size
                 )
                 self.buttons.append(self.menu_button)
                 
@@ -80,12 +90,12 @@ class PauseMenuView:
                 Logger.error("PauseMenuView.__init__", e)
                 self.menu_button = None
             
-            # Quit button
+            # Quit button - Quitter complètement le jeu
             try:
                 self.quit_button = ButtonView(
                     image_path='Game/Assets/buttonQuit.png',
-                    position=(self.screen_width // 2, button_y_start + button_spacing * 2),
-                    size=(188, 75)
+                    position=(self.screen_width // 2, quit_y),
+                    size=quit_size
                 )
                 self.buttons.append(self.quit_button)
                 
@@ -95,6 +105,22 @@ class PauseMenuView:
             except Exception as e:
                 Logger.error("PauseMenuView.__init__", e)
                 self.quit_button = None
+            
+            # Logout button - simple rectangle with text (no image)
+            try:
+                logout_size = (225, 50)
+                logout_x = self.screen_width // 2 - logout_size[0] // 2
+                self.logout_button = pygame.Rect(
+                    logout_x,
+                    logout_y - logout_size[1] // 2,
+                    logout_size[0],
+                    logout_size[1]
+                )
+                self.logout_button_text = "Déconnexion"
+                Logger.debug("PauseMenuView.__init__", "Logout button created as simple rectangle")
+            except Exception as e:
+                Logger.error("PauseMenuView.__init__", e)
+                self.logout_button = None
             
             # Font setup
             try:
@@ -116,6 +142,28 @@ class PauseMenuView:
             Logger.error("PauseMenuView.__init__", e)
             raise
     
+    def handle_logout(self, events):
+        """
+        Handle logout button click for pause menu.
+        
+        Args:
+            events: pygame events
+            
+        Returns:
+            bool: True if logout button was clicked, False otherwise
+        """
+        try:
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:  # Left mouse button
+                        if self.logout_button.collidepoint(event.pos):
+                            Logger.debug("PauseMenuView.handle_logout", "Logout button clicked")
+                            return True
+            return False
+        except Exception as e:
+            Logger.error("PauseMenuView.handle_logout", e)
+            return False
+
     # === MAIN LOOP ===
     
     def run(self):
@@ -135,9 +183,13 @@ class PauseMenuView:
             while running:
                 try:
                     events = pygame.event.get()
-
+                    
+                    # === CHECK LOGOUT BUTTON FIRST ===
+                    if self.logout_button and self.handle_logout(events):
+                        result = GameState.LOGOUT.value
+                        running = False
                     # === INPUT HANDLING VIA CONTROLLER ===
-                    if self.controller is not None:
+                    elif self.controller is not None:
                         try:
                             action = self.controller.handle_events(events)
                         except Exception as e:
@@ -217,7 +269,29 @@ class PauseMenuView:
             except Exception as e:
                 Logger.error("PauseMenuView.draw", e)
             
-            
+            # Draw logout button (simple rectangle with text)
+            try:
+                if self.logout_button:
+                    logout_color = (100, 100, 100)  # gray
+                    logout_hover_color = (150, 150, 150)  # lighter gray on hover
+                    
+                    # Check if mouse is over logout button
+                    mouse_pos = pygame.mouse.get_pos()
+                    if self.logout_button.collidepoint(mouse_pos):
+                        pygame.draw.rect(self.screen, logout_hover_color, self.logout_button, border_radius=5)
+                    else:
+                        pygame.draw.rect(self.screen, logout_color, self.logout_button, border_radius=5)
+                    
+                    # Draw border
+                    pygame.draw.rect(self.screen, (255, 255, 255), self.logout_button, 2, border_radius=5)
+                    
+                    # Draw text
+                    font = pygame.font.SysFont("Arial", 18)
+                    text_surf = font.render(self.logout_button_text, True, (255, 255, 255))
+                    text_rect = text_surf.get_rect(center=self.logout_button.center)
+                    self.screen.blit(text_surf, text_rect)
+            except Exception as e:
+                Logger.error("PauseMenuView.draw - logout button", e)
                 
         except Exception as e:
             Logger.error("PauseMenuView.draw", e)

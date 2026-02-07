@@ -63,7 +63,7 @@ class ButtonController(BaseController):
         Execute the action associated with the button.
         
         Returns:
-            str: Action identifier ("start_game", "quit_game", or None)
+            str: Action identifier ("start_game", "quit_game", "logout", or None)
         """
         try:
             Logger.debug("ButtonController.handleClick", "Button click handled", action=self.action)
@@ -75,6 +75,9 @@ class ButtonController(BaseController):
                 Logger.debug("ButtonController.handleClick", "Quit game action triggered")
                 self.quitGame()
                 return GameState.QUIT.value
+            elif self.action == "logout":
+                Logger.debug("ButtonController.handleClick", "Logout action triggered")
+                return GameState.LOGOUT.value
             
             return None
         except Exception as e:

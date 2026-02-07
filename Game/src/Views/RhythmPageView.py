@@ -247,6 +247,12 @@ class RhythmPageView:
                                             if self.rhythm_controller:
                                                 self.rhythm_controller.stop_all_audio()
                                             return GameState.QUIT.value
+                                        elif pause_result == GameState.LOGOUT.value:
+                                            Logger.debug("RhythmPageView.run", "Logout requested from pause menu")
+                                            # Stop all audio before logout
+                                            if self.rhythm_controller:
+                                                self.rhythm_controller.stop_all_audio()
+                                            return GameState.LOGOUT.value
                                         elif pause_result == GameState.MAIN_MENU.value:
                                             Logger.debug("RhythmPageView.run", "Main menu requested from pause menu")
                                             # Stop all audio before returning to main menu
@@ -369,7 +375,7 @@ class RhythmPageView:
                                         # Position: 15% from left, centered vertically
                                         player_x = int(self.screen_width * 0.15)
                                         player_y = self.screen_height // 2
-                                        self.character_view.drawCaracter(self.screen, self.johnny, offset=(player_x, player_y), is_map=False)
+                                        self.character_view.drawCaracter(self.screen, self.johnny, offset=(player_x, player_y), is_map=True)
                                         
                                         # Restore original position
                                         self.johnny.setX(original_x)

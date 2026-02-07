@@ -575,6 +575,9 @@ class MapPageView(PageView):
                                     if pause_result == GameState.QUIT.value:
                                         Logger.debug("MapPageView.run", "Quit requested from pause menu")
                                         return GameState.QUIT.value
+                                    elif pause_result == GameState.LOGOUT.value:
+                                        Logger.debug("MapPageView.run", "Logout requested from pause menu")
+                                        return GameState.LOGOUT.value
                                     elif pause_result == GameState.MAIN_MENU.value:
                                         Logger.debug("MapPageView.run", "Main menu requested from pause menu")
                                         return GameState.MAIN_MENU.value
@@ -632,15 +635,19 @@ class MapPageView(PageView):
                                     running = False
                                     break
                             
-                            # TEST: Press P to add money
+                            # TEST: Press P to add money (admin only)
                             elif event.key == pygame.K_p:
-                                try:
-                                    amount = 1000
-                                    self.johnny.addCurrency(amount)
-                                    new_money = self.johnny.getCurrency()
-                                    Logger.debug("MapPageView.run", "Money added for testing", amount=amount, total=new_money)
-                                except Exception as e:
-                                    Logger.error("MapPageView.run.test_money", e)
+                                # Only allow money cheat for admin users
+                                if self.sequence_controller.is_admin:
+                                    try:
+                                        amount = 1000
+                                        self.johnny.addCurrency(amount)
+                                        new_money = self.johnny.getCurrency()
+                                        Logger.debug("MapPageView.run", "Money added for testing (ADMIN)", amount=amount, total=new_money)
+                                    except Exception as e:
+                                        Logger.error("MapPageView.run.test_money", e)
+                                else:
+                                    Logger.debug("MapPageView.run", "Money cheat blocked: admin only")
 
                         # Handle mouse click on transition prompt or shop
                         elif event.type == pygame.MOUSEBUTTONDOWN:

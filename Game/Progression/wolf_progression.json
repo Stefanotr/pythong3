@@ -1,0 +1,18 @@
+{
+  "created_date": "2026-02-07T19:47:48.226534",
+  "last_save": "2026-02-07T19:47:48.233172",
+  "current_stage": 1,
+  "level": 0,
+  "hp": 100,
+  "max_hp": 100,
+  "damage": 10,
+  "drunkenness": 0,
+  "coma_risk": 0,
+  "position": {
+    "x": 175,
+    "y": 175
+  },
+  "inventory": [],
+  "completed_acts": [],
+  "completed_rhythms": []
+}
