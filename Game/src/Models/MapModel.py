@@ -1,39 +1,23 @@
-"""
-MapModel Module
 
-Represents the game map loaded from a file.
-Manages tile data, tile types, and map dimensions.
-"""
 
 import pygame
 from Utils.Logger import Logger
 
 
-# === MAP MODEL CLASS ===
 
 class MapModel:
-    """
-    Model for the game map.
-    Loads map data from file and manages tile layout.
-    """
     
-    # === INITIALIZATION ===
     
+   
     def __init__(self, map_file, tile_kinds, tile_size):
-        """
-        Initialize the map model by loading map data from file.
         
-        Args:
-            map_file: Path to the map file
-            tile_kinds: List of TileModel instances representing tile types
-            tile_size: Size of each tile in pixels
-        """
+        
         try:
             self.tile_kinds = tile_kinds
             self.tile_size = tile_size
             Logger.debug("MapModel.__init__", "Loading map", map_file=map_file, tile_size=tile_size)
             
-            # Load map data from file
+    
             try:
                 with open(map_file, "r") as file:
                     data = file.read()
@@ -47,10 +31,11 @@ class MapModel:
                 self.tiles = []
                 raise
             
-            # Parse map data (supports simple custom text maps and TMX maps)
+           
+           
             try:
                 self.tiles = []
-                # If the file is a TMX map, perform XML parsing to extract layers and tileset
+                
                 if str(map_file).lower().endswith('.tmx'):
                     import os
                     import xml.etree.ElementTree as ET
@@ -59,34 +44,36 @@ class MapModel:
                     tmx_dir = os.path.dirname(tmx_path)
 
                     root = ET.fromstring(data)
-                    # Map attributes
+                  
                     width = int(root.attrib.get('width', 0))
                     height = int(root.attrib.get('height', 0))
                     tilewidth = int(root.attrib.get('tilewidth', 32))
                     tileheight = int(root.attrib.get('tileheight', 32))
                     self.tile_size = tilewidth
 
-                    # Parse layers (CSV encoded) and store layers by name
+                   
+                   
                     layers = []
                     layers_by_name = {}
-                    flip_layers = []  # Store flip information for each layer
-                    FLIP_H = 0x80000000  # Horizontal flip
-                    FLIP_V = 0x40000000  # Vertical flip
-                    FLIP_D = 0x20000000  # Diagonal flip
+                    flip_layers = [] 
+                    FLIP_H = 0x80000000  
+                    FLIP_V = 0x40000000  
+                    FLIP_D = 0x20000000  
                     
                     for layer in root.findall('layer'):
                         layer_name = layer.attrib.get('name', '')
                         data_elem = layer.find('data')
                         if data_elem is None or data_elem.text is None:
                             matrix = [[0]*width for _ in range(height)]
-                            flips = [[0]*width for _ in range(height)]  # 0 = no flip
+                            flips = [[0]*width for _ in range(height)]  
                             layers.append((layer_name, matrix))
                             flip_layers.append((layer_name, flips))
                             layers_by_name[layer_name] = matrix
                             continue
                         csv = data_elem.text.strip()
                         nums = [int(n) for n in csv.replace('\n', ',').split(',') if n.strip()]
-                        # convert flat list to 2D and extract flips
+                      
+                      
                         matrix = []
                         flips = []
                         for r in range(height):
@@ -96,15 +83,17 @@ class MapModel:
                                 idx = r * width + c
                                 if idx < len(nums):
                                     gid = nums[idx]
-                                    # Extract flip flags
+                                   
+                                   
                                     flip_flags = 0
                                     if gid & FLIP_H:
-                                        flip_flags |= 1  # Bit 0: horizontal
+                                        flip_flags |= 1 
                                     if gid & FLIP_V:
-                                        flip_flags |= 2  # Bit 1: vertical
+                                        flip_flags |= 2  
                                     if gid & FLIP_D:
-                                        flip_flags |= 4  # Bit 2: diagonal
-                                    # Remove flip bits to get actual GID
+                                        flip_flags |= 4  
+                                  
+                                  
                                     gid = gid & ~(FLIP_H | FLIP_V | FLIP_D)
                                     row.append(gid)
                                     flip_row.append(flip_flags)
@@ -117,14 +106,15 @@ class MapModel:
                         flip_layers.append((layer_name, flips))
                         layers_by_name[layer_name] = matrix
 
-                    # Store flip information for all layers
+                  
+                  
                     self.flip_layers = {name: flips for name, flips in flip_layers}
 
-                    # Merge layers (topmost non-zero tile wins) and merge flips
+                   
                     merged = [[0 for _ in range(width)] for _ in range(height)]
                     merged_flips = [[0 for _ in range(width)] for _ in range(height)]
                     for i, (_name, layer) in enumerate(layers):
-                        # Get corresponding flip layer
+                        
                         flip_layer = flip_layers[i][1] if i < len(flip_layers) else None
                         for y in range(height):
                             for x in range(width):
@@ -135,18 +125,18 @@ class MapModel:
                                         merged_flips[y][x] = flip_layer[y][x]
 
                     self.tiles = merged
-                    self.tile_flips = merged_flips  # Store flip flags for each tile
-                    # expose parsed layers
+                    self.tile_flips = merged_flips 
+                   
                     self.layers = layers_by_name
-                    # preserve ordered list of layers (bottom -> top) to allow proper rendering
-                    # (some views rely on layering and transparency; merged map discards lower layers)
+                    
                     self.layer_ordered = layers
                     self.width = width
                     self.height = height
                     self.tilewidth = tilewidth
                     self.tileheight = tileheight
 
-                    # Parse object layers (objectgroup) for collisions/markers
+                  
+                  
                     self.object_layers = {}
                     for objgroup in root.findall('objectgroup'):
                         layer_name = objgroup.attrib.get('name', '')
@@ -170,20 +160,23 @@ class MapModel:
                                 continue
                         self.object_layers[layer_name] = objs
 
-                    # Handle multiple tilesets (external .tsx files)
-                    self.tile_kinds = {}  # Initialize as dict BEFORE the loop
-                    self.tilesets = []  # Store metadata for all tilesets
-                    tileset_elems = root.findall('tileset')  # Get all tilesets
+                   
+                    self.tile_kinds = {} 
+                    self.tilesets = []  
+                    tileset_elems = root.findall('tileset')  
                     
+
+
                     for tileset_elem in tileset_elems:
                         source = tileset_elem.attrib.get('source')
                         firstgid = int(tileset_elem.attrib.get('firstgid', 1))
                         tsx_path = os.path.join(tmx_dir, source) if source else None
                         if not tsx_path or not os.path.exists(tsx_path):
-                            # try workspace assets folder fallback
+                            
                             tsx_guess = os.path.join(os.path.dirname(tmx_dir), source) if source else None
                             if tsx_guess and os.path.exists(tsx_guess):
                                 tsx_path = tsx_guess
+
 
                         image_surface = None
                         tileset_columns = 0
@@ -195,10 +188,10 @@ class MapModel:
                                 image_elem = tsx_root.find('image')
                                 if image_elem is not None:
                                     img_src = image_elem.attrib.get('source')
-                                    # Resolve image path relative to tsx
+                                   
                                     img_path = os.path.join(os.path.dirname(tsx_path), img_src)
                                     if not os.path.exists(img_path):
-                                        # Try assets root
+                                       
                                         alt = os.path.join(os.path.dirname(os.path.dirname(tsx_path)), img_src)
                                         if os.path.exists(alt):
                                             img_path = alt
@@ -210,7 +203,8 @@ class MapModel:
                                                 image_surface = surf.convert_alpha()
                                                 Logger.debug('MapModel.__init__', 'TSX image loaded with alpha', path=img_path)
                                             except Exception:
-                                                # No per-pixel alpha - convert and set a colorkey from top-left pixel
+                                                
+
                                                 try:
                                                     surf2 = surf.convert()
                                                     col = surf2.get_at((0, 0))
@@ -221,8 +215,10 @@ class MapModel:
                                                     image_surface = None
                                         except Exception:
                                             image_surface = None
+
+
                                     else:
-                                        # Try to locate the image anywhere under Game/Assets by basename as a helpful fallback
+                                      
                                         try:
                                             basename = os.path.basename(img_src)
                                             search_root = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(tmx_path)))) if os.path.dirname(os.path.dirname(os.path.dirname(tmx_path))) else os.path.dirname(tmx_path)
@@ -257,11 +253,8 @@ class MapModel:
 
                                 tileset_columns = int(tsx_root.attrib.get('columns', 0))
                                 tileset_tilecount = int(tsx_root.attrib.get('tilecount', 0))
-                                # If we successfully loaded the tileset image, validate and
-                                # infer columns/tilecount from the actual image size when
-                                # the TSX attributes appear incorrect. This prevents
-                                # wrong slicing when the TSX metadata doesn't match the
-                                # referenced image (common when paths were edited).
+                               
+                               
                                 if image_surface is not None:
                                     try:
                                         img_w, img_h = image_surface.get_size()
@@ -279,10 +272,7 @@ class MapModel:
                             except Exception as e:
                                 Logger.error('MapModel.__init__', e)
 
-                        # Build tile_kinds mapping from gid -> TileModel for this tileset
-                        # (self.tile_kinds is already initialized as a dict before the loop)
-                        
-                        # Fallback for missing columns
+                       
                         columns = tileset_columns if tileset_columns > 0 else max(1, (tileset_tilecount or 0))
                         for gid_index in range(tileset_tilecount):
                             gid = firstgid + gid_index
@@ -291,21 +281,24 @@ class MapModel:
                                     col = gid_index % columns
                                     row = gid_index // columns
                                     rect = pygame.Rect(col * tilewidth, row * tileheight, tilewidth, tileheight)
-                                    # Create an alpha-capable surface and blit the tileset region
+                                  
+                                  
                                     tile_surf = pygame.Surface((tilewidth, tileheight), pygame.SRCALPHA, 32)
                                     tile_surf.blit(image_surface, (0, 0), rect)
                                     try:
                                         tile_surf = tile_surf.convert_alpha()
                                     except Exception:
-                                        # convert_alpha may fail in some contexts; keep SRCALPHA surface
+                                       
+                                       
                                         pass
                                 else:
-                                    # Create placeholder surface
+                                
                                     tile_surf = pygame.Surface((tilewidth, tileheight))
-                                    # Color by gid for visual distinctiveness
+                                  
+                                  
                                     color = ((gid * 37) % 256, (gid * 61) % 256, (gid * 97) % 256)
                                     tile_surf.fill(color)
-                                # Create a lightweight tile-like object compatible with MapView usage
+                               
                                 class _Tile:
                                     def __init__(self, image):
                                         self.image = image
@@ -313,7 +306,7 @@ class MapModel:
                             except Exception:
                                 continue
                         
-                        # Store tileset metadata for reference
+                      
                         self.tilesets.append({
                             'firstgid': firstgid,
                             'source': source,
@@ -321,7 +314,6 @@ class MapModel:
                             'columns': tileset_columns
                         })
 
-                    # Ensure any GID used in the merged map has at least a placeholder tile
                     try:
                         used_gids = set()
                         for row in self.tiles:
@@ -348,13 +340,13 @@ class MapModel:
                     Logger.debug("MapModel.__init__", "TMX map parsed successfully", width=width, height=height, tilewidth=tilewidth, tileheight=tileheight, tilesets=len(self.tilesets), object_layers=list(self.object_layers.keys()))
 
                 else:
-                    # Legacy simple text format parsing
-                    # Initialize tile_kinds as empty dict for consistency
+                  
                     self.tile_kinds = {}
-                    # No flips for legacy format maps
+                   
+                   
                     self.tile_flips = []
                     for line in data.split("\n"):
-                        if line.strip():  # Skip empty lines
+                        if line.strip(): 
                             row = []
                             for tile_number in line:
                                 try:
@@ -362,7 +354,7 @@ class MapModel:
                                 except ValueError:
                                     Logger.debug("MapModel.__init__", "Invalid tile number, skipping", tile=tile_number)
                                     continue
-                            if row:  # Only add non-empty rows
+                            if row: 
                                 self.tiles.append(row)
                     Logger.debug("MapModel.__init__", "Map parsed successfully", 
                                rows=len(self.tiles), 
@@ -376,31 +368,24 @@ class MapModel:
             Logger.error("MapModel.__init__", e)
             raise
     
-    # === GETTERS / SETTERS ===
+   
+   
     
     def getTileKinds(self):
-        """
-        Get the list of tile types.
-        
-        Returns:
-            list: List of TileModel instances
-        """
+      
+      
         try:
             return self.tile_kinds.copy() if hasattr(self, 'tile_kinds') else []
         except Exception as e:
             Logger.error("MapModel.getTileKinds", e)
             return []
     
+
     def setTileKinds(self, tile_kinds):
-        """
-        Set the list of tile types.
-        
-        Args:
-            tile_kinds: List of TileModel instances
-        """
+      
         try:
             if isinstance(tile_kinds, list):
-                self.tile_kinds = tile_kinds.copy()  # Store a copy
+                self.tile_kinds = tile_kinds.copy() 
                 Logger.debug("MapModel.setTileKinds", "Tile kinds set", count=len(self.tile_kinds))
             else:
                 Logger.error("MapModel.setTileKinds", ValueError("Tile kinds must be a list"))
@@ -408,25 +393,17 @@ class MapModel:
             Logger.error("MapModel.setTileKinds", e)
     
     def getTileSize(self):
-        """
-        Get the tile size in pixels.
-        
-        Returns:
-            int: Tile size in pixels
-        """
+      
         try:
             return self.tile_size
         except Exception as e:
             Logger.error("MapModel.getTileSize", e)
             return 32
     
+
+
     def setTileSize(self, tile_size):
-        """
-        Set the tile size in pixels.
-        
-        Args:
-            tile_size: Tile size in pixels
-        """
+      
         try:
             self.tile_size = max(1, int(tile_size))
             Logger.debug("MapModel.setTileSize", "Tile size set", tile_size=self.tile_size)
@@ -434,29 +411,20 @@ class MapModel:
             Logger.error("MapModel.setTileSize", e)
     
     def getTiles(self):
-        """
-        Get the tile map data.
-        
-        Returns:
-            list: 2D list of tile IDs
-        """
+
+
         try:
-            # Return a deep copy to prevent external modification
+            
             return [row.copy() for row in self.tiles] if hasattr(self, 'tiles') and self.tiles else []
         except Exception as e:
             Logger.error("MapModel.getTiles", e)
             return []
     
     def setTiles(self, tiles):
-        """
-        Set the tile map data.
-        
-        Args:
-            tiles: 2D list of tile IDs
-        """
+       
         try:
             if isinstance(tiles, list):
-                # Store a deep copy
+              
                 self.tiles = [row.copy() if isinstance(row, list) else row for row in tiles]
                 Logger.debug("MapModel.setTiles", "Tiles set", rows=len(self.tiles))
             else:
@@ -464,25 +432,15 @@ class MapModel:
         except Exception as e:
             Logger.error("MapModel.setTiles", e)
 
+
+
     def get_spawn_points(self, layer_name="spawn"):
-        """
-        Get all spawn points from a specific object layer.
-        Looks for objects in a layer named 'spawn' OR objects with type='spawn'.
-        
-        Args:
-            layer_name: Name of the object layer to search (default: 'spawn')
-        
-        Returns:
-            list: List of spawn point objects with 'x', 'y', 'width', 'height', 'name', etc.
-                  Returns empty list if no spawn points found.
-        """
+      
         try:
-            # Look for objects in the specified layer
             if not hasattr(self, 'object_layers'):
                 Logger.debug("MapModel.get_spawn_points", "No object_layers found in map")
                 return []
             
-            # First priority: get ALL objects from "spawn" layer (regardless of type)
             if layer_name in self.object_layers:
                 spawn_objects = self.object_layers[layer_name]
                 
@@ -491,7 +449,7 @@ class MapModel:
                                f"Found {len(spawn_objects)} spawn points in layer '{layer_name}'")
                     return spawn_objects
             
-            # Fallback: search all layers for objects with type='spawn'
+
             all_spawn_points = []
             for layer, objects in self.object_layers.items():
                 for obj in objects:

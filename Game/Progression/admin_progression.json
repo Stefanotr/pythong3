@@ -1,5 +1,5 @@
 {
-  "current_stage": 8,
+  "current_stage": 3,
   "level": 0,
   "hp": 100,
   "max_hp": 100,
@@ -93,5 +93,5 @@
   ],
   "completed_acts": [],
   "completed_rhythms": [],
-  "last_save": "2026-02-08T00:46:29.446103"
+  "last_save": "2026-02-08T18:16:21.320839"
 }

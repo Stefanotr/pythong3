@@ -1,3 +1,8 @@
+# Login
+username:admin
+password:admin123
+
+
 # Six-String Hangover
 
 A rhythm-based puzzle adventure game where the player must defeat enemies through rhythm combat and navigate a town to reach different acts.
@@ -7,6 +12,8 @@ A rhythm-based puzzle adventure game where the player must defeat enemies throug
 - **Genre**: Rhythm Puzzle Adventure
 - **Platform**: PC (Python/Pygame)
 - **Status**: In Development
+- **Version**: 1.0.0
+- **Last Updated**: February 8, 2026
 
 ## Controls
 
@@ -158,10 +165,16 @@ The game uses Tiled Map Editor format (.tmx files):
 - [ ] Additional acts/stages
 - [ ] Mobile/controller support
 
+## Documentation
+
+- [API Documentation](docs/API.md) - Complete class and method reference with detailed descriptions
+- [Game Design Document](docs/SCENARIO.md) - Game story and design specifications
+
 ## Credits
 
 - **Game Design & Development**: Team Six-String
 
 ---
 
-*Last Updated: February 6, 2026*
+*Last Updated: February 8, 2026*
+
