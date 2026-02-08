@@ -91,7 +91,7 @@ class RhythmController:
             self.guitar_channel.stop()
             self.track_backing.stop()
             self.track_guitar.stop()
-            # Arrêter tous les fail_sounds
+           
             for sound in self.fail_sounds:
                 sound.stop()
         except Exception as e:

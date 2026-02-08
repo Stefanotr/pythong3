@@ -35,7 +35,8 @@ class ShopController(BaseController):
                         self.shop_model.setSelectedIndex(current_index - 1)
                         Logger.debug("ShopController.handle_input", "Selection moved up")
                     else:
-                        # At top, wrap to bottom or go to previous page
+                       
+                       
                         self.shop_model.previousPage()
                         current_page = self.shop_model.getCurrentPage()
                         page_end = min((current_page + 1) * self.shop_model.items_per_page, len(items))
