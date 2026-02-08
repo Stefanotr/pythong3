@@ -335,12 +335,12 @@ class ActView:
                             elif event.key == pygame.K_ESCAPE:
                                 try:
                                     
-                                    if self.combat_controller and hasattr(self.combat_controller, 'isPaused'):
-                                        self.combat_controller.isPaused = True
+                                    if self.combat_controller and hasattr(self.combat_controller, 'is_paused'):
+                                        self.combat_controller.is_paused = True
                                         if hasattr(self.combat_controller, 'pauseAudio'):
                                             self.combat_controller.pauseAudio()
-                                    if self.rhythm_controller and hasattr(self.rhythm_controller, 'isPaused'):
-                                        self.rhythm_controller.isPaused = True
+                                    if self.rhythm_controller and hasattr(self.rhythm_controller, 'is_paused'):
+                                        self.rhythm_controller.is_paused = True
                                         if hasattr(self.rhythm_controller, 'pauseAudio'):
                                             self.rhythm_controller.pauseAudio()
                                     
@@ -373,12 +373,12 @@ class ActView:
                                         return GameState.MAIN_MENU.value
                                     else:  
                                         
-                                        if self.combat_controller and hasattr(self.combat_controller, 'isPaused'):
-                                            self.combat_controller.isPaused = False
+                                        if self.combat_controller and hasattr(self.combat_controller, 'is_paused'):
+                                            self.combat_controller.is_paused = False
                                             if hasattr(self.combat_controller, 'resumeAudio'):
                                                 self.combat_controller.resumeAudio()
-                                        if self.rhythm_controller and hasattr(self.rhythm_controller, 'isPaused'):
-                                            self.rhythm_controller.isPaused = False
+                                        if self.rhythm_controller and hasattr(self.rhythm_controller, 'is_paused'):
+                                            self.rhythm_controller.is_paused = False
                                             if hasattr(self.rhythm_controller, 'resumeAudio'):
                                                 self.rhythm_controller.resumeAudio()
                                         Logger.debug("ActView.run", "Resuming from pause menu")
@@ -387,10 +387,10 @@ class ActView:
                             
                             elif self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
                                 stage_number = event.key - pygame.K_1 + 1  
-                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                if self.sequence_controller.handleNumericInput(stage_number):
                                     Logger.debug("ActView.run", "Navigation to stage requested", 
                                                stage=stage_number, 
-                                               stageName =self.sequence_controller.get_current_stage_name())
+                                               stageName =self.sequence_controller.getCurrentStageName())
                                     return f"STAGE_{stage_number}"
                             
                             elif self.phase == "intro" and event.key == pygame.K_SPACE:
@@ -403,11 +403,11 @@ class ActView:
                                 
                                 if event.key == pygame.K_LEFT or event.key == pygame.K_UP:
                                     if hasattr(self.lola, 'inventory') and self.lola.inventory:
-                                        self.lola.inventory.select_previous()
+                                        self.lola.inventory.selectPrevious()
                                         Logger.debug("ActView.run", "Inventory previous selected")
                                 elif event.key == pygame.K_RIGHT or event.key == pygame.K_DOWN:
                                     if hasattr(self.lola, 'inventory') and self.lola.inventory:
-                                        self.lola.inventory.select_next()
+                                        self.lola.inventory.selectNext()
                                         Logger.debug("ActView.run", "Inventory next selected")
                                 
                                 if not self.combat_model.isCombatFinished():

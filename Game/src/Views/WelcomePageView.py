@@ -486,7 +486,7 @@ class WelcomPageView(PageView):
             
             from Utils.UserManager import UserManager
             user_manager = UserManager()
-            success = user_manager.save_progression(self.current_user, progression)
+            success = user_manager.saveProgression(self.current_user, progression)
             
             if success:
                 Logger.debug("WelcomPageView.savePlayerProgression", "Player progression saved", 
@@ -516,9 +516,9 @@ class WelcomPageView(PageView):
             
             sequence_controller = GameSequenceController()
             
-            sequence_controller.set_stage(starting_stage)
+            sequence_controller.setStage(starting_stage)
             
-            sequence_controller.isAdmin = self.is_admin
+            sequence_controller.is_admin = self.is_admin
             
             Logger.debug("WelcomPageView.startGameFlow", "GameSequenceController created", starting_stage=starting_stage, isAdmin=self.is_admin)
             
@@ -569,7 +569,7 @@ class WelcomPageView(PageView):
                     
                     if starting_stage == 0:
                         current_stage = self.user_progression.get("currentStage", 1)
-                        sequence_controller.set_stage(current_stage)
+                        sequence_controller.setStage(current_stage)
                         Logger.debug("WelcomPageView.startGameFlow", "Player loaded from progression with saved stage", username=self.current_user, savedStage=current_stage)
                     else:
                         Logger.debug("WelcomPageView.startGameFlow", "Player loaded from progression with FORCED stage (admin cheat)", username=self.current_user, forcedStage=starting_stage)
@@ -595,7 +595,7 @@ class WelcomPageView(PageView):
                     chef_securite_config = asset_manager.getBossByBame("Chef de la Sécurité")
                     
                     if manager_corrompu_config:
-                        managerCorrompu = BossModel.from_config(manager_corrompu_config, 80, 80)
+                        manager_corrompu = BossModel.fromConfig(manager_corrompu_config, 80, 80)
                     else:
                         
                         manager_corrompu = BossModel("Manager Corrompu", 80, 80)
@@ -604,7 +604,7 @@ class WelcomPageView(PageView):
                         Logger.warn("WelcomPageView.startGameFlow", "Manager Corrompu config not found, using fallback")
                     
                     if gros_bill_config:
-                        gros_bill = BossModel.from_config(gros_bill_config, 80, 80)
+                        gros_bill = BossModel.fromConfig(gros_bill_config, 80, 80)
                     else:
                         gros_bill = BossModel("Gros Bill", 80, 80)
                         gros_bill.setHealth(100)
@@ -613,7 +613,7 @@ class WelcomPageView(PageView):
                         Logger.warn("WelcomPageView.startGameFlow", "Gros Bill config not found, using fallback")
                     
                     if chef_securite_config:
-                        chef_securite = BossModel.from_config(chef_securite_config, 80, 80)
+                        chef_securite = BossModel.fromConfig(chef_securite_config, 80, 80)
                     else:
                         chef_securite = BossModel("Chef de la Sécurité", 80, 80)
                         chef_securite.setHealth(500)
@@ -648,8 +648,8 @@ class WelcomPageView(PageView):
             
             while True:
                 try:
-                    current_stage = sequence_controller.get_current_stage()
-                    stage_name = sequence_controller.get_current_stage_name()
+                    current_stage = sequence_controller.getCurrentStage()
+                    stage_name = sequence_controller.getCurrentStageName()
                     Logger.debug("WelcomPageView.startGameFlow", "Displaying stage", 
                                stage=current_stage, stageName=stage_name)
                     
@@ -676,7 +676,7 @@ class WelcomPageView(PageView):
                     elif current_stage == 3:
                         try:
                             
-                            sequence_controller.set_boss(gros_bill)
+                            sequence_controller.setBoss(gros_bill)
                             act1_view = Act1View(screen, player, sequence_controller)
                             result = act1_view.run()
                             
@@ -695,7 +695,7 @@ class WelcomPageView(PageView):
                     elif current_stage == 5:
                         try:
                             
-                            sequence_controller.set_boss(chef_securite)
+                            sequence_controller.setBoss(chef_securite)
                             act2_view = Act2View(screen, player, sequence_controller)
                             result = act2_view.run()
                             
@@ -754,9 +754,9 @@ class WelcomPageView(PageView):
                     elif result == GameState.COMPLETE.value:
                         Logger.debug("WelcomPageView.startGameFlow", "Stage completed successfully, advancing to next stage")
                         
-                        if sequence_controller.advance_stage():
+                        if sequence_controller.advanceStage():
                             Logger.debug("WelcomPageView.startGameFlow", "Advanced to next stage",
-                                       newStage =sequence_controller.get_current_stage())
+                                       newStage =sequence_controller.getCurrentStage())
                         else:
                             Logger.debug("WelcomPageView.startGameFlow", "Already at final stage")
                             break
@@ -772,7 +772,7 @@ class WelcomPageView(PageView):
                             stage_num = int(result.split("_")[1])
                             Logger.debug("WelcomPageView.startGameFlow", "Stage jump via numeric key (ADMIN)", targetStage =stage_num)
                             
-                            sequence_controller.set_stage(stage_num)
+                            sequence_controller.setStage(stage_num)
                             
                             continue
                         except Exception as e:
@@ -781,9 +781,9 @@ class WelcomPageView(PageView):
                     
                     else:
                         
-                        if sequence_controller.advance_stage():
+                        if sequence_controller.advanceStage():
                             Logger.debug("WelcomPageView.startGameFlow", "Advanced to next stage",
-                                       newStage =sequence_controller.get_current_stage())
+                                       newStage =sequence_controller.getCurrentStage())
                         else:
                             Logger.debug("WelcomPageView.startGameFlow", "Already at final stage")
                             break

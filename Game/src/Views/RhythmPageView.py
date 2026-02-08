@@ -170,10 +170,10 @@ class RhythmPageView:
                             
                             if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
                                 stage_number = event.key - pygame.K_1 + 1  
-                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                if self.sequence_controller.handleNumericInput(stage_number):
                                     Logger.debug("RhythmPageView.run", "Navigation to stage requested", 
                                                stage=stage_number, 
-                                               stageName=self.sequence_controller.get_current_stage_name())
+                                               stageName=self.sequence_controller.getCurrentStageName())
                                     
                                     return f"STAGE_{stage_number}"
                             
@@ -183,7 +183,7 @@ class RhythmPageView:
                                     try:
                                         
                                         if self.rhythm_controller:
-                                            self.rhythm_controller.isPaused = True
+                                            self.rhythm_controller.is_paused = True
                                             self.rhythm_controller.pauseAudio()
                                         
                                         pause_menu = PauseMenuView(self.screen)
@@ -348,13 +348,13 @@ class RhythmPageView:
                         Logger.debug("RhythmPageView.run", "Rhythm sequence won - showing transition")
                         Logger.debug("RhythmPageView.run", "Creating FinTransitionPageView",
                                    screen=self.screen,
-                                   screenSize =self.screen.get_size() if self.screen else None)
+                                   screen_size =self.screen.get_size() if self.screen else None)
                         
                         transition = FinTransitionPageView(
                             self.screen,
                             message="Stage Complete!",
-                            nextStageName ="Next Chapter",
-                            durationSeconds =5
+                            next_stage_name ="Next Chapter",
+                            duration_seconds =5
                         )
                         
                         Logger.debug("RhythmPageView.run", "FinTransitionPageView created, calling run()")
@@ -366,13 +366,13 @@ class RhythmPageView:
                         Logger.debug("RhythmPageView.run", "Rhythm sequence lost - showing defeat transition")
                         Logger.debug("RhythmPageView.run", "Creating defeat transition",
                                    screen=self.screen,
-                                   screenSize =self.screen.get_size() if self.screen else None)
+                                   screen_size =self.screen.get_size() if self.screen else None)
                         
                         transition = FinTransitionPageView(
                             self.screen,
                             message="Game Over",
-                            nextStageName ="Main Menu",
-                            durationSeconds =3
+                            next_stage_name ="Main Menu",
+                            duration_seconds =3
                         )
                         
                         Logger.debug("RhythmPageView.run", "Defeat transition created, calling run()")
