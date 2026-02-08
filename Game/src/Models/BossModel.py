@@ -21,9 +21,13 @@ class BossModel(CaracterModel):
     
     
 
+    @classmethod
     def from_config(cls, boss_config, x=175, y=175):
         
         try:
+            if not isinstance(boss_config, dict):
+                Logger.error("BossModel.from_config", "boss_config is not a dictionary")
+                return cls("Unknown Boss", x, y)
             
             boss_name = boss_config.get("name", "Unknown Boss")
             

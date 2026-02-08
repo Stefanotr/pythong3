@@ -65,16 +65,16 @@ class ActView:
             
             try:
                 if player is not None:
-                    self.johnny = player
-                    self.johnny.setHealth(100)
+                    self.lola = player
+                    self.lola.setHealth(100)
                     Logger.debug("ActView.__init__", "Using provided player")
                 else:
-                    self.johnny = PlayerModel("Lola Coma", 60, 60)
-                    self.johnny.setHealth(100)
-                    self.johnny.setDamage(8)
-                    self.johnny.setAccuracy(0.85)
-                    self.johnny.setDrunkenness(0)
-                    self.johnny.setComaRisk(10)
+                    self.lola = PlayerModel("Lola Coma", 60, 60)
+                    self.lola.setHealth(100)
+                    self.lola.setDamage(8)
+                    self.lola.setAccuracy(0.85)
+                    self.lola.setDrunkenness(0)
+                    self.lola.setComaRisk(10)
                     
                    
                     guitar_method = act_config.get('guitar_factory_method', 'createLaPelle')
@@ -85,8 +85,8 @@ class ActView:
                     
                    
                     beer = BottleModel("Beer", 15, 3, 5)
-                    self.johnny.inventory.add_item(beer)
-                    self.johnny.setSelectedBottle(self.johnny.inventory.get_selected_item())
+                    self.lola.inventory.add_item(beer)
+                    self.lola.setSelectedBottle(self.lola.inventory.get_selected_item())
                     Logger.debug("ActView.__init__", "New player created with 2 beers")
             except Exception as e:
                 Logger.error("ActView.__init__", e)
@@ -170,7 +170,7 @@ class ActView:
                 
                 
                 try:
-                    player_level = self.johnny.getLevel() if self.johnny else 0
+                    player_level = self.lola.getLevel() if self.lola else 0
                     current_health = self.boss.getHealth()
                     
                     
@@ -195,7 +195,7 @@ class ActView:
            
             
             try:
-                self.combat_model = CombatModel(self.johnny, self.boss)
+                self.combat_model = CombatModel(self.lola, self.boss)
                 self.combat_controller = CombatController(self.combat_model)
                 
               
@@ -500,15 +500,15 @@ class ActView:
                                 
                                
                                 if event.key == pygame.K_LEFT or event.key == pygame.K_UP:
-                                    if hasattr(self.johnny, 'inventory') and self.johnny.inventory:
-                                        self.johnny.inventory.select_previous()
+                                    if hasattr(self.lola, 'inventory') and self.lola.inventory:
+                                        self.lola.inventory.select_previous()
 
                                         Logger.debug("ActView.run", "Inventory previous selected")
                                 elif event.key == pygame.K_RIGHT or event.key == pygame.K_DOWN:
-                                    if hasattr(self.johnny, 'inventory') and self.johnny.inventory:
+                                    if hasattr(self.lola, 'inventory') and self.lola.inventory:
 
 
-                                        self.johnny.inventory.select_next()
+                                        self.lola.inventory.select_next()
                                         Logger.debug("ActView.run", "Inventory next selected")
                                 
                                 elif not self.combat_model.isCombatFinished():
@@ -597,7 +597,7 @@ class ActView:
                     if self.phase == "combat" and not getattr(self, '_combat_started', False):
                         try:
                             try:
-                                self.johnny.setCurrentAction('idle', duration=0)
+                                self.lola.setCurrentAction('idle', duration=0)
                             except Exception:
                                 pass
                             try:
@@ -628,7 +628,7 @@ class ActView:
                            
                            
                             try:
-                                self.player_view.drawCaracter(self.screen, self.johnny)
+                                self.player_view.drawCaracter(self.screen, self.lola)
                                 self.boss_view.drawCaracter(self.screen, self.boss)
                             except Exception as e:
                                 Logger.error("ActView.run", e)
@@ -640,7 +640,7 @@ class ActView:
                                 Logger.error("ActView.run", e)
                         elif self.phase == "rhythm":
                             if self.rhythm_view and self.rhythm_model:
-                                self.rhythm_view.draw(self.screen, self.rhythm_model, self.johnny)
+                                self.rhythm_view.draw(self.screen, self.rhythm_model, self.lola)
                     except Exception as e:
                         Logger.error("ActView.run", e)
                     
@@ -717,7 +717,7 @@ class ActView:
             
             self.rhythm_controller = RhythmController(
                 self.rhythm_model, 
-                self.johnny, 
+                self.lola, 
                 self.screen_height, 
                 self.rhythm_view,
                 load_another_one(),
@@ -749,7 +749,7 @@ class ActView:
             active_notes = [n for n in self.rhythm_model.getNotes() if n.get("active", False)]
             
           
-            if self.johnny.getHealth() <= 0:
+            if self.lola.getHealth() <= 0:
                 return True
             
             
@@ -858,8 +858,8 @@ class ActView:
 
             
             try:
-                self.johnny.setX(center_x - offset)
-                self.johnny.setY(self.screen_height // 2)
+                self.lola.setX(center_x - offset)
+                self.lola.setY(self.screen_height // 2)
             except Exception:
                 pass
 
@@ -884,7 +884,7 @@ class ActView:
             font = pygame.font.Font(None, 36)
             
           
-            level = self.johnny.getLevel() if hasattr(self.johnny, 'getLevel') else 1
+            level = self.lola.getLevel() if hasattr(self.lola, 'getLevel') else 1
             level_text = font.render(f"LEVEL {level}", True, (0, 255, 0))
             
            
@@ -895,7 +895,7 @@ class ActView:
             pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
             self.screen.blit(level_text, (text_x, text_y))
             
-            alcohol = self.johnny.getDrunkenness() if hasattr(self.johnny, 'getDrunkenness') else 0
+            alcohol = self.lola.getDrunkenness() if hasattr(self.lola, 'getDrunkenness') else 0
             alcohol_text = font.render(f"Alcohol: {alcohol}%", True, (0, 255, 0))
             
             

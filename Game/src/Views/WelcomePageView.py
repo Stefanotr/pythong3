@@ -298,7 +298,7 @@ class WelcomPageView(PageView):
                         continue
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:  # Left mouse button
+                    if event.button == 1: 
                         mouse_pos = event.pos
                         if self.logout_button.collidepoint(mouse_pos):
                             Logger.debug(
@@ -504,27 +504,32 @@ class WelcomPageView(PageView):
             try:
                 if hasattr(player, 'inventory') and player.inventory:
                     for bottle in player.inventory.get_all_items():
+
                         inventory_list.append({
                             "name": bottle.getName(),
                             "alcohol_level": bottle.getAlcoholLevel(),
                             "bonus_damage": bottle.getBonusDamage(),
+                            
                             "accuracy_penalty": bottle.getAccuracyPenalty()
                         })
             except Exception as e:
                 Logger.error("WelcomPageView._save_player_progression", f"Failed to serialize inventory: {e}")
             
             progression = {
+
                 "current_stage": sequence_controller.get_current_stage(),
                 "level": player.getLevel(),
                 "hp": player.getHealth(),
                 "max_hp": 100,  
                 "damage": player.getDamage(),
+
                 "drunkenness": player.getDrunkenness(),
                 "coma_risk": player.getComaRisk(),
                 "currency": player.getCurrency(),
                 "position": {
                     "x": player.getX(),
                     "y": player.getY()
+
                 },
                 "inventory": inventory_list,
                 "completed_acts": [],
@@ -538,6 +543,7 @@ class WelcomPageView(PageView):
             if success:
                 Logger.debug("WelcomPageView._save_player_progression", "Player progression saved", 
                            username=self.current_user)
+                
             else:
                 Logger.debug("WelcomPageView._save_player_progression", "Failed to save player progression", 
                            username=self.current_user)
@@ -547,6 +553,8 @@ class WelcomPageView(PageView):
             Logger.error("WelcomPageView._save_player_progression", e)
             return False
     
+
+
 
 
 
@@ -564,6 +572,7 @@ class WelcomPageView(PageView):
                     Logger.error("WelcomPageView._startGameFlow", f"Failed to stop welcome music: {e}")
             
             Logger.debug("WelcomPageView._startGameFlow", "Starting game flow with sequence controller")
+
             
             sequence_controller = GameSequenceController()
             
@@ -578,6 +587,7 @@ class WelcomPageView(PageView):
             try:
                 screen = self.screen
                 menu_size = (screen.get_width(), screen.get_height())
+
                 pygame.display.set_caption("Six-String Hangover")
                 Logger.debug("WelcomPageView._startGameFlow", "Menu size saved", width=menu_size[0], height=menu_size[1])
             except Exception as e:
@@ -591,6 +601,7 @@ class WelcomPageView(PageView):
                 except Exception:
                     pre_fullscreen = False
 
+
                 if not pre_fullscreen:
                     try:
                         pygame.display.set_mode(full_size, pygame.FULLSCREEN)
@@ -599,31 +610,41 @@ class WelcomPageView(PageView):
                         Logger.debug("WelcomPageView._startGameFlow", "Switched to FULLSCREEN for gameplay", width=full_size[0], height=full_size[1])
                     except Exception as e:
                         Logger.error("WelcomPageView._startGameFlow", e)
+
                 else:
                     Logger.debug("WelcomPageView._startGameFlow", "Already in fullscreen", width=full_size[0], height=full_size[1])
             except Exception as e:
                 Logger.error("WelcomPageView._startGameFlow", e)
+
             
             try:
                 from Models.PlayerModel import PlayerModel
                 from Models.BottleModel import BottleModel
+
                 from Models.GuitarModel import GuitarFactory
                 from Models.BossModel import BossModel
                 
                 asset_manager = AssetManager("Game")
                 
+
+
                 if self.current_user and self.user_progression:
                     player = self._load_player_from_progression(self.user_progression)
                     if starting_stage == 0:
+
                         current_stage = self.user_progression.get("current_stage", 1)
                         sequence_controller.set_stage(current_stage)
                         Logger.debug("WelcomPageView._startGameFlow", "Player loaded from progression with saved stage", username=self.current_user, saved_stage=current_stage)
                     else:
                         Logger.debug("WelcomPageView._startGameFlow", "Player loaded from progression with FORCED stage (admin cheat)", username=self.current_user, forced_stage=starting_stage)
                 else:
-                    # Create new player with default stats
+                   
+
+
                     player = PlayerModel("Lola Coma", 60, 60)
                     player.setHealth(100)
+
+
                     player.setDamage(10)
                     player.setAccuracy(0.85)
                     player.setDrunkenness(0)
@@ -637,6 +658,7 @@ class WelcomPageView(PageView):
                     player.setSelectedBottle(beer)
                 
                 try:
+
                     manager_corrompu_config = asset_manager.get_boss_by_name("Manager Corrompu")
                     gros_bill_config = asset_manager.get_boss_by_name("Gros Bill")
                     chef_securite_config = asset_manager.get_boss_by_name("Chef de la Sécurité")
@@ -650,6 +672,9 @@ class WelcomPageView(PageView):
                         Logger.warn("WelcomPageView._startGameFlow", "Manager Corrompu config not found, using fallback")
                     
                     if gros_bill_config:
+
+
+
                         gros_bill = BossModel.from_config(gros_bill_config, 80, 80)
                     else:
                         gros_bill = BossModel("Gros Bill", 80, 80)
@@ -666,6 +691,7 @@ class WelcomPageView(PageView):
                         chef_securite.setDamage(14)
                         chef_securite.setAccuracy(0.80)
                         Logger.warn("WelcomPageView._startGameFlow", "Chef de la Sécurité config not found, using fallback")
+
                     
                     Logger.debug("WelcomPageView._startGameFlow", "Bosses loaded from asset configurations")
                 except Exception as e:
@@ -678,6 +704,8 @@ class WelcomPageView(PageView):
                     gros_bill.setHealth(100)
                     gros_bill.setDamage(12)
                     gros_bill.setAccuracy(0.75)
+
+
                     
                     chef_securite = BossModel("Chef de la Sécurité", 80, 80)
                     chef_securite.setHealth(500)
@@ -693,12 +721,13 @@ class WelcomPageView(PageView):
             
 
 
-            
+
             while True:
                 try:
                     current_stage = sequence_controller.get_current_stage()
                     stage_name = sequence_controller.get_current_stage_name()
                     Logger.debug("WelcomPageView._startGameFlow", "Displaying stage", 
+                                 
                                stage=current_stage, stage_name=stage_name)
                     
                     result = None
@@ -712,6 +741,7 @@ class WelcomPageView(PageView):
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
                     elif current_stage == 2:
+
                         try:
                             map_view = MapPageView(screen, 1, player, sequence_controller)
                             result = map_view.run()
@@ -722,6 +752,7 @@ class WelcomPageView(PageView):
                     elif current_stage == 3:
                         try:
                             sequence_controller.set_boss(gros_bill)
+
                             act1_view = Act1View(screen, player, sequence_controller)
                             result = act1_view.run()
                             
@@ -744,6 +775,9 @@ class WelcomPageView(PageView):
                             
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
+
+
+
                     
                     elif current_stage == 6:
                         try:
@@ -756,6 +790,7 @@ class WelcomPageView(PageView):
                     
                     elif current_stage == 7:
                         try:
+
                             map_view = MapPageView(screen, 3, player, sequence_controller)
                             result = map_view.run()
                            
@@ -772,6 +807,9 @@ class WelcomPageView(PageView):
                         except Exception as e:
                             Logger.error("WelcomPageView._startGameFlow", e)
                     
+
+
+
                     if result is None:
                         Logger.debug("WelcomPageView._startGameFlow", "No result from stage", stage=current_stage)
                         break
@@ -787,6 +825,8 @@ class WelcomPageView(PageView):
                     elif result == GameState.MAIN_MENU.value:
                         Logger.debug("WelcomPageView._startGameFlow", "Main menu requested")
                         break
+
+
                     
                     elif result == GameState.GAME_OVER.value:
                         Logger.debug("WelcomPageView._startGameFlow", "Game over")
@@ -800,6 +840,8 @@ class WelcomPageView(PageView):
                         else:
                             Logger.debug("WelcomPageView._startGameFlow", "Already at final stage")
                             break
+
+
                         continue
                     
                     elif result.startswith("STAGE_"):
@@ -831,6 +873,9 @@ class WelcomPageView(PageView):
                     Logger.error("WelcomPageView._startGameFlow", e)
                     break
             
+
+
+
         except Exception as e:
             Logger.error("WelcomPageView._startGameFlow", e)
             raise
