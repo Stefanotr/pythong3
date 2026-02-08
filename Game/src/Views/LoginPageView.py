@@ -1,5 +1,14 @@
+import pygame
+import sys
+from Utils.Logger import Logger
+from Utils.AssetManager import AssetManager
+from Models.LoginModel import LoginModel
+from Views.PageView import PageView
+from Views.ButtonView import ButtonView
+from Controllers.ButtonController import ButtonController
 
     
+class LoginPageView(PageView):    
     def __init__(self, name="Login", width=800, height=800, RESIZABLE=0, background_image="Game/Assets/welcomePage.png"):
         try:
             super().__init__(name, width, height, pygame.FULLSCREEN, background_image)
