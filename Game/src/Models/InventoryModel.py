@@ -21,25 +21,25 @@ class InventoryModel:
         for i, item in enumerate(self.items):
             if item.getName() == itemName:
                 self.items.pop(i)
-                uniqueBottles = self.getUniqueBottles()
-                if self.selectedIndex >= len(uniqueBottles) and self.selectedIndex > 0:
+                unique_bottles = self.getUniqueBottles()
+                if self.selectedIndex >= len(unique_bottles) and self.selectedIndex > 0:
                     self.selectedIndex -= 1
                 return item
         return None
 
     def consumeSelected(self):
-        uniqueBottles = self.getUniqueBottles()
-        if not uniqueBottles or self.selectedIndex < 0 or self.selectedIndex >= len(uniqueBottles):
+        unique_bottles = self.getUniqueBottles()
+        if not unique_bottles or self.selectedIndex < 0 or self.selectedIndex >= len(unique_bottles):
             return None
         
-        selectedUnique = uniqueBottles[self.selectedIndex]
-        bottleName = selectedUnique['name']
+        selected_unique = unique_bottles[self.selectedIndex]
+        bottle_name = selected_unique['name']
         
         for i, item in enumerate(self.items):
-            if item.getName() == bottleName:
+            if item.getName() == bottle_name:
                 bottle = self.items.pop(i)
-                uniqueBottles = self.getUniqueBottles()
-                if self.selectedIndex >= len(uniqueBottles) and self.selectedIndex > 0:
+                unique_bottles = self.getUniqueBottles()
+                if self.selectedIndex >= len(unique_bottles) and self.selectedIndex > 0:
                     self.selectedIndex -= 1
                 return bottle
         return None
@@ -49,9 +49,9 @@ class InventoryModel:
         return self.items
 
     def getSelectedItem(self):
-        uniqueBottles = self.getUniqueBottles()
-        if uniqueBottles and 0 <= self.selectedIndex < len(uniqueBottles):
-            return uniqueBottles[self.selectedIndex]['obj']
+        unique_bottles = self.getUniqueBottles()
+        if unique_bottles and 0 <= self.selectedIndex < len(unique_bottles):
+            return unique_bottles[self.selectedIndex]['obj']
         return None
 
     def getSelectedIndex(self):
@@ -78,14 +78,14 @@ class InventoryModel:
 
 
     def selectNext(self):
-        uniqueBottles = self.getUniqueBottles()
-        if len(uniqueBottles) > 0:
-            self.selectedIndex = (self.selectedIndex + 1) % len(uniqueBottles)
+        unique_bottles = self.getUniqueBottles()
+        if len(unique_bottles) > 0:
+            self.selectedIndex = (self.selectedIndex + 1) % len(unique_bottles)
 
     def selectPrevious(self):
-        uniqueBottles = self.getUniqueBottles()
-        if len(uniqueBottles) > 0:
-            self.selectedIndex = (self.selectedIndex - 1) % len(uniqueBottles)
+        unique_bottles = self.getUniqueBottles()
+        if len(unique_bottles) > 0:
+            self.selectedIndex = (self.selectedIndex - 1) % len(unique_bottles)
 
 
     def count_item(self, item_name):

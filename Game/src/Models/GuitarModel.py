@@ -3,10 +3,10 @@ from Utils.Logger import Logger
 
 class GuitarModel:
 
-    def __init__(self, name, baseDamage, specialEffect=None, effectChance=0):
+    def __init__(self, name, base_damage, specialEffect=None, effectChance=0):
         try:
             self._name = name
-            self._baseDamage = baseDamage
+            self._base_damage = base_damage
             self._specialEffect = specialEffect
             self._effectChance = effectChance
             Logger.debug("GuitarModel.__init__", f"Guitar created: {name}")
@@ -28,13 +28,13 @@ class GuitarModel:
 
     
     def getBaseDamage(self):
-        return self._baseDamage
+        return self._base_damage
 
     def setBaseDamage(self, damage):
         try:
             if damage < 0:
                 raise ValueError("Base damage cannot be negative")
-            self._baseDamage = damage
+            self._base_damage = damage
         except Exception as e:
             Logger.error("GuitarModel.setBaseDamage", e)
 
@@ -60,7 +60,7 @@ class GuitarModel:
     
     def getDescription(self):
         try:
-            desc = f"{self._name} (Damage: +{self._baseDamage})"
+            desc = f"{self._name} (Damage: +{self._base_damage})"
             if self._specialEffect:
                 desc += f" | Effect: {self._specialEffect} ({self._effectChance}%)"
             return desc

@@ -20,7 +20,7 @@ class FinTransitionPageView(PageView):
             self.elapsed_frames = 0
             
             Logger.debug("FinTransitionPageView.__init__", "Transition view created",
-                        durationSeconds =duration_seconds, nextStage =next_stage_name)
+                        duration_seconds =duration_seconds, nextStage =next_stage_name)
         except Exception as e:
             Logger.error("FinTransitionPageView.__init__", e)
             raise
@@ -107,8 +107,8 @@ class FinTransitionPageView(PageView):
                             except Exception:
                                 font_hint = pygame.font.Font(None, 18)
                             
-                            timeRemaining = max(0, self.duration_seconds - (self.elapsed_frames / 60))
-                            text_hint = font_hint.render(f"Auto-transition in {timeRemaining:.1f}s (Press SPACE to skip)", True, (150, 150, 150))
+                            time_remaining = max(0, self.duration_seconds - (self.elapsed_frames / 60))
+                            text_hint = font_hint.render(f"Auto-transition in {time_remaining:.1f}s (Press SPACE to skip)", True, (150, 150, 150))
                             hint_rect = text_hint.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 50))
                             self.screen.blit(text_hint, hint_rect)
                             

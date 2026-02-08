@@ -153,7 +153,7 @@ class RhythmCombatPageView:
                                 if self.sequence_controller.handle_numeric_input(stage_number):
                                     Logger.debug("RhythmCombatPageView.run", "Navigation to stage requested",
                                                stage=stage_number,
-                                               stageName =self.sequence_controller.get_current_stage_name())
+                                               stage_name =self.sequence_controller.get_current_stage_name())
                                     
                                     return f"STAGE_{stage_number}"
                         
@@ -193,11 +193,11 @@ class RhythmCombatPageView:
                         if self.boss:
                             self.boss.updateActionTimer()
                         
-                        countdownVal = 0
+                        count_down_val = 0
                         if hasattr(self.controller, 'waitingToStart') and self.controller.waiting_to_start:
-                            countdownVal = max(1, self.controller.current_countdown_val)
+                            count_down_val = max(1, self.controller.current_count_down_val)
                         
-                        noteSpeed = getattr(self.controller, 'noteSpeed', 0.5)
+                        note_speed = getattr(self.controller, 'note_speed', 0.5)
                         
                         if self.combat_view and self.rhythm_model:
                             self.combat_view.draw(
@@ -206,7 +206,7 @@ class RhythmCombatPageView:
                                 self.player,
                                 self.boss,
                                 note_speed,
-                                countdown_val
+                                count_down_val
                             )
                         
                         pygame.display.flip()
@@ -226,24 +226,24 @@ class RhythmCombatPageView:
                     self.controller.endCombat()
                     
                     if self.player:
-                        currentLevel = self.player.getLevel()
-                        newLevel = current_level + 1
+                        current_level = self.player.getLevel()
+                        new_level = current_level + 1
                         self.player.setLevel(new_level)
                         
-                        currentDamage = self.player.getDamage()
-                        newDamage = current_damage + 1
+                        current_damage = self.player.getDamage()
+                        new_damage = current_damage + 1
                         self.player.setDamage(new_damage)
                         
-                        currentHealth = self.player.getHealth()
-                        newHealth = current_health + 25
+                        current_health = self.player.getHealth()
+                        new_health = current_health + 25
                         self.player.setHealth(new_health)
                         
                         Logger.debug("RhythmCombatPageView.run", "Player level incremented and stats increased", 
-                                   oldLevel =current_level, newLevel =new_level,
-                                   newDamage =new_damage, newHealth =new_health)
+                                   old_level =current_level, new_level =new_level,
+                                   new_damage =new_damage, new_health =new_health)
                         
-                        isLastStage = (self.sequence_controller and 
-                                        self.sequence_controller.get_current_stage() == 8)
+                        is_last_stage = (self.sequence_controller and 
+                                        self.sequence_controller.getCurrentStage() == 8)
                         
                         if is_last_stage:
                             
@@ -256,8 +256,8 @@ class RhythmCombatPageView:
                     transition = FinTransitionPageView(
                         self.screen,
                         message="Stage Complete!",
-                        nextStageName ="Continued Adventure",
-                        durationSeconds =5
+                        next_stage_name ="Continued Adventure",
+                        duration_seconds =5
                     )
                     transition.run()
                     
@@ -277,8 +277,8 @@ class RhythmCombatPageView:
                     transition = FinTransitionPageView(
                         self.screen,
                         message="Game Over",
-                        nextStageName ="Main Menu",
-                        durationSeconds =3
+                        next_stage_name ="Main Menu",
+                        duration_seconds =3
                     )
                     transition.run()
                     

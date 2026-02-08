@@ -411,7 +411,7 @@ class LoginPageView(PageView):
                     "success": True,
                     "user": self.successful_user,
                     "progression": self.successful_progression,
-                    "isAdmin": self.login_model.isUserAdmin(),
+                    "is_admin": self.login_model.isUserAdmin(),
                     "width": self.width,
                     "height": self.height
                 }

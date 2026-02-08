@@ -231,18 +231,18 @@ class CombatModel:
     def applyBleedingDamage(self):
         try:
             if self._playerStatus["bleeding"] > 0:
-                bleedDamage = 2
-                currentHp = self._player.getHealth()
-                self._player.setHealth(max(0, currentHp - bleedDamage))
-                self.addToCombatLog(f"{self._player.getName()} loses {bleedDamage} HP (bleeding)")
-                Logger.debug("CombatModel.applyBleedingDamage", "Player bleeding damage applied", damage=bleedDamage)
+                bleed_damage = 2
+                current_hp = self._player.getHealth()
+                self._player.setHealth(max(0, current_hp - bleed_damage))
+                self.addToCombatLog(f"{self._player.getName()} loses {bleed_damage} HP (bleeding)")
+                Logger.debug("CombatModel.applyBleedingDamage", "Player bleeding damage applied", damage=bleed_damage)
             
             if self._enemyStatus["bleeding"] > 0:
-                bleedDamage = 2
-                currentHp = self._enemy.getHealth()
-                self._enemy.setHealth(max(0, currentHp - bleedDamage))
-                self.addToCombatLog(f"{self._enemy.getName()} loses {bleedDamage} HP (bleeding)")
-                Logger.debug("CombatModel.applyBleedingDamage", "Enemy bleeding damage applied", damage=bleedDamage)
+                bleed_damage = 2
+                current_hp = self._enemy.getHealth()
+                self._enemy.setHealth(max(0, current_hp - bleed_damage))
+                self.addToCombatLog(f"{self._enemy.getName()} loses {bleed_damage} HP (bleeding)")
+                Logger.debug("CombatModel.applyBleedingDamage", "Enemy bleeding damage applied", damage=bleed_damage)
         except Exception as e:
             Logger.error("CombatModel.applyBleedingDamage", e)
     
@@ -250,10 +250,10 @@ class CombatModel:
     
     def checkCombatEnd(self):
         try:
-            playerHp = self._player.getHealth()
-            enemyHp = self._enemy.getHealth()
+            player_hp = self._player.getHealth()
+            enemy_hp = self._enemy.getHealth()
             
-            if playerHp <= 0:
+            if player_hp <= 0:
                 self.setCombatFinished(True)
                 self.setWinner("ENEMY")
                 
@@ -266,7 +266,7 @@ class CombatModel:
                 
                 return True
             
-            if enemyHp <= 0:
+            if enemy_hp <= 0:
                 self.setCombatFinished(True)
                 self.setWinner("PLAYER")
                 self.addToCombatLog(f"{self._enemy.getName()} is defeated!")

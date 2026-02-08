@@ -14,7 +14,7 @@ class PlayerModel(CaracterModel):
             from Models.InventoryModel import InventoryModel
             self.inventory = InventoryModel()
             
-            defaultBeer = BottleModel("Beer", alcoholLevel=15, bonusDamage=3, accuracyPenalty=5)
+            defaultBeer = BottleModel("Beer", alcohol_level=15, bonus_damage=3, accuracy_penalty=5)
             self.inventory.addItem(defaultBeer)
             
             Logger.debug("PlayerModel.__init__", f"Player initialized: {name}")
@@ -41,18 +41,18 @@ class PlayerModel(CaracterModel):
         self.setLevel(self._level + amount)
 
 
-    def drinkBottle(self, selectedBottle):
+    def drinkBottle(self, selected_bottle):
         try:
-            if not isinstance(selectedBottle, BottleModel):
-                raise TypeError("selectedBottle is not a BottleModel")
+            if not isinstance(selected_bottle, BottleModel):
+                raise TypeError("selected_bottle is not a BottleModel")
             
-            Logger.debug("PlayerModel.drinkBottle", f"{self.getName()} drinks {selectedBottle.getName()}")
+            Logger.debug("PlayerModel.drinkBottle", f"{self.getName()} drinks {selected_bottle.getName()}")
 
-            self.addDrunkenness(selectedBottle.getAlcoholLevel())
+            self.addDrunkenness(selected_bottle.getAlcoholLevel())
 
-            self.addDamage(selectedBottle.getBonusDamage())
+            self.addDamage(selected_bottle.getBonusDamage())
             
-            penalty = selectedBottle.getAccuracyPenalty()
+            penalty = selected_bottle.getAccuracyPenalty()
             if penalty > 1:
                 penalty = penalty / 100.0
             newAccuracy = max(0.1, self.getAccuracy() - penalty)

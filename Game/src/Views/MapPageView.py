@@ -167,9 +167,9 @@ class MapPageView(PageView):
                     player_config = None
                 
                 self.player_view = CaracterView("Game/Assets/lola.png", baseName ="lola", 
-                                               spriteSize =(64, 64),
+                                               sprite_size =(64, 64),
                                                character_config =player_config,
-                                               gameMode ="map")
+                                               game_mode ="map")
                 self.map_view = MapView(self.map)
                 
                 Logger.debug("MapPageView.__init__", "Character and map views created")

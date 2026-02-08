@@ -17,11 +17,11 @@ class ButtonController(BaseController):
             raise
 
 
-    def isClicked(self, mousePos):
+    def isClicked(self, mouse_pos):
         try:
-            isClicked = self.button.rect.collidepoint(mousePos)
-            Logger.debug("ButtonController.isClicked", "Button click checked", clicked=isClicked)
-            return isClicked
+            is_clicked = self.button.rect.collidepoint(mouse_pos)
+            Logger.debug("ButtonController.isClicked", "Button click checked", clicked=is_clicked)
+            return is_clicked
         except Exception as e:
             Logger.error("ButtonController.isClicked", e)
             return False
@@ -51,9 +51,9 @@ class ButtonController(BaseController):
     def handleInput(self, event):
         try:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                mousePos = pygame.mouse.get_pos()
+                mouse_pos = pygame.mouse.get_pos()
 
-                if self.isClicked(mousePos):
+                if self.isClicked(mouse_pos):
                     Logger.debug("ButtonController.handleInput", "Button clicked, handling action")
                     return self.handleClick()
 

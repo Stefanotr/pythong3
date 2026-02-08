@@ -39,7 +39,7 @@ class RhythmController:
         self.waiting_to_start = True
         self.countdown_duration = 5000
         self.countdown_start_tick = pygame.time.get_ticks()
-        self.current_countdown_val = 5
+        self.current_count_down_val = 5
 
         self.start_time = 0
         self.is_playing = False
@@ -121,7 +121,7 @@ class RhythmController:
             elapsed = now - self.countdown_start_tick
             remaining = self.countdown_duration - elapsed
 
-            self.current_countdown_val = math.ceil(remaining / 1000)
+            self.current_count_down_val = math.ceil(remaining / 1000)
 
             if remaining <= 0:
                 self.is_paused = False
@@ -137,7 +137,7 @@ class RhythmController:
             elapsed = now - self.countdown_start_tick
             remaining = self.countdown_duration - elapsed
 
-            self.current_countdown_val = math.ceil(remaining / 1000)
+            self.current_count_down_val = math.ceil(remaining / 1000)
 
             fakeTime = -remaining
 
@@ -320,7 +320,7 @@ class RhythmController:
         self.waiting_to_start = True
         self.countdown_duration = 5000
         self.countdown_start_tick = pygame.time.get_ticks()
-        self.current_countdown_val = 5
+        self.current_count_down_val = 5
         pygame.mixer.pause()
         Logger.debug("RhythmController.resumePause", "Resume countdown started")
 
@@ -350,8 +350,8 @@ class RhythmController:
 
     def endConcert(self):
         try:
-            playerLevel = self.character.getLevel() if self.character else 0
-            levelMultiplier = playerLevel + 1
+            player_level = self.character.getLevel() if self.character else 0
+            levelMultiplier = player_level + 1
 
             if self.context == "rhythm_combat":
                 cashPerHit = 2

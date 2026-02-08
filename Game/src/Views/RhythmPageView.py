@@ -83,9 +83,9 @@ class RhythmPageView:
                 self.character_view = None
                 try:
                     self.character_view = CaracterView("Game/Assets/lola.png", baseName="lola", 
-                                                       spriteSize=(200, 200), 
-                                                       characterConfig=player_config,
-                                                       gameMode="rhythm")
+                                                       sprite_size=(200, 200), 
+                                                       character_config=player_config,
+                                                       game_mode="rhythm")
                     print(f"[DEBUG] CaracterView created successfully, sprite: {self.character_view.sprite}")
                     Logger.debug("RhythmPageView.__init__", "Character view created for rhythm display")
                 except Exception as e:
@@ -110,7 +110,7 @@ class RhythmPageView:
                 )
                 
                 Logger.debug("RhythmPageView.__init__", "Rhythm system initialized", 
-                           totalNotes =len(self.rhythm_model.notes))
+                           total_notes =len(self.rhythm_model.notes))
             except Exception as e:
                 Logger.error("RhythmPageView.__init__", e)
                 raise
@@ -173,7 +173,7 @@ class RhythmPageView:
                                 if self.sequence_controller.handleNumericInput(stage_number):
                                     Logger.debug("RhythmPageView.run", "Navigation to stage requested", 
                                                stage=stage_number, 
-                                               stageName=self.sequence_controller.getCurrentStageName())
+                                               stage_name=self.sequence_controller.getCurrentStageName())
                                     
                                     return f"STAGE_{stage_number}"
                             
@@ -329,20 +329,20 @@ class RhythmPageView:
             try:
                 
                 Logger.debug("RhythmPageView.run", "Main loop ended", 
-                           gameComplete=self.game_complete,
+                           game_complete=self.game_complete,
                            running=running)
                 
                 if self.game_complete:
                     
-                    self.rhythm_controller.end_concert()
+                    self.rhythm_controller.endConcert()
                     
                     is_victory = self.rhythm_model.crowd_satisfaction > 0
                     
                     Logger.debug("RhythmPageView.run", "Rhythm game completed", 
                                satisfaction=self.rhythm_model.crowd_satisfaction,
-                               isVictory=is_victory,
-                               totalNotes=len(self.rhythm_model.notes),
-                               activeNotes=len([n for n in self.rhythm_model.notes if n.get("active", False)]))
+                               is_victory=is_victory,
+                               total_notes=len(self.rhythm_model.notes),
+                               active_notes=len([n for n in self.rhythm_model.notes if n.get("active", False)]))
                     
                     if is_victory:
                         Logger.debug("RhythmPageView.run", "Rhythm sequence won - showing transition")

@@ -29,13 +29,13 @@ class PlayerController(BaseController):
 
             if event.key == pygame.K_b:
                 try:
-                    selectedBottle = self.player.getSelectedBottle()
-                    if selectedBottle:
-                        self.player.drink(selectedBottle)
+                    selected_bottle = self.player.getSelectedBottle()
+                    if selected_bottle:
+                        self.player.drink(selected_bottle)
                         Logger.debug(
                             "PlayerController.handleInput",
                             "Player drank",
-                            bottle=selectedBottle.getName(),
+                            bottle=selected_bottle.getName(),
                             drunkenness=self.player.getDrunkenness(),
                         )
                     else:

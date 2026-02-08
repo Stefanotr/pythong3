@@ -46,20 +46,20 @@ class BossModel(CaracterModel):
             if not isinstance(player, PlayerModel):
                 raise TypeError("player must be PlayerModel")
             
-            playerLevel = player.getLevel()
-            if playerLevel <= 0:
-                playerLevel = 1
+            player_level = player.getLevel()
+            if player_level <= 0:
+                player_level = 1
             
-            currentHealth = self.getHealth()
-            currentDamage = self.getDamage()
+            current_health = self.getHealth()
+            current_damage = self.getDamage()
             
-            scaledHealth = currentHealth * playerLevel
-            scaledDamage = currentDamage * playerLevel
+            scaled_health = current_health * player_level
+            scaled_damage = current_damage * player_level
             
-            self.setHealth(scaledHealth)
-            self.setDamage(scaledDamage)
+            self.setHealth(scaled_health)
+            self.setDamage(scaled_damage)
             
-            Logger.debug("BossModel.scaleByPlayerLevel", f"Scaled to level {playerLevel}")
+            Logger.debug("BossModel.scaleByPlayerLevel", f"Scaled to level {player_level}")
                 
         except Exception as e:
             Logger.error("BossModel.scaleByPlayerLevel", e)

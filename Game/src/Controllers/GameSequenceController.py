@@ -42,7 +42,7 @@ class GameSequenceController:
         return self.current_stage
 
     def getCurrentStageName(self):
-        stageNames = {
+        satge_names = {
             1: "Rhythm Page",
             2: "Map",
             3: "Act 1",
@@ -52,19 +52,19 @@ class GameSequenceController:
             7: "Map",
             8: "Rhythm Combat"
         }
-        return stageNames.get(self.current_stage, "Unknown Stage")
+        return satge_names.get(self.current_stage, "Unknown Stage")
 
-    def setStage(self, stageNumber):
-        if 1 <= stageNumber <= 8:
-            oldStage = self.current_stage
-            self.current_stage = stageNumber
+    def setStage(self, stage_number):
+        if 1 <= stage_number <= 8:
+            old_stage = self.current_stage
+            self.current_stage = stage_number
             Logger.debug("GameSequenceController.setStage", "Stage changed",
-                       fromStage=oldStage, toStage=stageNumber,
-                       stageName=self.getCurrentStageName())
+                       from_stage=old_stage, to_stage=stage_number,
+                       stage_name=self.getCurrentStageName())
             return True
         else:
             Logger.debug("GameSequenceController.setStage", "Invalid stage number",
-                       requestedStage=stageNumber)
+                       requestedStage=stage_number)
             return False
 
     def advanceStage(self):
@@ -76,7 +76,7 @@ class GameSequenceController:
             return False
 
     def getNextView(self):
-        stageConfig = {
+        stage_config = {
             1: {"view_type": "RhythmPageView"},
             2: {"view_type": "MapPageView", "map_act": 1},
             3: {"view_type": "Act1View"},
@@ -86,18 +86,18 @@ class GameSequenceController:
             7: {"view_type": "MapPageView", "map_act": 3},
             8: {"view_type": "RhythmCombatView"}
         }
-        return stageConfig.get(self.current_stage, {"view_type": "Unknown"})
+        return stage_config.get(self.current_stage, {"view_type": "Unknown"})
 
-    def isLastStage(self):
+    def is_last_stage(self):
         return self.current_stage == 8
 
-    def handleNumericInput(self, keyNumber):
+    def handleNumericInput(self, key_number):
         if not self.is_admin:
             Logger.debug("GameSequenceController.handleNumericInput", "Stage navigation blocked: admin only")
             return False
 
-        if 1 <= keyNumber <= 8:
-            self.setStage(keyNumber)
-            Logger.debug("GameSequenceController.handleNumericInput", "Stage jumped (ADMIN)", stage=keyNumber)
+        if 1 <= key_number <= 8:
+            self.setStage(key_number)
+            Logger.debug("GameSequenceController.handleNumericInput", "Stage jumped (ADMIN)", stage=key_number)
             return True
         return False

@@ -49,7 +49,7 @@ class RhythmCombatController:
         self.waiting_to_start = True
         self.countdown_duration = 5000
         self.countdown_start_tick = pygame.time.get_ticks()
-        self.current_countdown_val = 5
+        self.current_count_down_val = 5
         self.is_paused = False
 
         self.start_time = 0
@@ -72,7 +72,7 @@ class RhythmCombatController:
         self.notes_hit = 0
         self.notes_missed = 0
 
-        Logger.debug("RhythmCombatController.__init__", "MODE COMBAT RHYTHM", boss=self.boss.getName(), player=self.player.getName(), totalNotes=self.total_notes)
+        Logger.debug("RhythmCombatController.__init__", "MODE COMBAT RHYTHM", boss=self.boss.getName(), player=self.player.getName(), total_notes=self.total_notes)
 
     def playRandomFail(self):
         if self.fail_sounds:
@@ -139,7 +139,7 @@ class RhythmCombatController:
             elapsed = now - self.countdown_start_tick
             remaining = self.countdown_duration - elapsed
 
-            self.current_countdown_val = math.ceil(remaining / 1000)
+            self.current_count_down_val = math.ceil(remaining / 1000)
 
             if remaining <= 0:
                 self.waiting_to_start = False
@@ -162,7 +162,7 @@ class RhythmCombatController:
             if note["active"]:
                 notesRemaining = True
                 timeDiff = note["time"] - currentTime
-                note["y"] = self.rhythm.hitLineY - (timeDiff * self.noteSpeed)
+                note["y"] = self.rhythm.hitLineY - (timeDiff * self.note_speed)
 
                 if note["y"] > self.rhythm.hitLineY + 100:
                     note["active"] = False
@@ -185,12 +185,12 @@ class RhythmCombatController:
         self.rhythm.combo = 0
 
         damageToPlayer = 10
-        currentHp = self.player.getHealth()
-        self.player.setHealth(max(0, currentHp - damageToPlayer))
+        current_hp = self.player.getHealth()
+        self.player.setHealth(max(0, current_hp - damageToPlayer))
 
         self.boss.setCurrentAction("attacking", 30)
 
-        Logger.debug("RhythmCombatController.triggerMiss", "Player took damage", damage=damageToPlayer, playerHp=self.player.getHealth())
+        Logger.debug("RhythmCombatController.triggerMiss", "Player took damage", damage=damageToPlayer, player_hp=self.player.getHealth())
 
         bossHeal = 5
         bossHp = self.boss.getHealth()
@@ -244,41 +244,41 @@ class RhythmCombatController:
             self.guitar_channel.set_volume(1.0)
             self.last_hit_time = pygame.time.get_ticks()
 
-            baseDamage = 0
+            base_damage = 0
 
             if bestDistance <= perfectWindow:
-                baseDamage = 15
+                base_damage = 15
                 feedback = "PERFECT!"
                 particleColor = (255, 255, 0)
                 self.view.create_particles(self.getLaneX(lane), self.rhythm.hitLineY, particleColor)
 
             elif bestDistance <= excellentWindow:
-                baseDamage = 12
+                base_damage = 12
                 feedback = "EXCELLENT!"
                 particleColor = (100, 255, 255)
                 self.view.create_particles(self.getLaneX(lane), self.rhythm.hitLineY, particleColor)
 
             elif bestDistance <= goodWindow:
-                baseDamage = 8
+                base_damage = 8
                 feedback = "GOOD"
 
             elif bestDistance <= okWindow:
-                baseDamage = 5
+                base_damage = 5
                 feedback = "OK"
 
             else:
-                baseDamage = 2
+                base_damage = 2
                 feedback = "LATE!" if (bestNote["time"] - currentTime) < 0 else "EARLY!"
 
-            self.dealDamageToBoss(baseDamage, feedback)
+            self.dealDamageToBoss(base_damage, feedback)
 
         else:
             self.rhythm.combo = 0
             self.playRandomFail()
 
             damage = 3
-            currentHp = self.player.getHealth()
-            self.player.setHealth(max(0, currentHp - damage))
+            current_hp = self.player.getHealth()
+            self.player.setHealth(max(0, current_hp - damage))
 
             if self.player.getHealth() <= 0:
                 self.game_over = True
@@ -288,7 +288,7 @@ class RhythmCombatController:
     def dealDamageToBoss(self, damage, feedback):
         self.rhythm.combo += 1
         comboMultiplier = 1 + (self.rhythm.combo // 5) * 0.2
-        finalDamage = int(damage * comboMultiplier)
+        final_damage = int(damage * comboMultiplier)
 
         try:
             drunkenness = self.player.getDrunkenness()
@@ -296,23 +296,23 @@ class RhythmCombatController:
             drunkenness = 0
 
         drunkennessDamagePenalty = int((drunkenness / 100) * 20)
-        finalDamage = max(1, finalDamage - drunkennessDamagePenalty)
+        final_damage = max(1, final_damage - drunkennessDamagePenalty)
 
         if drunkenness >= 50:
-            finalDamage = int(finalDamage * 1.2)
+            final_damage = int(final_damage * 1.2)
 
-        finalDamage = finalDamage // 2
+        final_damage = final_damage // 2
 
         self.player.setCurrentAction("attacking", 30)
 
         bossHp = self.boss.getHealth()
-        newBossHp = max(0, bossHp - finalDamage)
+        newBossHp = max(0, bossHp - final_damage)
         self.boss.setHealth(newBossHp)
 
         Logger.debug("RhythmCombatController.dealDamageToBoss",
                     f"Boss health: {bossHp} -> {newBossHp}",
                     feedback=feedback,
-                    damage=finalDamage)
+                    damage=final_damage)
 
         self.rhythm.feedback = feedback
         self.rhythm.feedbackTimer = 20
@@ -337,8 +337,8 @@ class RhythmCombatController:
             self.victory = True
 
             try:
-                playerLevel = self.player.getLevel() if self.player else 0
-                levelMultiplier = playerLevel + 1
+                player_level = self.player.getLevel() if self.player else 0
+                levelMultiplier = player_level + 1
                 baseReward = 250
 
                 baseCash = int(baseReward * levelMultiplier)
@@ -432,7 +432,7 @@ class RhythmCombatController:
             elapsed = now - self.countdown_start_tick
             remaining = self.countdown_duration - elapsed
             
-            self.current_countdown_val = math.ceil(remaining / 1000)
+            self.current_count_down_val = math.ceil(remaining / 1000)
             
             if remaining <= 0:
                 self.waiting_to_start = False

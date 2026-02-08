@@ -14,7 +14,7 @@ class CaracterModel:
             self._y = y
             self._drunkenness = 0
             self._comaRisk = 0
-            self._selectedBottle = None
+            self._selected_bottle = None
             self._currentAction = "idle"
             self._actionTimer = 0
             self._currency = 0
@@ -130,10 +130,10 @@ class CaracterModel:
 
 
     def getSelectedBottle(self):
-        return self._selectedBottle
+        return self._selected_bottle
 
     def setSelectedBottle(self, bottle):
-        self._selectedBottle = bottle
+        self._selected_bottle = bottle
 
 
     def getCurrency(self):
@@ -165,9 +165,9 @@ class CaracterModel:
             Logger.error("CaracterModel.removeCurrency", e)
 
 
-    def takeDamage(self, damageAmount):
-        newHealth = max(0, self._health - damageAmount)
-        self.setHealth(newHealth)
+    def takeDamage(self, damage_amount):
+        new_health = max(0, self._health - damage_amount)
+        self.setHealth(new_health)
 
     def isAlive(self):
         return self._health > 0

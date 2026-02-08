@@ -48,7 +48,7 @@ class ActView:
             
             Logger.debug("ActView.__init__", f"Initializing Act {act_config.get('actNum', 1)}", 
                         location=act_config.get('location', 'Unknown'),
-                        windowSize =f"{full_width}x{full_height}")
+                        window_size =f"{full_width}x{full_height}")
             
             try:
                 if player is not None:
@@ -191,16 +191,16 @@ class ActView:
                     boss_config = None
                 
                 self.player_view = CaracterView("Game/Assets/lola.png", baseName ="lola", 
-                                               characterConfig =player_config, gameMode ="combat")
+                                               character_config =player_config, game_mode ="combat")
                 self.boss_view = CaracterView(boss_asset, baseName =boss_base,
-                                             characterConfig =boss_config, gameMode ="combat")
+                                             character_config =boss_config, game_mode ="combat")
                 
                 self.positionCharacters()
                 Logger.debug("ActView.__init__", "Character views created")
             except Exception as e:
                 Logger.error("ActView.__init__", e)
             
-            self.has_rhythm_phase = act_config.get('hasRhythmPhase', False)
+            self.has_rhythm_phase = act_config.get('has_rhythm_phase', False)
             self.rhythm_model = None
             self.rhythm_controller = None
             self.rhythm_view = None
@@ -241,7 +241,7 @@ class ActView:
             'bossDamage': 12,
             'bossAccuracy': 0.75,
             'guitarFactoryMethod': 'createLaPelle',
-            'hasRhythmPhase': False,
+            'has_rhythm_phase': False,
             'backgroundImage': 'Game/Assets/grosbillfight.png'
         }
     
@@ -268,7 +268,7 @@ class ActView:
             'bossDamage': 14,
             'bossAccuracy': 0.80,
             'guitarFactoryMethod': 'createGuitareGonflable',
-            'hasRhythmPhase': True,
+            'has_rhythm_phase': True,
             'backgroundImage': 'Game/Assets/chefsecuritefight.png'
         }
     
@@ -390,7 +390,7 @@ class ActView:
                                 if self.sequence_controller.handleNumericInput(stage_number):
                                     Logger.debug("ActView.run", "Navigation to stage requested", 
                                                stage=stage_number, 
-                                               stageName =self.sequence_controller.getCurrentStageName())
+                                               stage_name =self.sequence_controller.getCurrentStageName())
                                     return f"STAGE_{stage_number}"
                             
                             elif self.phase == "intro" and event.key == pygame.K_SPACE:

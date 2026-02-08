@@ -235,9 +235,9 @@ class WelcomPageView(PageView):
                             "WelcomPageView.handleEvents",
                             "Numeric key detected",
                             key=event.key,
-                            stageNum=stage_num,
-                            isAdmin=self.is_admin,
-                            currentUser=self.current_user
+                            stage_num=stage_num,
+                            is_admin=self.is_admin,
+                            current_user=self.current_user
                         )
                         
                         if self.is_admin:
@@ -264,7 +264,7 @@ class WelcomPageView(PageView):
                             Logger.debug(
                                 "WelcomPageView.handleEvents",
                                 "Stage selection blocked: admin only",
-                                isAdmin=self.is_admin
+                                is_admin=self.is_admin
                             )
                         continue
                     
@@ -420,9 +420,9 @@ class WelcomPageView(PageView):
                     try:
                         bottle = BottleModel(
                             bottle_data.get("name", "Beer"),
-                            alcoholLevel=bottle_data.get("alcoholLevel", 15),
-                            bonusDamage=bottle_data.get("bonusDamage", 0),
-                            accuracyPenalty=bottle_data.get("accuracyPenalty", 0)
+                            alcohol_level=bottle_data.get("alcohol_level", 15),
+                            bonus_damage=bottle_data.get("bonus_damage", 0),
+                            accuracy_penalty=bottle_data.get("accuracy_penalty", 0)
                         )
                         player.inventory.addItem(bottle)
                     except Exception as e:
@@ -459,9 +459,9 @@ class WelcomPageView(PageView):
                     for bottle in player.inventory.get_all_items():
                         inventory_list.append({
                             "name": bottle.getName(),
-                            "alcoholLevel": bottle.getAlcoholLevel(),
-                            "bonusDamage": bottle.getBonusDamage(),
-                            "accuracyPenalty": bottle.getAccuracyPenalty()
+                            "alcohol_level": bottle.getAlcoholLevel(),
+                            "bonus_damage": bottle.getBonusDamage(),
+                            "accuracy_penalty": bottle.getAccuracyPenalty()
                         })
             except Exception as e:
                 Logger.error("WelcomPageView.savePlayerProgression", f"Failed to serialize inventory: {e}")
@@ -520,7 +520,7 @@ class WelcomPageView(PageView):
             
             sequence_controller.is_admin = self.is_admin
             
-            Logger.debug("WelcomPageView.startGameFlow", "GameSequenceController created", starting_stage=starting_stage, isAdmin=self.is_admin)
+            Logger.debug("WelcomPageView.startGameFlow", "GameSequenceController created", starting_stage=starting_stage, is_admin=self.is_admin)
             
             menu_size = None
             menu_resizable = getattr(self, "resizable", pygame.RESIZABLE)
@@ -651,7 +651,7 @@ class WelcomPageView(PageView):
                     current_stage = sequence_controller.getCurrentStage()
                     stage_name = sequence_controller.getCurrentStageName()
                     Logger.debug("WelcomPageView.startGameFlow", "Displaying stage", 
-                               stage=current_stage, stageName=stage_name)
+                               stage=current_stage, stage_name=stage_name)
                     
                     result = None
                     
@@ -756,7 +756,7 @@ class WelcomPageView(PageView):
                         
                         if sequence_controller.advanceStage():
                             Logger.debug("WelcomPageView.startGameFlow", "Advanced to next stage",
-                                       newStage =sequence_controller.getCurrentStage())
+                                       new_stage =sequence_controller.getCurrentStage())
                         else:
                             Logger.debug("WelcomPageView.startGameFlow", "Already at final stage")
                             break
@@ -783,7 +783,7 @@ class WelcomPageView(PageView):
                         
                         if sequence_controller.advanceStage():
                             Logger.debug("WelcomPageView.startGameFlow", "Advanced to next stage",
-                                       newStage =sequence_controller.getCurrentStage())
+                                       new_stage =sequence_controller.getCurrentStage())
                         else:
                             Logger.debug("WelcomPageView.startGameFlow", "Already at final stage")
                             break

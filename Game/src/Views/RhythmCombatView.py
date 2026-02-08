@@ -46,9 +46,9 @@ class RhythmCombatView:
             player_config = None
         
         self.player_view = CaracterView("Game/Assets/lola.png", baseName="lola", 
-                                       spriteSize=(200, 200),
-                                       characterConfig=player_config,
-                                       gameMode="rhythmCombat")
+                                       sprite_size=(200, 200),
+                                       character_config=player_config,
+                                       game_mode="rhythmCombat")
         self.boss_view = None  
         
         self.lane_colors = [
@@ -124,7 +124,7 @@ class RhythmCombatView:
         hp_text = self.font.render(f"{int(current)}/{int(maximum)}", True, (255, 255, 255))
         screen.blit(hp_text, (x + width//2 - hp_text.get_width()//2, y + height//2 - hp_text.get_height()//2))
 
-    def draw(self, screen, rhythm_model, player_model, boss_model, note_speed=0.5, countdown_val=0):
+    def draw(self, screen, rhythm_model, player_model, boss_model, note_speed=0.5, count_down_val=0):
 
         self.time += 1
         
@@ -321,9 +321,9 @@ class RhythmCombatView:
                     boss_config = None
                 
                 self.boss_view = CaracterView(boss_asset, baseName=boss_base_name, 
-                                             spriteSize=(200, 200),
-                                             characterConfig=boss_config,
-                                             gameMode="rhythmCombat")
+                                             sprite_size=(200, 200),
+                                             character_config=boss_config,
+                                             game_mode="rhythmCombat")
             
             if self.boss_view:
                 boss_x = int(self.screen_width * 0.75)  
@@ -345,18 +345,18 @@ class RhythmCombatView:
         except Exception as e:
             pass
 
-        if countdown_val > 0:
+        if count_down_val > 0:
             over = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
             over.fill((0, 0, 0, 150))
             screen.blit(over, (0, 0))
             
-            col = (100, 255, 100) if countdown_val > 3 else ((255, 200, 0) if countdown_val > 1 else (255, 50, 50))
+            col = (100, 255, 100) if count_down_val > 3 else ((255, 200, 0) if count_down_val > 1 else (255, 50, 50))
             
             ready = self.title_font.render("PRÊT POUR LE COMBAT ?", True, (255, 255, 255))
             screen.blit(ready, (self.screen_width//2 - ready.get_width()//2, self.screen_height//2 - 150))
             
-            nb = self.huge_font.render(str(countdown_val), True, col)
-            nb_shadow = self.huge_font.render(str(countdown_val), True, (0, 0, 0))
+            nb = self.huge_font.render(str(count_down_val), True, col)
+            nb_shadow = self.huge_font.render(str(count_down_val), True, (0, 0, 0))
             
             nb_x = self.screen_width//2 - nb.get_width()//2
             nb_y = self.screen_height//2 - nb.get_height()//2
