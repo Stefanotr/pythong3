@@ -15,17 +15,15 @@ class Logger:
     
     @staticmethod
     def error(function_name, exception):
-        """
-        Save errors in timestamped log file
-        """
-        # Create log folder if needed
+        
+       
         os.makedirs(Logger.LOG_DIR, exist_ok=True)
 
-        # File name: log_YYYY-MM-DD.txt
+      
         date_str = datetime.now().strftime("%Y-%m-%d")
         file_path = os.path.join(Logger.LOG_DIR, f"log_{date_str}.txt")
 
-        # log info
+       
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         error_type = type(exception).__name__
         error_message = str(exception)
@@ -40,15 +38,17 @@ class Logger:
             f"Traceback   :\n{stack_trace}"
         )
 
-        # writing in the file
+       
         with open(file_path, "a", encoding="utf-8") as file:
             file.write(log_entry)
     
-    @staticmethod
+
+
+
+   
     def debug(function_name, message, **values):
-        """
-        Log de debug with key values
-        """
+       
+       
         if not Logger.ENABLED:
             return
 
