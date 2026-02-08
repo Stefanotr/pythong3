@@ -133,8 +133,9 @@ python -m venv .venv
 # Install dependencies
 pip install pygame
 
+
 # Run the game
-python Game/src/main.py
+{drive}/xxx/xxxx/xxx/pythong3    command: python Game/src/main.py
 ```
 
 ### Debug Logs
@@ -175,6 +176,3 @@ The game uses Tiled Map Editor format (.tmx files):
 - **Game Design & Development**: Team Six-String
 
 ---
-
-*Last Updated: February 8, 2026*
-
