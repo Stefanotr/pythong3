@@ -41,6 +41,7 @@ class GameSequenceController:
         self.current_stage = GameStage.RHYTHM_PAGE_1.value
         self.player = None
         self.boss = None
+        self.is_admin = False  # Flag for admin permissions (allows cheats)
         Logger.debug("GameSequenceController.__init__", "Game sequence controller created")
     
     def set_player(self, player):
@@ -152,7 +153,7 @@ class GameSequenceController:
     
     def handle_numeric_input(self, key_number):
         """
-        Handle numeric input to jump to stages.
+        Handle numeric input to jump to stages (admin only).
         
         Args:
             key_number: Numeric key pressed (1-8)
@@ -160,7 +161,13 @@ class GameSequenceController:
         Returns:
             bool: True if the key was a valid stage jump, False otherwise
         """
+        # Only allow stage navigation for admin users
+        if not self.is_admin:
+            Logger.debug("GameSequenceController.handle_numeric_input", "Stage navigation blocked: admin only")
+            return False
+        
         if 1 <= key_number <= 8:
             self.set_stage(key_number)
+            Logger.debug("GameSequenceController.handle_numeric_input", "Stage jumped (ADMIN)", stage=key_number)
             return True
         return False

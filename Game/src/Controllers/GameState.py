@@ -8,6 +8,7 @@ class GameState(Enum):
     """
 
     QUIT = "QUIT"
+    LOGOUT = "LOGOUT"  # Return to login
     MAIN_MENU = "MAIN_MENU"
     ACT1 = "ACT1"
     ACT2 = "ACT2"

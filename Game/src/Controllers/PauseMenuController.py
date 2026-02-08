@@ -73,11 +73,9 @@ class PauseMenuController(BaseController):
             if event.type == pygame.QUIT:
                 Logger.debug("PauseMenuController.handle_input", "QUIT event received")
                 return GameState.QUIT.value
-                # ESC to continue
-                if event.key == pygame.K_ESCAPE:
-                    Logger.debug("PauseMenuController.handle_input", "ESC pressed -> continue")
-                    return "continue"
 
+            # Keyboard events
+            if event.type == pygame.KEYDOWN:
                 # Arrow keys for navigation
                 if self.button_controllers:
                     if event.key == pygame.K_UP:
@@ -139,6 +137,8 @@ class PauseMenuController(BaseController):
             return GameState.MAIN_MENU.value
         if action == "quit_game":
             return GameState.QUIT.value
+        if action == "logout":
+            return GameState.LOGOUT.value
         return None
 
 

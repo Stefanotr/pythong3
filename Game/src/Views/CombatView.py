@@ -173,8 +173,8 @@ class CombatView:
                 
                 if player and hasattr(player, 'inventory') and self.inventory_view:
                     # Position: left side, above where alcohol would be displayed
-                    inv_x = 20 + 100  # Left side, centered in box
-                    inv_y = self.screen_height - 280  # Much higher above alcohol display
+                    inv_x = 115  # Left side, centered in box
+                    inv_y = self.screen_height - 200 # Much higher above alcohol display
                     self.inventory_view.draw_inventory_display(screen, player.inventory, inv_x, inv_y)
             except Exception as e:
                 Logger.error("CombatView.draw - inventory", e)
@@ -499,8 +499,8 @@ class CombatView:
         """
         # Position menu on right side, fairly close to center but not overlapping main UI
         menu_width = 300  # Reduced from 380
-        menu_x = max(40, self.screen_width - menu_width - 40)
-        menu_y = self.screen_height - 380  # Adjusted to fit reduced height
+        menu_x = max(40, self.screen_width - menu_width - 10)
+        menu_y = self.screen_height - 410  # Adjusted to fit reduced height
         menu_height = 260  # Reduced from 320
         
         # Panel with player color accent
@@ -531,11 +531,11 @@ class CombatView:
             
             # Name
             name_surf = self.small_font.render(name, True, (255, 255, 255))
-            screen.blit(name_surf, (menu_x + 60, action_y))
+            screen.blit(name_surf, (menu_x + 45, action_y))
             
             # Description
             desc_surf = self.log_font.render(desc, True, (200, 200, 200))
-            screen.blit(desc_surf, (menu_x + 60, action_y + 18))
+            screen.blit(desc_surf, (menu_x + 45, action_y + 18))
             
             # Divider between actions
             pygame.draw.line(screen, (80, 150, 80), 

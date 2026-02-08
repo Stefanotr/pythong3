@@ -166,7 +166,7 @@
             },
             "backgrounds": {
                 "combat": "Game/Assets/managerevade.png",
-                "rhythm_combat": "Game/Assets/stage.png"
+                "rhythm_combat": "Game/Assets/managerevade.png"
             },
             "positions": {
                 "map": {

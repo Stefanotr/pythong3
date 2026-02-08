@@ -126,7 +126,7 @@ class ActView:
             
             try:
                 # Initialize AssetManager for loading configurations
-                asset_manager = AssetManager("Game")
+                self.asset_manager = AssetManager("Game")
                 
                 # Get boss from sequence controller if available, otherwise create new one
                 self.boss = None
@@ -140,7 +140,7 @@ class ActView:
                     
                     try:
                         # Try loading boss from configuration
-                        boss_config = asset_manager.get_boss_by_act(act_num)
+                        boss_config = self.asset_manager.get_boss_by_act(act_num)
                         if boss_config:
                             self.boss = BossModel.from_config(boss_config, 80, 80)
                             self.boss_config = boss_config  # Store config for backgrounds
@@ -159,7 +159,7 @@ class ActView:
                             gros_bill.setAccuracy(0.75)
                             self.boss = gros_bill
                             # Try to load config even in fallback
-                            self.boss_config = asset_manager.get_boss_by_name("Gros Bill")
+                            self.boss_config = self.asset_manager.get_boss_by_name("Gros Bill")
                         elif act_num == 2:
                             # Act 2: Chef de la Sécurité
                             chef_securite = BossModel("Chef de la Sécurité", 80, 80)
@@ -168,7 +168,7 @@ class ActView:
                             chef_securite.setAccuracy(0.80)
                             self.boss = chef_securite
                             # Try to load config even in fallback
-                            self.boss_config = asset_manager.get_boss_by_name("Chef de la Sécurité")
+                            self.boss_config = self.asset_manager.get_boss_by_name("Chef de la Sécurité")
                         else:
                             # Fallback for unknown acts
                             boss_name = act_config.get('boss_name', 'Boss')
@@ -180,10 +180,13 @@ class ActView:
                             self.boss.setDamage(boss_damage)
                             self.boss.setAccuracy(boss_accuracy)
                             # Try to load config
-                            self.boss_config = asset_manager.get_boss_by_name(boss_name)
+                            self.boss_config = self.asset_manager.get_boss_by_name(boss_name)
                     
                     if self.sequence_controller:
                         self.sequence_controller.set_boss(self.boss)
+                
+                # Store boss name for later use
+                self.boss_name = self.boss.getName() if self.boss else None
                 
                 # Update boss stats based on player level (scale difficulty)
                 try:
@@ -431,6 +434,14 @@ class ActView:
                                         if self.rhythm_controller and hasattr(self.rhythm_controller, 'stop_all_audio'):
                                             self.rhythm_controller.stop_all_audio()
                                         return GameState.QUIT.value
+                                    elif pause_result == GameState.LOGOUT.value:
+                                        Logger.debug("ActView.run", "Logout requested from pause menu")
+                                        # Stop all audio before logout
+                                        if self.combat_controller and hasattr(self.combat_controller, 'stop_all_audio'):
+                                            self.combat_controller.stop_all_audio()
+                                        if self.rhythm_controller and hasattr(self.rhythm_controller, 'stop_all_audio'):
+                                            self.rhythm_controller.stop_all_audio()
+                                        return GameState.LOGOUT.value
                                     elif pause_result == GameState.MAIN_MENU.value:
                                         Logger.debug("ActView.run", "Main menu requested from pause menu")
                                         # Stop all audio before returning to main menu

@@ -19,8 +19,8 @@ class InventoryView:
         self.screen_height = screen_height
         
         # Fonts (reduced by 20% for inventory)
-        self.font = pygame.font.SysFont("Arial", int(screen_height * 0.02), bold=True)
-        self.big_font = pygame.font.SysFont("Arial", int(screen_height * 0.032), bold=True)
+        self.font = pygame.font.SysFont("Arial", int(screen_height * 0.015), bold=True)
+        self.big_font = pygame.font.SysFont("Arial", int(screen_height * 0.022), bold=True)
     
     def draw_inventory_display(self, screen, inventory_model, x, y):
         """
@@ -35,40 +35,45 @@ class InventoryView:
         try:
             selected_bottle = inventory_model.get_selected_item()
             selected_index = inventory_model.get_selected_index()
-            total_items = len(inventory_model.get_all_items())
+            unique_bottles = inventory_model.get_unique_bottles()
             
-            if not selected_bottle or total_items == 0:
+            if not selected_bottle or len(unique_bottles) == 0:
                 return
+            
+            # Get count of selected bottle type
+            selected_unique = unique_bottles[selected_index] if 0 <= selected_index < len(unique_bottles) else None
+            if not selected_unique:
+                return
+            
+            bottle_count = selected_unique['count']
             
             # Display selected bottle info
             bottle_name = selected_bottle.getName()
             bottle_alcohol = selected_bottle.getAlcoholLevel()
             bottle_damage = selected_bottle.getBonusDamage()
             
-            # Draw background box
-            box_width = 300
-            box_height = 150
-            pygame.draw.rect(screen, (20, 20, 40), (x - box_width//2, y, box_width, box_height), border_radius=10)
-            pygame.draw.rect(screen, (100, 100, 150), (x - box_width//2, y, box_width, box_height), 2, border_radius=10)
+            # Draw background box (reduced size)
+            box_width = 200
+            box_height = 100
+            pygame.draw.rect(screen, (20, 20, 40), (x - box_width//2, y, box_width, box_height), border_radius=8)
+            pygame.draw.rect(screen, (100, 100, 150), (x - box_width//2, y, box_width, box_height), 2, border_radius=8)
             
             # Title
             title_surf = self.big_font.render("INVENTORY", True, (200, 200, 255))
-            screen.blit(title_surf, (x - title_surf.get_width()//2, y + 10))
+            screen.blit(title_surf, (x - title_surf.get_width()//2, y + 5))
             
-            # Selected bottle name
-            name_surf = self.big_font.render(bottle_name, True, (255, 215, 0))
-            screen.blit(name_surf, (x - name_surf.get_width()//2, y + 40))
+            # Selected bottle name with count
+            count_text = f"{bottle_name} x{bottle_count}"
+            name_surf = self.big_font.render(count_text, True, (255, 215, 0))
+            screen.blit(name_surf, (x - name_surf.get_width()//2, y + 25))
             
-            # Stats
-            alcohol_txt = self.font.render(f"Alcohol: {bottle_alcohol}%", True, (255, 100, 100))
-            screen.blit(alcohol_txt, (x - alcohol_txt.get_width()//2, y + 75))
+            # Stats (smaller)
+            alcohol_txt = self.font.render(f"Alc: {bottle_alcohol}% | Dmg: +{bottle_damage}", True, (200, 200, 200))
+            screen.blit(alcohol_txt, (x - alcohol_txt.get_width()//2, y + 48))
             
-            damage_txt = self.font.render(f"Damage Bonus: +{bottle_damage}", True, (100, 255, 100))
-            screen.blit(damage_txt, (x - damage_txt.get_width()//2, y + 100))
-            
-            # Navigation arrows
-            nav_txt = self.font.render(f"<- {selected_index + 1}/{total_items} ->", True, (255, 255, 255))
-            screen.blit(nav_txt, (x - nav_txt.get_width()//2, y + 125))
+            # Navigation arrows (showing unique bottles count)
+            nav_txt = self.font.render(f"<- {selected_index + 1}/{len(unique_bottles)} ->", True, (200, 200, 200))
+            screen.blit(nav_txt, (x - nav_txt.get_width()//2, y + 67))
             
         except Exception as e:
             pass

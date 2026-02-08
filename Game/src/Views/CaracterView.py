@@ -64,6 +64,7 @@ class CaracterView:
             try:
                 self.font = pygame.font.SysFont(None, 36)
                 self.small_font = pygame.font.SysFont(None, 18)  # For map view
+                self.big_font = pygame.font.SysFont(None, 32)  # For rhythm/rhythm_combat view
                 Logger.debug("CaracterView.__init__", "Fonts initialized")
             except Exception as e:
                 Logger.error("CaracterView.__init__", e)
@@ -313,22 +314,15 @@ class CaracterView:
             except Exception as e:
                 Logger.error("CaracterView.drawCaracter", e)
 
-            # Draw character name above sprite (smaller font for map)
+            # Draw character name above sprite (different font sizes based on game mode)
             if is_map:
                 try:
                     name = caracter.getName()
-                    name_surface = self.small_font.render(name, True, (255, 255, 255))
+                    # Use bigger font for rhythm modes, smaller for map
+                    name_font = self.big_font if self.game_mode in ["rhythm", "rhythm_combat"] else self.small_font
+                    name_surface = name_font.render(name, True, (255, 255, 255))
                     name_x = draw_x + sprite_w // 2 - name_surface.get_width() // 2
                     name_y = draw_y - name_surface.get_height() - 5
-                    screen.blit(name_surface, (name_x, name_y))
-                except Exception as e:
-                    Logger.error("CaracterView.drawCaracter", e)
-            else:  # Only draw name below sprite in combat
-                try:
-                    name = caracter.getName()
-                    name_surface = self.font.render(name, True, (255, 255, 255))
-                    name_x = draw_x + sprite_w // 2 - name_surface.get_width() // 2
-                    name_y = draw_y + sprite_h + 10
                     screen.blit(name_surface, (name_x, name_y))
                 except Exception as e:
                     Logger.error("CaracterView.drawCaracter", e)
