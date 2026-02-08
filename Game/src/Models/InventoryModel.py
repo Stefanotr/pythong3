@@ -88,6 +88,6 @@ class InventoryModel:
             self.selectedIndex = (self.selectedIndex - 1) % len(unique_bottles)
 
 
-    def count_item(self, item_name):
+    def countItem(self, item_name):
 
         return sum(1 for item in self.items if item.getName() == item_name)

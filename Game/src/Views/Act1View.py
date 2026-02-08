@@ -70,8 +70,8 @@ class ActView:
                         guitar = GuitarFactory.createLaPelle()
                     
                     beer = BottleModel("Beer", 15, 3, 5)
-                    self.lola.inventory.add_item(beer)
-                    self.lola.setSelectedBottle(self.lola.inventory.get_selected_item())
+                    self.lola.inventory.addItem(beer)
+                    self.lola.setSelectedBottle(self.lola.inventory.getSelectedItem())
                     Logger.debug("ActView.__init__", "New player created with 2 beers")
             except Exception as e:
                 Logger.error("ActView.__init__", e)
@@ -84,7 +84,7 @@ class ActView:
                 self.boss = None
                 self.boss_config = None  
                 if self.sequence_controller:
-                    self.boss = self.sequence_controller.get_boss()
+                    self.boss = self.sequence_controller.getBoss()
                 
                 if not self.boss:
                     act_num = act_config.get('actNum', 1)
@@ -93,7 +93,7 @@ class ActView:
                         
                         boss_config = self.asset_manager.getBossByAct(act_num)
                         if boss_config:
-                            self.boss = BossModel.from_config(boss_config, 80, 80)
+                            self.boss = BossModel.fromConfig(boss_config, 80, 80)
                             self.boss_config = boss_config  
                             Logger.debug("ActView.__init__", f"Boss loaded from config for Act {act_num}")
                         else:
@@ -121,10 +121,10 @@ class ActView:
                             self.boss_config = self.asset_manager.getBossByBame("Chef de la Sécurité")
                         else:
                             
-                            boss_name = act_config.get('bossName', 'Boss')
-                            boss_health = act_config.get('bossHealth', 150)
-                            boss_damage = act_config.get('bossDamage', 12)
-                            boss_accuracy = act_config.get('bossAccuracy', 0.75)
+                            boss_name = act_config.get('boss_name', 'Boss')
+                            boss_health = act_config.get('boss_health', 150)
+                            boss_damage = act_config.get('boss_dDamage', 12)
+                            boss_accuracy = act_config.get('boss_accuracy', 0.75)
                             self.boss = BossModel(boss_name, 80, 80)
                             self.boss.setHealth(boss_health)
                             self.boss.setDamage(boss_damage)
@@ -133,7 +133,7 @@ class ActView:
                             self.boss_config = self.asset_manager.getBossByBame(boss_name)
                     
                     if self.sequence_controller:
-                        self.sequence_controller.set_boss(self.boss)
+                        self.sequence_controller.setBoss(self.boss)
                 
                 self.boss_name = self.boss.getName() if self.boss else None
                 
@@ -234,12 +234,12 @@ class ActView:
                 "Face Gros Bill, the biker leader,",
                 "and prove you're still a legend!"
             ],
-            'bossName': "Gros Bill",
+            'boss_name': "Gros Bill",
             'bossAsset': "Game/Assets/chefdesmotards.png",
             'bossBase': "motard",
-            'bossHealth': 100,
-            'bossDamage': 12,
-            'bossAccuracy': 0.75,
+            'boss_health': 100,
+            'boss_dDamage': 12,
+            'boss_accuracy': 0.75,
             'guitarFactoryMethod': 'createLaPelle',
             'has_rhythm_phase': False,
             'backgroundImage': 'Game/Assets/grosbillfight.png'
@@ -261,12 +261,12 @@ class ActView:
                 "Defeat the Security Chief to earn",
                 "the right to perform!"
             ],
-            'bossName': "Chef de la Sécurité",
+            'boss_name': "Chef de la Sécurité",
             'bossAsset': "Game/Assets/Agentdesecurité.png",
             'bossBase': "agent",
-            'bossHealth': 500,
-            'bossDamage': 14,
-            'bossAccuracy': 0.80,
+            'boss_health': 500,
+            'boss_dDamage': 14,
+            'boss_accuracy': 0.80,
             'guitarFactoryMethod': 'createGuitareGonflable',
             'has_rhythm_phase': True,
             'backgroundImage': 'Game/Assets/chefsecuritefight.png'

@@ -88,7 +88,7 @@ class GameSequenceController:
         }
         return stage_config.get(self.current_stage, {"view_type": "Unknown"})
 
-    def is_last_stage(self):
+    def isLastStage(self):
         return self.current_stage == 8
 
     def handleNumericInput(self, key_number):

@@ -41,7 +41,7 @@ class MapView:
                                 tile_size = self.map.tile_size  
                                 
                                 flip_flags = 0
-                                if hasattr(self.map, 'tileFlips'):
+                                if hasattr(self.map, 'tile_flips'):
                                     try:
                                         flip_flags = self.map.tile_flips[y][x]
                                     except (IndexError, TypeError):

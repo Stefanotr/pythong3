@@ -15,12 +15,12 @@ class BossModel(CaracterModel):
 
 
     @classmethod
-    def fromConfig(cls, bossConfig, x=175, y=175):
+    def fromConfig(cls, boss_config, x=175, y=175):
         try:
-            bossName = bossConfig.get("name", "Unknown Boss")
-            boss = cls(bossName, x, y)
+            boss_name = boss_config.get("name", "Unknown Boss")
+            boss = cls(boss_name, x, y)
             
-            attributes = bossConfig.get("attributes", {})
+            attributes = boss_config.get("attributes", {})
             if attributes:
                 health = attributes.get("base_health")
                 damage = attributes.get("base_damage")
@@ -33,7 +33,7 @@ class BossModel(CaracterModel):
                 if accuracy is not None:
                     boss.setAccuracy(accuracy)
                 
-                Logger.debug("BossModel.fromConfig", f"Boss config applied: {bossName}")
+                Logger.debug("BossModel.fromConfig", f"Boss config applied: {boss_name}")
             
             return boss
         except Exception as e:

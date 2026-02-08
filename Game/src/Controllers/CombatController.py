@@ -80,7 +80,7 @@ class CombatController(BaseController):
         except Exception as e:
             Logger.error("CombatController.handleInput", e)
 
-    def performPlayerAttack(self, boss_damage, actionName, hitMessage, missMessage, is_powerful=False):
+    def performPlayerAttack(self, boss_damage, action_name, hit_message, miss_message, is_powerful=False):
         try:
             if self.combat.getPlayerStatus("paralyzed") > 0:
                 self.combat.addToCombatLog(f"{self.player.getName()} is paralyzed!")
@@ -92,7 +92,7 @@ class CombatController(BaseController):
                 self.endPlayerTurn()
                 return False
 
-            self.player.setCurrentAction(actionName, 30)
+            self.player.setCurrentAction(action_name, 30)
 
             damage = boss_damage if not is_powerful else int(boss_damage * 2.5)
 
@@ -113,11 +113,11 @@ class CombatController(BaseController):
             if random.randint(1, 100) <= accuracy:
                 final_damage = max(1, int(damage))
                 self.enemy.setHealth(max(0, self.enemy.getHealth() - final_damage))
-                self.combat.addToCombatLog(hitMessage.format(player=self.player.getName(), damage=final_damage))
+                self.combat.addToCombatLog(hit_message.format(player=self.player.getName(), damage=final_damage))
                 Logger.debug("CombatController.performPlayerAttack", "Hit", damage=final_damage)
                 return True
             else:
-                self.combat.addToCombatLog(missMessage.format(player=self.player.getName()))
+                self.combat.addToCombatLog(miss_message.format(player=self.player.getName()))
                 Logger.debug("CombatController.performPlayerAttack", "Missed")
                 return False
         except Exception as e:

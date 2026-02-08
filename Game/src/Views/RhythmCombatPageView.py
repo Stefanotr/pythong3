@@ -19,7 +19,7 @@ class RhythmCombatPageView:
             
             self.boss = boss
             if not self.boss and self.sequence_controller:
-                self.boss = self.sequence_controller.get_boss()
+                self.boss = self.sequence_controller.getBoss()
             
             if not self.boss:
                 Logger.error("RhythmCombatPageView.__init__", "No boss provided or found in sequence controller")
@@ -150,10 +150,10 @@ class RhythmCombatPageView:
                             
                             elif self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
                                 stage_number = event.key - pygame.K_1 + 1
-                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                if self.sequence_controller.handleNumericInput(stage_number):
                                     Logger.debug("RhythmCombatPageView.run", "Navigation to stage requested",
                                                stage=stage_number,
-                                               stage_name =self.sequence_controller.get_current_stage_name())
+                                               stage_name =self.sequence_controller.getCurrentStageName())
                                     
                                     return f"STAGE_{stage_number}"
                         

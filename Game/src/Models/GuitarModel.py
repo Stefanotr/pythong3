@@ -3,12 +3,12 @@ from Utils.Logger import Logger
 
 class GuitarModel:
 
-    def __init__(self, name, base_damage, specialEffect=None, effectChance=0):
+    def __init__(self, name, base_damage, specialEffect=None, effect_chance=0):
         try:
             self._name = name
             self._base_damage = base_damage
             self._specialEffect = specialEffect
-            self._effectChance = effectChance
+            self._effect_chance = effect_chance
             Logger.debug("GuitarModel.__init__", f"Guitar created: {name}")
         except Exception as e:
             Logger.error("GuitarModel.__init__", e)
@@ -47,13 +47,13 @@ class GuitarModel:
 
     
     def getEffectChance(self):
-        return self._effectChance
+        return self._effect_chance
 
     def setEffectChance(self, chance):
         try:
             if not 0 <= chance <= 100:
                 raise ValueError("Effect chance must be 0-100")
-            self._effectChance = chance
+            self._effect_chance = chance
         except Exception as e:
             Logger.error("GuitarModel.setEffectChance", e)
 
@@ -62,7 +62,7 @@ class GuitarModel:
         try:
             desc = f"{self._name} (Damage: +{self._base_damage})"
             if self._specialEffect:
-                desc += f" | Effect: {self._specialEffect} ({self._effectChance}%)"
+                desc += f" | Effect: {self._specialEffect} ({self._effect_chance}%)"
             return desc
         except Exception as e:
             Logger.error("GuitarModel.getDescription", e)

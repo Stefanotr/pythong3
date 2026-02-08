@@ -16,7 +16,7 @@ class PlayerController(BaseController):
             self.SPEED = 6
             self.screenWidth = screenWidth
             self.screenHeight = screenHeight
-            Logger.debug("PlayerController.__init__", "Player controller initialized", playerName=player.getName(), collisions=len(self.collisionRects))
+            Logger.debug("PlayerController.__init__", "Player controller initialized", player_name=player.getName(), collisions=len(self.collisionRects))
         except Exception as e:
             Logger.error("PlayerController.__init__", e)
             raise

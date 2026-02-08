@@ -115,20 +115,20 @@ class AssetManager:
             Logger.error("AssetManager.loadPlayerConfig", e)
             return {}
     
-    def save_player_config(self, config):
+    def savePlayerConfig(self, config):
         
         try:
             os.makedirs(self.config_dir, exist_ok=True)
             with open(self.player_config_path, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=4, ensure_ascii=False)
-                Logger.debug("AssetManager.save_player_config", 
+                Logger.debug("AssetManager.savePlayerConfig", 
                            f"Saved player config to {self.player_config_path}")
         except Exception as e:
-            Logger.error("AssetManager.save_player_config", e)
+            Logger.error("AssetManager.savePlayerConfig", e)
             raise
     
 
-    def save_player_progression(self, player_name, progression_data):
+    def savePlayerProgression(self, player_name, progression_data):
         
         try:
             os.makedirs(self.progression_dir, exist_ok=True)
@@ -137,37 +137,37 @@ class AssetManager:
             
             with open(progression_file, 'w', encoding='utf-8') as f:
                 json.dump(progression_data, f, indent=4, ensure_ascii=False)
-                Logger.debug("AssetManager.save_player_progression", 
+                Logger.debug("AssetManager.savePlayerProgression", 
                            f"Saved progression for {player_name}", 
                            file=progression_file)
         except Exception as e:
-            Logger.error("AssetManager.save_player_progression", e)
+            Logger.error("AssetManager.savePlayerProgression", e)
             raise
     
-    def load_player_progression(self, player_name):
+    def loadPlayerProgression(self, player_name):
         
         try:
             safe_name = "".join(c for c in player_name if c.isalnum() or c in (' ', '_')).rstrip()
             progression_file = os.path.join(self.progression_dir, f"{safe_name}_progression.json")
             
             if not os.path.exists(progression_file):
-                Logger.warn("AssetManager.load_player_progression", 
+                Logger.warn("AssetManager.loadPlayerProgression", 
                            f"Progression file not found for {player_name}")
                 return {}
             
             with open(progression_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                Logger.debug("AssetManager.load_player_progression", 
+                Logger.debug("AssetManager.loadPlayerProgression", 
                            f"Loaded progression for {player_name}")
                 return data
         except json.JSONDecodeError as e:
-            Logger.error("AssetManager.load_player_progression", f"Invalid JSON: {e}")
+            Logger.error("AssetManager.loadPlayerProgression", f"Invalid JSON: {e}")
             return {}
         except Exception as e:
-            Logger.error("AssetManager.load_player_progression", e)
+            Logger.error("AssetManager.loadPlayerProgression", e)
             return {}
     
-    def list_saved_progressions(self):
+    def listSavedProgressions(self):
         
         try:
             if not os.path.exists(self.progression_dir):
@@ -181,23 +181,23 @@ class AssetManager:
             
             return saved_players
         except Exception as e:
-            Logger.error("AssetManager.list_saved_progressions", e)
+            Logger.error("AssetManager.listSavedProgressions", e)
             return []
     
 
-    def get_asset_image_path(self, asset_path):
+    def getAssetImagePath(self, asset_path):
    
         try:
             return asset_path.replace("\\", "/")
         except Exception as e:
-            Logger.error("AssetManager.get_asset_image_path", e)
+            Logger.error("AssetManager.getAssetImagePath", e)
             return asset_path
     
-    def asset_exists(self, asset_path):
+    def assetExists(self, asset_path):
        
         try:
             return os.path.exists(asset_path)
         except Exception as e:
-            Logger.error("AssetManager.asset_exists", e)
+            Logger.error("AssetManager.assetExists", e)
             return False
 

@@ -1,11 +1,11 @@
 {
-  "current_stage": 8,
+  "currentStage": 4,
   "level": 0,
   "hp": 100,
-  "max_hp": 100,
+  "maxHp": 100,
   "damage": 10,
   "drunkenness": 0,
-  "coma_risk": 0,
+  "comaRisk": 0,
   "currency": 2652,
   "position": {
     "x": 404,
@@ -91,7 +91,7 @@
       "accuracy_penalty": 3
     }
   ],
-  "completed_acts": [],
-  "completed_rhythms": [],
-  "last_save": "2026-02-08T00:46:29.446103"
+  "completedActs": [],
+  "completedRhythms": [],
+  "last_save": "2026-02-08T15:52:00.077619"
 }

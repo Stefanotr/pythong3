@@ -112,12 +112,12 @@ class WelcomPageView(PageView):
             play_size = (225, 82)
             play_x = int(self.width * 0.82)
             play_y = int(self.height * 0.45)
-            self.play_button.set_position((play_x, play_y))
+            self.play_button.setPosition((play_x, play_y))
             
             quit_size = (225, 82)
             quit_x = int(self.width * 0.82)
             quit_y = play_y + play_size[1] // 2 + 5 + quit_size[1] // 2
-            self.quit_button.set_position((quit_x, quit_y))
+            self.quit_button.setPosition((quit_x, quit_y))
             
             logout_size = (225, 50)
             logout_x = int(self.width * 0.82)
@@ -429,9 +429,9 @@ class WelcomPageView(PageView):
                         Logger.error("WelcomPageView.loadPlayerFromProgression", f"Failed to restore bottle: {e}")
             else:
                 default_beer = BottleModel("Beer", 15, 3, 5)
-                player.inventory.add_item(default_beer)
+                player.inventory.addItem(default_beer)
             
-            selected_item = player.inventory.get_selected_item()
+            selected_item = player.inventory.getSelectedItem()
             if selected_item:
                 player.setSelectedBottle(selected_item)
             
@@ -456,7 +456,7 @@ class WelcomPageView(PageView):
             inventory_list = []
             try:
                 if hasattr(player, 'inventory') and player.inventory:
-                    for bottle in player.inventory.get_all_items():
+                    for bottle in player.inventory.getAllItems():
                         inventory_list.append({
                             "name": bottle.getName(),
                             "alcohol_level": bottle.getAlcoholLevel(),
@@ -639,7 +639,7 @@ class WelcomPageView(PageView):
                     chef_securite.setDamage(14)
                     chef_securite.setAccuracy(0.80)
                 
-                sequence_controller.set_player(player)
+                sequence_controller.setPlayer(player)
                 
                 Logger.debug("WelcomPageView.startGameFlow", "Player and bosses created successfully")
             except Exception as e:
@@ -723,7 +723,7 @@ class WelcomPageView(PageView):
                     elif current_stage == 8:
                         try:
                             
-                            sequence_controller.set_boss(manager_corrompu)
+                            sequence_controller.setBoss(manager_corrompu)
                             rhythm_combat_view = RhythmCombatPageView(screen, player, manager_corrompu, sequence_controller)
                             result = rhythm_combat_view.run()
                             

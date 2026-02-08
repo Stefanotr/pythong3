@@ -87,7 +87,7 @@ class MapPageView(PageView):
                 
                 spawn_x, spawn_y = None, None
                 try:
-                    spawn_points = self.map.get_spawn_points()
+                    spawn_points = self.map.getSpawnPoints()
                     if spawn_points:
                         chosen_spawn = random.choice(spawn_points)
                         
@@ -216,7 +216,7 @@ class MapPageView(PageView):
                     
                     self.shop_width = self.shop_tile_width * self.map.tile_size
                     self.shop_height = self.shop_tile_height * self.map.tile_size
-                    self.shopRectWorld = pygame.Rect(self.shop_left, self.shop_top, self.shop_width, self.shop_height)
+                    self.shop_rect_world = pygame.Rect(self.shop_left, self.shop_top, self.shop_width, self.shop_height)
                     
                     door_w = max(8, self.map.tile_size // 2)
                     door_h = max(8, self.map.tile_size // 2)
@@ -421,7 +421,7 @@ class MapPageView(PageView):
             self._shop_cooldown_frames = 0
 
             self.show_debug_overlay = False
-            Logger.debug("MapPageView.__init__", "Shop & map debug", shopRect =self.shop_rect_world, doorRect =self.shop_door_rect, tileSize =self.map.tile_size, mapSize =(getattr(self.map,'width',None), getattr(self.map,'height',None)))
+            Logger.debug("MapPageView.__init__", "Shop & map debug", shopRect =self.shop_rect_world, doorRect =self.shop_door_rect, tile_size =self.map.tile_size, mapSize =(getattr(self.map,'width',None), getattr(self.map,'height',None)))
 
             try:
                 if hasattr(self, 'controller') and self.controller is not None:
@@ -476,10 +476,10 @@ class MapPageView(PageView):
                             
                             if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
                                 stage_number = event.key - pygame.K_1 + 1  
-                                if self.sequence_controller.handle_numeric_input(stage_number):
+                                if self.sequence_controller.handleNumericInput(stage_number):
                                     Logger.debug("MapPageView.run", "Navigation to stage requested", 
                                                stage=stage_number, 
-                                               stage_name =self.sequence_controller.get_current_stage_name())
+                                               stage_name =self.sequence_controller.getCurrentStageName())
                                     
                                     return f"STAGE_{stage_number}"
                             
@@ -803,7 +803,7 @@ class MapPageView(PageView):
                                 except Exception:
                                     font = pygame.font.Font(None, 14)
                                 lines = []
-                                lines.append(f'tileSize ={self.map.tile_size} map={getattr(self.map, "width",None)}x{getattr(self.map,"height",None)}')
+                                lines.append(f'tile_size ={self.map.tile_size} map={getattr(self.map, "width",None)}x{getattr(self.map,"height",None)}')
                                 lines.append(f'mapPixels ={len(self.map.tiles[0])*self.map.tile_size}x{len(self.map.tiles)*self.map.tile_size}')
                                 lines.append(f'shopRect ={self.shop_rect_world}')
                                 lines.append(f'shopDoor ={self.shop_door_rect}')

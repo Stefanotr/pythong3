@@ -49,7 +49,7 @@ class ShopModel:
     def setPlayer(self, player):
         try:
             self.player = player
-            Logger.debug("ShopModel.setPlayer", "Player set", playerName=player.getName() if player else "None")
+            Logger.debug("ShopModel.setPlayer", "Player set", player_name=player.getName() if player else "None")
         except Exception as e:
             Logger.error("ShopModel.setPlayer", e)
     
