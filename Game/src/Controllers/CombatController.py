@@ -1,10 +1,3 @@
-"""
-CombatController Module
-
-Handles turn-based combat logic and player/enemy actions.
-Manages combat flow, status effects, and turn switching.
-"""
-
 import pygame
 import random
 from Utils.Logger import Logger
@@ -12,13 +5,12 @@ from Controllers import BaseController
 
 
 class CombatController(BaseController):
-    """Controller for managing turn-based combat logic."""
 
-    def __init__(self, combat_model):
+    def __init__(self, combatModel):
         try:
-            self.combat = combat_model
-            self.player = combat_model.getPlayer()
-            self.enemy = combat_model.getEnemy()
+            self.combat = combatModel
+            self.player = combatModel.getPlayer()
+            self.enemy = combatModel.getEnemy()
 
             self.action_delay = 0
             self.action_cooldown = 30
@@ -41,62 +33,54 @@ class CombatController(BaseController):
         except Exception as e:
             Logger.error("CombatController.update", e)
 
-    def handle_input(self, event):
+    def handleInput(self, event):
         try:
             if event.type == pygame.KEYDOWN:
-                Logger.debug("CombatController.handle_input", "Key pressed", key=pygame.key.name(event.key), is_player_turn=self.combat.isPlayerTurn(), action_delay=self.action_delay)
+                Logger.debug("CombatController.handleInput", "Key pressed", key=pygame.key.name(event.key), isPlayerTurn=self.combat.isPlayerTurn(), actionDelay=self.action_delay)
                 
                 if not self.combat.isPlayerTurn():
-                    Logger.debug("CombatController.handle_input", "Not player turn, ignoring input")
+                    Logger.debug("CombatController.handleInput", "Not player turn, ignoring input")
                     return
                 
                 if self.action_delay > 0:
-                    Logger.debug("CombatController.handle_input", "Action delay active, ignoring input", delay=self.action_delay)
+                    Logger.debug("CombatController.handleInput", "Action delay active, ignoring input", delay=self.action_delay)
                     return
                 
-                # Simple attack (A)
                 if event.key == pygame.K_a:
-                    Logger.debug("CombatController.handle_input", "Simple Attack triggered")
+                    Logger.debug("CombatController.handleInput", "Simple Attack triggered")
                     try:
                         self.playerSimpleAttack()
                         self.action_delay = self.action_cooldown
                     except Exception as e:
-                        Logger.error("CombatController.handle_input", e)
+                        Logger.error("CombatController.handleInput", e)
 
-                # Power Chord (P)
                 elif event.key == pygame.K_p:
-                    Logger.debug("CombatController.handle_input", "Power Chord triggered")
+                    Logger.debug("CombatController.handleInput", "Power Chord triggered")
                     try:
                         self.playerPowerChord()
                         self.action_delay = self.action_cooldown
                     except Exception as e:
-                        Logger.error("CombatController.handle_input", e)
+                        Logger.error("CombatController.handleInput", e)
 
-                # Dégueulando (D)
                 elif event.key == pygame.K_d:
-                    Logger.debug("CombatController.handle_input", "Dégueulando triggered")
+                    Logger.debug("CombatController.handleInput", "Dégueulando triggered")
                     try:
                         self.playerDegueulando()
                         self.action_delay = self.action_cooldown
                     except Exception as e:
-                        Logger.error("CombatController.handle_input", e)
+                        Logger.error("CombatController.handleInput", e)
 
-                # Drink (B)
                 elif event.key == pygame.K_b:
-                    Logger.debug("CombatController.handle_input", "Drink triggered")
+                    Logger.debug("CombatController.handleInput", "Drink triggered")
                     try:
                         self.playerDrink()
                         self.action_delay = self.action_cooldown
                     except Exception as e:
-                        Logger.error("CombatController.handle_input", e)
+                        Logger.error("CombatController.handleInput", e)
         except Exception as e:
-            Logger.error("CombatController.handle_input", e)
+            Logger.error("CombatController.handleInput", e)
 
-    def handleInput(self, event):
-        return self.handle_input(event)
-
-    # --- Player attack utilities ---
-    def _performPlayerAttack(self, base_damage, action_name, hit_message, miss_message, is_powerful=False):
+    def performPlayerAttack(self, baseDamage, actionName, hitMessage, missMessage, isPowerful=False):
         try:
             if self.combat.getPlayerStatus("paralyzed") > 0:
                 self.combat.addToCombatLog(f"{self.player.getName()} is paralyzed!")
@@ -108,52 +92,47 @@ class CombatController(BaseController):
                 self.endPlayerTurn()
                 return False
 
-            # Set animation
-            self.player.setCurrentAction(action_name, 30)
+            self.player.setCurrentAction(actionName, 30)
 
-            # Damage calculation
-            damage = base_damage if not is_powerful else int(base_damage * 2.5)
+            damage = baseDamage if not isPowerful else int(baseDamage * 2.5)
 
-            # Drunkenness bonus
             try:
                 drunkenness = self.player.getDrunkenness()
             except Exception:
                 drunkenness = 0
 
-            if drunkenness >= 50 and not is_powerful:
+            if drunkenness >= 50 and not isPowerful:
                 damage = int(damage * 1.5)
                 self.combat.addToCombatLog("Drunkenness bonus! (+50% damage)")
 
-            # Accuracy
             try:
                 accuracy = max(20, min(100, int(self.player.getAccuracy() * 100)))
             except Exception:
                 accuracy = 50
 
             if random.randint(1, 100) <= accuracy:
-                final_damage = max(1, int(damage))
-                self.enemy.setHealth(max(0, self.enemy.getHealth() - final_damage))
-                self.combat.addToCombatLog(hit_message.format(player=self.player.getName(), damage=final_damage))
-                Logger.debug("CombatController._performPlayerAttack", "Hit", damage=final_damage)
+                finalDamage = max(1, int(damage))
+                self.enemy.setHealth(max(0, self.enemy.getHealth() - finalDamage))
+                self.combat.addToCombatLog(hitMessage.format(player=self.player.getName(), damage=finalDamage))
+                Logger.debug("CombatController.performPlayerAttack", "Hit", damage=finalDamage)
                 return True
             else:
-                self.combat.addToCombatLog(miss_message.format(player=self.player.getName()))
-                Logger.debug("CombatController._performPlayerAttack", "Missed")
+                self.combat.addToCombatLog(missMessage.format(player=self.player.getName()))
+                Logger.debug("CombatController.performPlayerAttack", "Missed")
                 return False
         except Exception as e:
-            Logger.error("CombatController._performPlayerAttack", e)
+            Logger.error("CombatController.performPlayerAttack", e)
             return False
 
-    # --- Player actions ---
     def playerSimpleAttack(self):
         try:
-            base_damage = self.player.getDamage()
-            success = self._performPlayerAttack(
-                base_damage,
+            baseDamage = self.player.getDamage()
+            success = self.performPlayerAttack(
+                baseDamage,
                 "attacking",
                 "{player} strikes with guitar! ({damage} damage)",
                 "{player} misses the attack!",
-                is_powerful=False,
+                isPowerful=False,
             )
 
             if success and self.combat.checkCombatEnd():
@@ -164,20 +143,20 @@ class CombatController(BaseController):
 
     def playerPowerChord(self):
         try:
-            player_hp = self.player.getHealth()
-            if player_hp <= 10:
+            playerHp = self.player.getHealth()
+            if playerHp <= 10:
                 self.combat.addToCombatLog("Not enough HP for Power Chord! (need 10 HP)")
                 return
 
-            self.player.setHealth(player_hp - 10)
+            self.player.setHealth(playerHp - 10)
 
-            base_damage = self.player.getDamage()
-            success = self._performPlayerAttack(
-                base_damage,
+            baseDamage = self.player.getDamage()
+            success = self.performPlayerAttack(
+                baseDamage,
                 "attacking",
                 "POWER CHORD! {player} deals {damage} damage!",
                 "{player} misses the power chord!",
-                is_powerful=True,
+                isPowerful=True,
             )
 
             if success:
@@ -204,36 +183,32 @@ class CombatController(BaseController):
             self.combat.setEnemyStatus("disgusted", 2)
             self.combat.addToCombatLog(f"DEGUEULANDO! {self.enemy.getName()} is paralyzed with disgust!")
             self.player.setDrunkenness(max(0, drunkenness - 20))
-            Logger.debug("CombatController.playerDegueulando", "Executed", drunkenness_cost=20)
+            Logger.debug("CombatController.playerDegueulando", "Executed", drunkennessCost=20)
             self.endPlayerTurn()
         except Exception as e:
             Logger.error("CombatController.playerDegueulando", e)
 
     def playerDrink(self):
         try:
-            # Check if player has inventory and items
             if not hasattr(self.player, 'inventory') or not self.player.inventory:
                 self.combat.addToCombatLog("No inventory available!")
                 return
 
-            # Get selected bottle from inventory
-            selected_bottle = self.player.inventory.get_selected_item()
-            if not selected_bottle:
+            selectedBottle = self.player.inventory.getSelectedItem()
+            if not selectedBottle:
                 self.combat.addToCombatLog("No bottle selected!")
                 return
 
             self.player.setCurrentAction("drinking", 30)
-            self.player.drink(selected_bottle)
+            self.player.drink(selectedBottle)
             drunkenness = self.player.getDrunkenness()
-            self.combat.addToCombatLog(f"{self.player.getName()} drinks {selected_bottle.getName()}! (Drunkenness: {drunkenness}%)")
+            self.combat.addToCombatLog(f"{self.player.getName()} drinks {selectedBottle.getName()}! (Drunkenness: {drunkenness}%)")
             
-            # Remove the bottle from inventory after drinking
-            self.player.inventory.consume_selected()
+            self.player.inventory.consumeSelected()
             
-            # Update selected bottle to the new selected item (or None if inventory is empty)
-            self.player.setSelectedBottle(self.player.inventory.get_selected_item())
+            self.player.setSelectedBottle(self.player.inventory.getSelectedItem())
             
-            Logger.debug("CombatController.playerDrink", "Player drank", bottle=selected_bottle.getName(), drunkenness=drunkenness)
+            Logger.debug("CombatController.playerDrink", "Player drank", bottle=selectedBottle.getName(), drunkenness=drunkenness)
 
             if self.player.getHealth() <= 0:
                 self.combat.setDiedFromComa(True)
@@ -245,7 +220,6 @@ class CombatController(BaseController):
         except Exception as e:
             Logger.error("CombatController.playerDrink", e)
 
-    # --- Enemy logic ---
     def enemyTurn(self):
         try:
             if self.combat.getEnemyStatus("paralyzed") > 0 or self.combat.getEnemyStatus("disgusted") > 0:
@@ -296,12 +270,12 @@ class CombatController(BaseController):
 
     def enemyHeavyAttack(self):
         try:
-            heavy_damage = int(self.enemy.getDamage() * 1.8)
+            heavyDamage = int(self.enemy.getDamage() * 1.8)
             if random.randint(1, 100) <= 60:
                 self.enemy.setCurrentAction("attacking", 30)
-                self.player.setHealth(max(0, self.player.getHealth() - heavy_damage))
-                self.combat.addToCombatLog(f"{self.enemy.getName()} strikes violently! ({heavy_damage} damage)")
-                Logger.debug("CombatController.enemyHeavyAttack", "Hit", damage=heavy_damage)
+                self.player.setHealth(max(0, self.player.getHealth() - heavyDamage))
+                self.combat.addToCombatLog(f"{self.enemy.getName()} strikes violently! ({heavyDamage} damage)")
+                Logger.debug("CombatController.enemyHeavyAttack", "Hit", damage=heavyDamage)
                 if random.randint(1, 100) <= 25:
                     self.combat.setPlayerStatus("stunned", 1)
                     self.combat.addToCombatLog(f"{self.player.getName()} is stunned!")

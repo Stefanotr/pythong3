@@ -1,11 +1,3 @@
-"""
-AssetManager Module
-
-Manages loading and saving of asset configurations for bosses and players.
-Handles JSON file I/O for character image paths, sizes, and attributes across different game modes.
-Supports player progression saving/loading.
-"""
-
 import json
 import os
 from pathlib import Path
@@ -13,45 +5,20 @@ from Utils.Logger import Logger
 
 
 class AssetManager:
-    """
-    Centralized manager for game asset configurations.
-    Loads and saves boss/player data with image paths and sizing for different game modes.
-    """
 
-    # === CONSTANTS ===
-    
-    # Asset configuration directory (relative to Game/Assets/)
     CONFIG_DIR = "Assets"
-    
-    # Progression directory (relative to Game/)
     PROGRESSION_DIR = "Progression"
-    
-    # Configuration file names
     BOSSES_CONFIG_FILE = "bosses_config.json"
     PLAYER_CONFIG_FILE = "player_config.json"
-    
-    # Game modes for image sizing
     GAME_MODES = ["map", "dialogue", "combat", "rhythm", "rhythm_combat"]
-    
-    # === CLASS INITIALIZATION ===
-    
+
     def __init__(self, base_path="Game"):
-        """
-        Initialize AssetManager.
-        
-        Args:
-            base_path: Base path to Game directory (default: "Game")
-        """
         try:
             self.base_path = base_path
             self.config_dir = os.path.join(base_path, self.CONFIG_DIR)
             self.progression_dir = os.path.join(base_path, self.PROGRESSION_DIR)
-            
-            # Ensure directories exist
             os.makedirs(self.config_dir, exist_ok=True)
             os.makedirs(self.progression_dir, exist_ok=True)
-            
-            # Full paths to config files
             self.bosses_config_path = os.path.join(self.config_dir, self.BOSSES_CONFIG_FILE)
             self.player_config_path = os.path.join(self.config_dir, self.PLAYER_CONFIG_FILE)
             
@@ -62,10 +29,8 @@ class AssetManager:
         except Exception as e:
             Logger.error("AssetManager.__init__", e)
             raise
-    
-    # === BOSS CONFIGURATION ===
-    
-    def load_bosses_config(self):
+
+    def loadBossesConfig(self):
         """
         Load boss configuration from JSON file.
         
@@ -74,23 +39,23 @@ class AssetManager:
         """
         try:
             if not os.path.exists(self.bosses_config_path):
-                Logger.warn("AssetManager.load_bosses_config", 
+                Logger.warn("AssetManager.loadBossesConfig", 
                            f"Boss config file not found: {self.bosses_config_path}")
                 return {}
             
             with open(self.bosses_config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-                Logger.debug("AssetManager.load_bosses_config", 
+                Logger.debug("AssetManager.loadBossesConfig", 
                            f"Loaded boss config with {len(config.get('bosses', []))} bosses")
                 return config
         except json.JSONDecodeError as e:
-            Logger.error("AssetManager.load_bosses_config", f"Invalid JSON: {e}")
+            Logger.error("AssetManager.loadBossesConfig", f"Invalid JSON: {e}")
             return {}
         except Exception as e:
-            Logger.error("AssetManager.load_bosses_config", e)
+            Logger.error("AssetManager.loadBossesConfig", e)
             return {}
     
-    def save_bosses_config(self, config):
+    def saveBossesConfig(self, config):
         """
         Save boss configuration to JSON file.
         
@@ -101,13 +66,13 @@ class AssetManager:
             os.makedirs(self.config_dir, exist_ok=True)
             with open(self.bosses_config_path, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=4, ensure_ascii=False)
-                Logger.debug("AssetManager.save_bosses_config", 
+                Logger.debug("AssetManager.saveBossesConfig", 
                            f"Saved boss config to {self.bosses_config_path}")
         except Exception as e:
-            Logger.error("AssetManager.save_bosses_config", e)
+            Logger.error("AssetManager.saveBossesConfig", e)
             raise
     
-    def get_boss_by_name(self, boss_name):
+    def getBossByBame(self, boss_name):
         """
         Get a specific boss configuration by name.
         
@@ -118,20 +83,20 @@ class AssetManager:
             dict: Boss configuration or None if not found
         """
         try:
-            config = self.load_bosses_config()
+            config = self.loadBossesConfig()
             bosses = config.get("bosses", [])
             
             for boss in bosses:
                 if boss.get("name") == boss_name:
                     return boss
             
-            Logger.warn("AssetManager.get_boss_by_name", f"Boss not found: {boss_name}")
+            Logger.warn("AssetManager.getBossByBame", f"Boss not found: {boss_name}")
             return None
         except Exception as e:
-            Logger.error("AssetManager.get_boss_by_name", e)
+            Logger.error("AssetManager.getBossByBame", e)
             return None
     
-    def get_boss_by_act(self, act_num):
+    def getBossByAct(self, act_num):
         """
         Get boss configuration for a specific act.
         
@@ -142,22 +107,21 @@ class AssetManager:
             dict: Boss configuration or None if not found
         """
         try:
-            config = self.load_bosses_config()
+            config = self.loadBossesConfig()
             bosses = config.get("bosses", [])
             
             for boss in bosses:
                 if boss.get("act") == act_num:
                     return boss
             
-            Logger.warn("AssetManager.get_boss_by_act", f"Boss not found for act: {act_num}")
+            Logger.warn("AssetManager.getBossByAct", f"Boss not found for act: {act_num}")
             return None
         except Exception as e:
-            Logger.error("AssetManager.get_boss_by_act", e)
+            Logger.error("AssetManager.getBossByAct", e)
             return None
     
-    # === PLAYER CONFIGURATION ===
-    
-    def load_player_config(self):
+
+    def loadPlayerConfig(self):
         """
         Load player base configuration from JSON file.
         
@@ -166,22 +130,21 @@ class AssetManager:
         """
         try:
             if not os.path.exists(self.player_config_path):
-                Logger.warn("AssetManager.load_player_config", 
+                Logger.warn("AssetManager.loadPlayerConfig", 
                            f"Player config file not found: {self.player_config_path}")
                 return {}
             
             with open(self.player_config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-                # Return just the 'player' object, not the full JSON
                 player_data = config.get('player', {})
-                Logger.debug("AssetManager.load_player_config", 
+                Logger.debug("AssetManager.loadPlayerConfig", 
                            f"Loaded player config with {len(player_data.get('actions', {}))} actions")
                 return player_data
         except json.JSONDecodeError as e:
-            Logger.error("AssetManager.load_player_config", f"Invalid JSON: {e}")
+            Logger.error("AssetManager.loadPlayerConfig", f"Invalid JSON: {e}")
             return {}
         except Exception as e:
-            Logger.error("AssetManager.load_player_config", e)
+            Logger.error("AssetManager.loadPlayerConfig", e)
             return {}
     
     def save_player_config(self, config):
@@ -201,8 +164,7 @@ class AssetManager:
             Logger.error("AssetManager.save_player_config", e)
             raise
     
-    # === PLAYER PROGRESSION ===
-    
+
     def save_player_progression(self, player_name, progression_data):
         """
         Save player progression data.
@@ -213,8 +175,6 @@ class AssetManager:
         """
         try:
             os.makedirs(self.progression_dir, exist_ok=True)
-            
-            # Create filename from player name (sanitize)
             safe_name = "".join(c for c in player_name if c.isalnum() or c in (' ', '_')).rstrip()
             progression_file = os.path.join(self.progression_dir, f"{safe_name}_progression.json")
             
@@ -280,8 +240,7 @@ class AssetManager:
             Logger.error("AssetManager.list_saved_progressions", e)
             return []
     
-    # === UTILITY METHODS ===
-    
+
     def get_asset_image_path(self, asset_path):
         """
         Normalize asset image path (for cross-platform compatibility).

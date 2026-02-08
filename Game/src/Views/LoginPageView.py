@@ -1,10 +1,3 @@
-"""
-LoginPageView Module
-
-Displays the login/registration page with input fields and authentication buttons.
-Handles user interface for login and registration flows.
-"""
-
 import pygame
 import sys
 from Utils.Logger import Logger
@@ -14,63 +7,41 @@ from Views.PageView import PageView
 from Views.ButtonView import ButtonView
 from Controllers.ButtonController import ButtonController
 
-
-# === LOGIN PAGE VIEW CLASS ===
-
 class LoginPageView(PageView):
-    """
-    Login page view displaying login and registration interface.
-    Manages input fields for username and password authentication.
-    """
-    
-    def __init__(self, name="Login", width=800, height=800, RESIZABLE=0, background_image="Game/Assets/welcomePage.png"):
-        """
-        Initialize the login page view.
-        
-        Args:
-            name: Window title
-            width: Window width in pixels
-            height: Window height in pixels
-            RESIZABLE: Pygame flag for window resizability (ignored - always fullscreen)
-            background_image: Path to background image file
-        """
+
+    def __init__(self, name="Login", width=800, height=800, resizable=0, background_image="Game/Assets/welcomePage.png"):
+
         try:
-            # Force fullscreen mode for login page
+            
             super().__init__(name, width, height, pygame.FULLSCREEN, background_image)
             
-            # Initialize login model
             self.login_model = LoginModel()
             
-            # UI State
-            self.mode = "login"  # "login" or "register"
+            self.mode = "login"  
             self.username_input = ""
             self.password_input = ""
             self.password_confirm_input = ""
-            self.active_input = "username"  # Which field is being edited
+            self.active_input = "username"  
             self.show_password = False
-            self.login_successful = False  # Flag to indicate successful login
-            self.successful_user = None  # Store successful login username
-            self.successful_progression = None  # Store successful login progression
+            self.login_successful = False  
+            self.successful_user = None  
+            self.successful_progression = None  
             
-            # Input field definitions (x, y, width, height) - centered and lowered
             input_width = 300
             input_x = (self.width - input_width) // 2
             self.input_fields = {
                 "username": {"rect": pygame.Rect(input_x, 360, input_width, 40), "label": "Nom d'utilisateur"},
                 "password": {"rect": pygame.Rect(input_x, 440, input_width, 40), "label": "Mot de passe"},
-                "password_confirm": {"rect": pygame.Rect(input_x, 520, input_width, 40), "label": "Confirmer mot de passe"}
+                "passwordConfirm": {"rect": pygame.Rect(input_x, 520, input_width, 40), "label": "Confirmer mot de passe"}
             }
             
-            # Buttons
             self.buttons = {}
-            self.setup_buttons()
+            self.setupButtons()
             
-            # Font for text rendering
             self.font_large = pygame.font.Font(None, 36)
             self.font_medium = pygame.font.Font(None, 24)
             self.font_small = pygame.font.Font(None, 18)
             
-            # Colors
             self.color_text = (255, 255, 255)
             self.color_input_bg = (40, 40, 40)
             self.color_input_border = (100, 100, 100)
@@ -78,11 +49,9 @@ class LoginPageView(PageView):
             self.color_error = (255, 100, 100)
             self.color_success = (100, 255, 100)
             
-            # Error message display
             self.error_message = ""
             self.error_timer = 0
             
-            # Clock for frame rate
             self.clock = pygame.time.Clock()
             self.fps = 60
             
@@ -91,60 +60,53 @@ class LoginPageView(PageView):
             Logger.error("LoginPageView.__init__", e)
             raise
     
-    # === BUTTON SETUP ===
-    
-    def setup_buttons(self):
-        """Setup login/register buttons - centered."""
+    def setupButtons(self):
+
         try:
-            # Button dimensions
+            
             btn_width = 140
             btn_height = 50
             btn_gap = 30
             total_width = btn_width * 2 + btn_gap
             
-            # Center two buttons
             btn_x1 = (self.width - total_width) // 2
             btn_x2 = btn_x1 + btn_width + btn_gap
             btn_y = 610
             
-            # Quit button - positioned to the right and lower
             quit_x =  self.width// 2
             quit_y = 700
             
-            # Login mode buttons
-            self.buttons["login_btn"] = {
+            self.buttons["loginBtn"] = {
                 "rect": pygame.Rect(btn_x1, btn_y, btn_width, btn_height),
                 "label": "Connexion",
-                "action": self.handle_login
+                "action": self.handleLogin
             }
             
-            self.buttons["register_toggle_btn"] = {
+            self.buttons["registerToggleBtn"] = {
                 "rect": pygame.Rect(btn_x2, btn_y, btn_width, btn_height),
                 "label": "S'inscrire",
-                "action": self.switch_to_register
+                "action": self.switchToRegister
             }
             
-            # Register mode buttons
-            self.buttons["register_btn"] = {
+            self.buttons["registerBtn"] = {
                 "rect": pygame.Rect(btn_x1, btn_y, btn_width, btn_height),
                 "label": "S'inscrire",
-                "action": self.handle_register
+                "action": self.handleRegister
             }
             
-            self.buttons["login_toggle_btn"] = {
+            self.buttons["loginToggleBtn"] = {
                 "rect": pygame.Rect(btn_x2, btn_y, btn_width, btn_height),
                 "label": "Connexion",
-                "action": self.switch_to_login
+                "action": self.switchToLogin
             }
             
-            # Quit button - using ButtonView with image like other pages
             try:
                 self.quit_button_view = ButtonView(
-                    image_path='Game/Assets/buttonQuit.png',
+                    imagePath ='Game/Assets/buttonQuit.png',
                     position=(quit_x, quit_y),
                     size=(btn_width, btn_height)
                 )
-                self.quit_button_controller = ButtonController(self.quit_button_view, "quit_game")
+                self.quit_button_controller = ButtonController(self.quit_button_view, "quitGame")
                 Logger.debug("LoginPageView.setup_buttons", "Quit button created as ButtonView")
             except Exception as e:
                 Logger.error("LoginPageView.setup_buttons", e)
@@ -154,10 +116,8 @@ class LoginPageView(PageView):
         except Exception as e:
             Logger.error("LoginPageView.setup_buttons", e)
     
-    # === MODE SWITCHING ===
-    
-    def handle_quit(self):
-        """Handle quit button click - closes the application."""
+    def handleQuit(self):
+
         try:
             Logger.debug("LoginPageView.handle_quit", "Quit requested from login page")
             pygame.quit()
@@ -167,51 +127,49 @@ class LoginPageView(PageView):
             pygame.quit()
             sys.exit()
     
-    def switch_to_login(self):
-        """Switch to login mode."""
+    def switchToLogin(self):
+
         self.mode = "login"
-        self.clear_inputs()
+        self.clearInputs()
         self.error_message = ""
     
-    def switch_to_register(self):
-        """Switch to registration mode."""
+    def switchToRegister(self):
+
         self.mode = "register"
-        self.clear_inputs()
+        self.clearInputs()
         self.error_message = ""
     
-    def clear_inputs(self):
-        """Clear all input fields."""
+    def clearInputs(self):
+
         self.username_input = ""
         self.password_input = ""
         self.password_confirm_input = ""
         self.active_input = "username"
     
-    # === LOGIN HANDLERS ===
-    
-    def handle_login(self):
-        """Handle login button click."""
+    def handleLogin(self):
+
         try:
             if self.login_model.login(self.username_input, self.password_input):
                 Logger.debug("LoginPageView.handle_login", "Login successful")
-                self.on_login_success()
+                self.onLoginSuccess()
             else:
                 self.error_message = self.login_model.login_error or "Connexion échouée"
-                self.error_timer = 300  # Display error for 5 seconds
+                self.error_timer = 300  
                 Logger.debug("LoginPageView.handle_login", "Login failed", error=self.error_message)
         except Exception as e:
             Logger.error("LoginPageView.handle_login", e)
             self.error_message = "Erreur lors de la connexion"
             self.error_timer = 300
     
-    def handle_register(self):
-        """Handle registration button click."""
+    def handleRegister(self):
+
         try:
             if self.login_model.register(self.username_input, self.password_input, self.password_confirm_input):
                 Logger.debug("LoginPageView.handle_register", "Registration successful")
                 self.error_message = "Inscription réussie! Vous êtes maintenant connecté."
                 self.error_timer = 300
-                # Automatically proceed to game after successful registration
-                self.on_login_success()
+                
+                self.onLoginSuccess()
             else:
                 self.error_message = self.login_model.registration_error or "Inscription échouée"
                 self.error_timer = 300
@@ -221,13 +179,12 @@ class LoginPageView(PageView):
             self.error_message = "Erreur lors de l'inscription"
             self.error_timer = 300
     
-    def on_login_success(self):
-        """Called when login is successful - signals to exit login page."""
+    def onLoginSuccess(self):
+
         try:
-            # Get progression data for the logged-in user
-            progression = self.login_model.get_user_progression()
             
-            # Store successful login data
+            progression = self.login_model.getUserProgression()
+            
             self.login_successful = True
             self.successful_user = self.login_model.current_user
             self.successful_progression = progression
@@ -237,90 +194,84 @@ class LoginPageView(PageView):
             Logger.error("LoginPageView.on_login_success", e)
             self.error_message = "Erreur lors du chargement du jeu"
     
-    # === INPUT HANDLING ===
-    
-    def handle_input(self):
-        """Handle keyboard and mouse input."""
+    def handleInput(self):
+
         try:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return False
                 
                 elif event.type == pygame.KEYDOWN:
-                    self.handle_key_press(event)
+                    self.handleKeyPress(event)
                 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.handle_mouse_click(event.pos)
+                    self.handleMouseClick(event.pos)
             
-            # Exit if login was successful
             if self.login_successful:
                 return False
             
             return True
         except Exception as e:
-            Logger.error("LoginPageView.handle_input", e)
+            Logger.error("LoginPageView.handleInput", e)
             return False
     
-    def handle_key_press(self, event):
-        """Handle keyboard key press."""
+    def handleKeyPress(self, event):
+
         try:
             if event.key == pygame.K_TAB:
-                # Cycle through input fields
+                
                 fields = ["username", "password"]
                 if self.mode == "register":
-                    fields.append("password_confirm")
+                    fields.append("passwordConfirm")
                 
                 current_idx = fields.index(self.active_input)
                 self.active_input = fields[(current_idx + 1) % len(fields)]
             
             elif event.key == pygame.K_BACKSPACE:
-                # Delete last character
+                
                 if self.active_input == "username":
                     self.username_input = self.username_input[:-1]
                 elif self.active_input == "password":
                     self.password_input = self.password_input[:-1]
-                elif self.active_input == "password_confirm":
+                elif self.active_input == "passwordConfirm":
                     self.password_confirm_input = self.password_confirm_input[:-1]
             
             elif event.key == pygame.K_RETURN:
-                # Submit form
+                
                 if self.mode == "login":
-                    self.handle_login()
+                    self.handleLogin()
                 else:
-                    self.handle_register()
+                    self.handleRegister()
             
             elif event.unicode and event.unicode.isprintable():
-                # Add character to active field
+                
                 if len(event.unicode) > 0:
                     char = event.unicode
                     if self.active_input == "username" and len(self.username_input) < 20:
                         self.username_input += char
                     elif self.active_input == "password" and len(self.password_input) < 20:
                         self.password_input += char
-                    elif self.active_input == "password_confirm" and len(self.password_confirm_input) < 20:
+                    elif self.active_input == "passwordConfirm" and len(self.password_confirm_input) < 20:
                         self.password_confirm_input += char
         except Exception as e:
             Logger.error("LoginPageView.handle_key_press", e)
     
-    def handle_mouse_click(self, pos):
-        """Handle mouse click on buttons or input fields."""
+    def handleMouseClick(self, pos):
+
         try:
             x, y = pos
             
-            # Check quit button click first
             if self.quit_button_view and self.quit_button_view.rect.collidepoint(x, y):
-                self.handle_quit()
+                self.handleQuit()
                 return
             
-            # Check input field clicks
             for field_name, field_info in self.input_fields.items():
-                if field_name != "password_confirm" or self.mode == "register":
+                if field_name != "passwordConfirm" or self.mode == "register":
                     if field_info["rect"].collidepoint(x, y):
                         self.active_input = field_name
                         return
             
-            # Check button clicks
-            visible_buttons = self.get_visible_buttons()
+            visible_buttons = self.getVisibleButtons()
             for btn_name, btn_info in visible_buttons.items():
                 if btn_info["rect"].collidepoint(x, y):
                     btn_info["action"]()
@@ -328,71 +279,61 @@ class LoginPageView(PageView):
         except Exception as e:
             Logger.error("LoginPageView.handle_mouse_click", e)
     
-    def get_visible_buttons(self):
-        """Get buttons visible in current mode (login/register buttons only)."""
+    def getVisibleButtons(self):
+
         if self.mode == "login":
             return {
-                "login_btn": self.buttons["login_btn"],
-                "register_toggle_btn": self.buttons["register_toggle_btn"]
+                "loginBtn": self.buttons["loginBtn"],
+                "registerToggleBtn": self.buttons["registerToggleBtn"]
             }
         else:
             return {
-                "register_btn": self.buttons["register_btn"],
-                "login_toggle_btn": self.buttons["login_toggle_btn"]
+                "registerBtn": self.buttons["registerBtn"],
+                "loginToggleBtn": self.buttons["loginToggleBtn"]
             }
     
-    # === RENDERING ===
-    
     def render(self):
-        """Render the login page."""
+
         try:
-            # Draw background
+            
             self.screen.blit(self.background, (0, 0))
             
-            # Draw title
             title_text = "Connexion" if self.mode == "login" else "S'inscrire"
-            title_surface = self.font_large.render(title_text, True, self.color_text)
+            title_surface = self.fontLarge.render(title_text, True, self.colorText)
             title_rect = title_surface.get_rect(center=(self.width // 2, 80))
             self.screen.blit(title_surface, title_rect)
             
-            # Draw input fields
-            self.render_inputs()
+            self.renderInputs()
             
-            # Draw buttons
-            self.render_buttons()
+            self.renderButtons()
             
-            # Draw quit button (ButtonView)
             if self.quit_button_view:
                 self.quit_button_view.draw(self.screen)
             
-            # Draw error message
             if self.error_message:
-                self.render_error()
+                self.renderError()
             
             pygame.display.flip()
         except Exception as e:
             Logger.error("LoginPageView.render", e)
     
-    def render_inputs(self):
-        """Render input fields."""
+    def renderInputs(self):
+
         try:
             visible_fields = ["username", "password"]
             if self.mode == "register":
-                visible_fields.append("password_confirm")
+                visible_fields.append("passwordConfirm")
             
             for field_name in visible_fields:
                 field_info = self.input_fields[field_name]
                 rect = field_info["rect"]
                 is_active = self.active_input == field_name
                 
-                # Draw border
                 border_color = self.color_input_active if is_active else self.color_input_border
                 pygame.draw.rect(self.screen, border_color, rect, 3)
                 
-                # Draw background
                 pygame.draw.rect(self.screen, self.color_input_bg, rect.inflate(-6, -6))
                 
-                # Get input value (mask password)
                 if field_name == "username":
                     display_value = self.username_input
                 elif field_name == "password":
@@ -400,50 +341,44 @@ class LoginPageView(PageView):
                 else:
                     display_value = "*" * len(self.password_confirm_input)
                 
-                # Draw text
                 text_surface = self.font_medium.render(display_value, True, self.color_text)
                 text_rect = text_surface.get_rect(midleft=(rect.x + 10, rect.centery))
                 self.screen.blit(text_surface, text_rect)
                 
-                # Draw label above field
                 label_surface = self.font_small.render(field_info["label"], True, self.color_text)
                 self.screen.blit(label_surface, (rect.x, rect.y - 30))
                 
-                # Draw cursor if active
                 if is_active:
                     cursor_rect = pygame.Rect(rect.x + 10 + text_rect.width, rect.centery - 10, 2, 20)
                     pygame.draw.rect(self.screen, self.color_text, cursor_rect)
         except Exception as e:
             Logger.error("LoginPageView.render_inputs", e)
     
-    def render_buttons(self):
-        """Render buttons."""
+    def renderButtons(self):
+
         try:
-            visible_buttons = self.get_visible_buttons()
+            visible_buttons = self.getVisibleButtons()
             
             for btn_name, btn_info in visible_buttons.items():
                 rect = btn_info["rect"]
                 label = btn_info["label"]
                 
-                # Draw button background
                 pygame.draw.rect(self.screen, (100, 100, 150), rect)
                 pygame.draw.rect(self.screen, (200, 200, 255), rect, 2)
                 
-                # Draw button text
                 text_surface = self.font_medium.render(label, True, self.color_text)
                 text_rect = text_surface.get_rect(center=rect.center)
                 self.screen.blit(text_surface, text_rect)
         except Exception as e:
             Logger.error("LoginPageView.render_buttons", e)
     
-    def render_error(self):
-        """Render error message."""
+    def renderError(self):
+
         try:
             error_surface = self.font_small.render(self.error_message, True, self.color_error)
             error_rect = error_surface.get_rect(center=(self.width // 2, self.height - 100))
             self.screen.blit(error_surface, error_rect)
             
-            # Decrease timer
             if self.error_timer > 0:
                 self.error_timer -= 1
             else:
@@ -451,38 +386,32 @@ class LoginPageView(PageView):
         except Exception as e:
             Logger.error("LoginPageView.render_error", e)
     
-    # === MAIN RUN LOOP ===
-    
     def run(self):
-        """Run the login page main loop. Returns login success data if login successful."""
+
         try:
             Logger.debug("LoginPageView.run", "Login page run loop started")
             
             running = True
             while running:
-                # Handle input
-                running = self.handle_input()
                 
-                # Check if login was successful - exit loop if so
+                running = self.handleInput()
+                
                 if self.login_successful:
                     running = False
                     Logger.debug("LoginPageView.run", "Login successful, exiting run loop")
                 
-                # Render
                 self.render()
                 
-                # Frame rate
                 self.clock.tick(self.fps)
             
             Logger.debug("LoginPageView.run", "Login page run loop ended")
             
-            # Return login data if successful
             if self.login_successful:
                 return {
                     "success": True,
                     "user": self.successful_user,
                     "progression": self.successful_progression,
-                    "is_admin": self.login_model.is_user_admin(),
+                    "isAdmin": self.login_model.is_user_admin(),
                     "width": self.width,
                     "height": self.height
                 }
@@ -492,8 +421,7 @@ class LoginPageView(PageView):
             Logger.error("LoginPageView.run", e)
             return {"success": False}
         finally:
-            # Only quit pygame if login was not successful
-            # If login successful, pygame will be reused by WelcomePageView
+            
             if not self.login_successful:
                 try:
                     pygame.quit()

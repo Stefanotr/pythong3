@@ -14,101 +14,56 @@ from Utils.Logger import Logger
 
 
 class UserManager:
-    """
-    Manages user authentication and progression data.
-    Handles credential encryption and linking with player progression files.
-    """
 
-    # === CONSTANTS ===
-    
     PROGRESSION_DIR = "Game/Progression"
-    CREDENTIALS_FILE = ".credentials.json"  # Hidden file for credentials
-    KEY_FILE = ".secret.key"  # Encryption key file
-    
-    # === INITIALIZATION ===
-    
+    CREDENTIALS_FILE = ".credentials.json"
+    KEY_FILE = ".secret.key"
+
     def __init__(self):
-        """Initialize UserManager and ensure necessary directories and keys exist."""
         try:
-            # Ensure progression directory exists
             os.makedirs(self.PROGRESSION_DIR, exist_ok=True)
-            
-            # Initialize encryption key
-            self._initialize_encryption_key()
-            
+            self.initializeEncryptionKey()
             Logger.debug("UserManager.__init__", "UserManager initialized")
         except Exception as e:
             Logger.error("UserManager.__init__", e)
             raise
     
-    # === ENCRYPTION KEY MANAGEMENT ===
-    
-    def _initialize_encryption_key(self):
-        """Initialize or load the encryption key for password encryption."""
+
+    def initializeEncryptionKey(self):
         try:
             key_path = os.path.join(self.PROGRESSION_DIR, self.KEY_FILE)
-            
             if os.path.exists(key_path):
-                # Load existing key
                 with open(key_path, 'rb') as f:
                     self.cipher_key = f.read()
             else:
-                # Generate new key
                 self.cipher_key = Fernet.generate_key()
                 with open(key_path, 'wb') as f:
                     f.write(self.cipher_key)
-                Logger.debug("UserManager._initialize_encryption_key", "New encryption key created")
+                Logger.debug("UserManager.initializeEncryptionKey", "New encryption key created")
             
             self.cipher = Fernet(self.cipher_key)
         except Exception as e:
-            Logger.error("UserManager._initialize_encryption_key", e)
+            Logger.error("UserManager.initializeEncryptionKey", e)
             raise
     
-    # === PASSWORD ENCRYPTION/DECRYPTION ===
-    
-    def _encrypt_password(self, password):
-        """
-        Encrypt a password using Fernet symmetric encryption.
-        
-        Args:
-            password: Plain text password
-            
-        Returns:
-            Encrypted password as string
-        """
+    def encryptPassword(self, password):
         try:
             encrypted = self.cipher.encrypt(password.encode())
             return encrypted.decode()
         except Exception as e:
-            Logger.error("UserManager._encrypt_password", e)
+            Logger.error("UserManager.encryptPassword", e)
             raise
     
-    def _decrypt_password(self, encrypted_password):
-        """
-        Decrypt a password using Fernet symmetric encryption.
-        
-        Args:
-            encrypted_password: Encrypted password string
-            
-        Returns:
-            Decrypted password as string
-        """
+    def decryptPassword(self, encrypted_password):
         try:
             decrypted = self.cipher.decrypt(encrypted_password.encode())
             return decrypted.decode()
         except Exception as e:
-            Logger.error("UserManager._decrypt_password", e)
+            Logger.error("UserManager.decryptPassword", e)
             raise
     
-    # === CREDENTIALS FILE MANAGEMENT ===
-    
-    def _get_credentials_data(self):
-        """
-        Load all credentials from the hidden credentials file.
-        
-        Returns:
-            Dictionary of credentials or empty dict if file doesn't exist
-        """
+
+    def getCredentialsData(self):
         try:
             cred_path = os.path.join(self.PROGRESSION_DIR, self.CREDENTIALS_FILE)
             
@@ -117,40 +72,32 @@ class UserManager:
                     return json.load(f)
             return {}
         except Exception as e:
-            Logger.error("UserManager._get_credentials_data", e)
+            Logger.error("UserManager.getCredentialsData", e)
             raise
     
-    def _save_credentials_data(self, credentials):
-        """
-        Save credentials to the hidden credentials file.
-        
-        Args:
-            credentials: Dictionary of credentials to save
-        """
+    def saveCredentialsData(self, credentials):
         try:
             cred_path = os.path.join(self.PROGRESSION_DIR, self.CREDENTIALS_FILE)
-            
-            # Ensure directory exists
             try:
                 os.makedirs(self.PROGRESSION_DIR, exist_ok=True)
             except Exception as e:
-                Logger.error("UserManager._save_credentials_data", f"Could not create directory: {e}")
+                Logger.error("UserManager.saveCredentialsData", f"Could not create directory: {e}")
             
             # Try to remove old file if it exists (to handle locked files)
             try:
                 if os.path.exists(cred_path):
                     os.remove(cred_path)
-                    Logger.debug("UserManager._save_credentials_data", "Removed old credentials file")
+                    Logger.debug("UserManager.saveCredentialsData", "Removed old credentials file")
             except PermissionError:
-                Logger.debug("UserManager._save_credentials_data", "Old credentials file is locked, will overwrite")
+                Logger.debug("UserManager.saveCredentialsData", "Old credentials file is locked, will overwrite")
             except Exception as e:
-                Logger.debug("UserManager._save_credentials_data", f"Could not remove old file: {e}")
+                Logger.debug("UserManager.saveCredentialsData", f"Could not remove old file: {e}")
             
             # Write new credentials file
             with open(cred_path, 'w', encoding='utf-8') as f:
                 json.dump(credentials, f, indent=2)
             
-            Logger.debug("UserManager._save_credentials_data", "Credentials saved successfully", path=cred_path)
+            Logger.debug("UserManager.saveCredentialsData", "Credentials saved successfully", path=cred_path)
             
             # Try to hide the file on Windows
             try:
@@ -159,12 +106,11 @@ class UserManager:
             except Exception:
                 pass  # Non-Windows system, file hiding not needed
         except Exception as e:
-            Logger.error("UserManager._save_credentials_data", e)
+            Logger.error("UserManager.saveCredentialsData", e)
             raise
     
-    # === USER REGISTRATION ===
-    
-    def register_user(self, username, password):
+
+    def registerUser(self, username, password):
         """
         Register a new user with username and password.
         Creates player progression file.
@@ -177,100 +123,64 @@ class UserManager:
             True if registration successful, False if username already exists
         """
         try:
-            # Check if user already exists
-            if self.user_exists(username):
-                Logger.debug("UserManager.register_user", "Registration failed: username already exists", username=username)
+            if self.userExists(username):
+                Logger.debug("UserManager.registerUser", "Registration failed: username already exists", username=username)
                 return False
             
-            # Load existing credentials
-            credentials = self._get_credentials_data()
+            credentials = self.getCredentialsData()
             
-            # Add new user with encrypted password
-            encrypted_pwd = self._encrypt_password(password)
+            encrypted_pwd = self.encryptPassword(password)
             credentials[username] = {
                 "password": encrypted_pwd,
                 "created_date": datetime.now().isoformat(),
                 "progression_file": f"{username}_progression.json"
             }
             
-            # Save updated credentials
-            self._save_credentials_data(credentials)
+            self.saveCredentialsData(credentials)
             
-            # Create empty progression file
-            self._create_empty_progression(username)
+            self.createEmptyProgression(username)
             
-            Logger.debug("UserManager.register_user", "User registered successfully", username=username)
+            Logger.debug("UserManager.registerUser", "User registered successfully", username=username)
             return True
         except Exception as e:
-            Logger.error("UserManager.register_user", e)
+            Logger.error("UserManager.registerUser", e)
             raise
     
-    # === USER AUTHENTICATION ===
-    
-    def authenticate_user(self, username, password):
-        """
-        Authenticate user with username and password.
-        
-        Args:
-            username: Username to authenticate
-            password: Password to verify
-            
-        Returns:
-            True if authentication successful, False otherwise
-        """
+
+    def authenticateUser(self, username, password):
         try:
-            credentials = self._get_credentials_data()
+            credentials = self.getCredentialsData()
             
             if username not in credentials:
-                Logger.debug("UserManager.authenticate_user", "Authentication failed: username not found", username=username)
+                Logger.debug("UserManager.authenticateUser", "Authentication failed: username not found", username=username)
                 return False
             
-            # Decrypt stored password and compare
             stored_encrypted_pwd = credentials[username]["password"]
-            stored_password = self._decrypt_password(stored_encrypted_pwd)
+            stored_password = self.decryptPassword(stored_encrypted_pwd)
             
             result = stored_password == password
             if result:
-                Logger.debug("UserManager.authenticate_user", "User authenticated successfully", username=username)
+                Logger.debug("UserManager.authenticateUser", "User authenticated successfully", username=username)
             else:
-                Logger.debug("UserManager.authenticate_user", "Authentication failed: wrong password", username=username)
+                Logger.debug("UserManager.authenticateUser", "Authentication failed: wrong password", username=username)
             
             return result
         except Exception as e:
-            Logger.error("UserManager.authenticate_user", e)
+            Logger.error("UserManager.authenticateUser", e)
             return False
     
-    # === USER EXISTENCE CHECK ===
-    
-    def user_exists(self, username):
-        """
-        Check if a user already exists.
-        
-        Args:
-            username: Username to check
-            
-        Returns:
-            True if user exists, False otherwise
-        """
+
+    def userExists(self, username):
         try:
-            credentials = self._get_credentials_data()
+            credentials = self.getCredentialsData()
             return username in credentials
         except Exception as e:
-            Logger.error("UserManager.user_exists", e)
+            Logger.error("UserManager.userExists", e)
             return False
     
-    # === PROGRESSION FILE MANAGEMENT ===
-    
-    def _create_empty_progression(self, username):
-        """
-        Create an empty progression file for a new user.
-        
-        Args:
-            username: Username for the progression file
-        """
+
+    def createEmptyProgression(self, username):
         try:
-            # Note: Game character is always "Lola Coma" - username is only for login
-            # Username is associated via the progression filename, not stored in the data
             progression_data = {
                 "created_date": datetime.now().isoformat(),
                 "last_save": datetime.now().isoformat(),
@@ -287,24 +197,15 @@ class UserManager:
                 "completed_rhythms": []
             }
             
-            self.save_progression(username, progression_data)
-            Logger.debug("UserManager._create_empty_progression", "Empty progression file created", username=username)
+            self.saveProgression(username, progression_data)
+            Logger.debug("UserManager.createEmptyProgression", "Empty progression file created", username=username)
         except Exception as e:
-            Logger.error("UserManager._create_empty_progression", e)
+            Logger.error("UserManager.createEmptyProgression", e)
             raise
     
-    def get_progression_filepath(self, username):
-        """
-        Get the full filepath for a user's progression file.
-        
-        Args:
-            username: Username
-            
-        Returns:
-            Full path to progression file
-        """
+    def getProgressionFilepath(self, username):
         try:
-            credentials = self._get_credentials_data()
+            credentials = self.getCredentialsData()
             
             if username not in credentials:
                 return None
@@ -312,111 +213,72 @@ class UserManager:
             progression_filename = credentials[username]["progression_file"]
             return os.path.join(self.PROGRESSION_DIR, progression_filename)
         except Exception as e:
-            Logger.error("UserManager.get_progression_filepath", e)
+            Logger.error("UserManager.getProgressionFilepath", e)
             return None
     
-    def load_progression(self, username):
-        """
-        Load player progression data from file.
-        
-        Args:
-            username: Username whose progression to load
-            
-        Returns:
-            Progression data dictionary or None if file doesn't exist
-        """
+    def loadProgression(self, username):
         try:
-            filepath = self.get_progression_filepath(username)
+            filepath = self.getProgressionFilepath(username)
             
             if filepath is None or not os.path.exists(filepath):
-                Logger.debug("UserManager.load_progression", "Progression file not found", username=username)
+                Logger.debug("UserManager.loadProgression", "Progression file not found", username=username)
                 return None
             
             with open(filepath, 'r', encoding='utf-8') as f:
                 progression_data = json.load(f)
             
-            Logger.debug("UserManager.load_progression", "Progression loaded successfully", username=username)
+            Logger.debug("UserManager.loadProgression", "Progression loaded successfully", username=username)
             return progression_data
         except Exception as e:
-            Logger.error("UserManager.load_progression", e)
+            Logger.error("UserManager.loadProgression", e)
             return None
     
-    def save_progression(self, username, progression_data):
-        """
-        Save player progression data to file.
-        
-        Args:
-            username: Username whose progression to save
-            progression_data: Dictionary of progression data to save
-            
-        Returns:
-            True if save successful, False otherwise
-        """
+    def saveProgression(self, username, progression_data):
         try:
-            filepath = self.get_progression_filepath(username)
+            filepath = self.getProgressionFilepath(username)
             
             if filepath is None:
-                Logger.debug("UserManager.save_progression", "Cannot save: user progression file not mapped", username=username)
+                Logger.debug("UserManager.saveProgression", "Cannot save: user progression file not mapped", username=username)
                 return False
             
-            # Ensure directory exists
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             
-            # Update last save timestamp
             progression_data["last_save"] = datetime.now().isoformat()
             
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(progression_data, f, indent=2, ensure_ascii=False)
             
-            Logger.debug("UserManager.save_progression", "Progression saved successfully", username=username)
+            Logger.debug("UserManager.saveProgression", "Progression saved successfully", username=username)
             return True
         except Exception as e:
-            Logger.error("UserManager.save_progression", e)
+            Logger.error("UserManager.saveProgression", e)
             return False
     
-    # === UTILITY METHODS ===
-    
-    def get_all_users(self):
-        """
-        Get list of all registered usernames.
-        
-        Returns:
-            List of usernames
-        """
+
+    def getAllUsers(self):
         try:
-            credentials = self._get_credentials_data()
+            credentials = self.getCredentialsData()
             return list(credentials.keys())
         except Exception as e:
-            Logger.error("UserManager.get_all_users", e)
+            Logger.error("UserManager.getAllUsers", e)
             return []
     
-    def delete_user(self, username):
-        """
-        Delete a user account and their progression file.
-        
-        Args:
-            username: Username to delete
-            
-        Returns:
-            True if deletion successful, False otherwise
-        """
+    def deleteUser(self, username):
         try:
-            credentials = self._get_credentials_data()
+            credentials = self.getCredentialsData()
             
             if username not in credentials:
                 return False
             
-            # Delete from credentials
             del credentials[username]
-            self._save_credentials_data(credentials)
+            self.saveCredentialsData(credentials)
             
-            # Delete progression file
-            filepath = self.get_progression_filepath(username)
+            filepath = self.getProgressionFilepath(username)
             if filepath and os.path.exists(filepath):
                 os.remove(filepath)
             
-            Logger.debug("UserManager.delete_user", "User deleted successfully", username=username)
+            Logger.debug("UserManager.deleteUser", "User deleted successfully", username=username)
             return True
         except Exception as e:
-            Logger.error("UserManager.delete_user", e)
+            Logger.error("UserManager.deleteUser", e)
             return False

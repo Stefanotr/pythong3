@@ -1,6 +1,10 @@
+from Utils.Logger import Logger
 
 
-class BuildingModel():
+class BuildingModel:
 
     def __init__(self):
-        pass
+        try:
+            Logger.debug("BuildingModel.__init__", "Building model initialized")
+        except Exception as e:
+            Logger.error("BuildingModel.__init__", e)

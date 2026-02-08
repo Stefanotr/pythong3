@@ -1,103 +1,72 @@
-"""
-GuitarModel Module
-
-Represents guitar weapons in the game.
-Manages guitar properties like base damage, special effects, and effect chances.
-"""
-
 from Utils.Logger import Logger
 
 
-# === GUITAR MODEL CLASS ===
-
 class GuitarModel:
-    """
-    Model for guitar weapons in the game.
-    Tracks base damage, special effects (paralyze, bleed, stun), and effect probabilities.
-    """
-    
-    # === INITIALIZATION ===
-    
-    def __init__(self, name, base_damage, special_effect=None, effect_chance=0):
-        """
-        Initialize the guitar model.
-        
-        Args:
-            name: Guitar name
-            base_damage: Base damage value
-            special_effect: Special effect type ("paralyze", "bleed", "stun") or None
-            effect_chance: Probability of special effect (0-100)
-        """
+
+    def __init__(self, name, baseDamage, specialEffect=None, effectChance=0):
         try:
             self._name = name
-            self._base_damage = base_damage
-            self._special_effect = special_effect  # "paralyze", "bleed", "stun"
-            self._effect_chance = effect_chance  # Effect probability (0-100)
-            Logger.debug("GuitarModel.__init__", "Guitar model initialized", 
-                       name=name, base_damage=base_damage, 
-                       special_effect=special_effect, effect_chance=effect_chance)
+            self._baseDamage = baseDamage
+            self._specialEffect = specialEffect
+            self._effectChance = effectChance
+            Logger.debug("GuitarModel.__init__", f"Guitar created: {name}")
         except Exception as e:
             Logger.error("GuitarModel.__init__", e)
             raise
+
         
     def getName(self):
         return self._name
-    
+
     def setName(self, name):
         try:
             if not name:
-                raise ValueError("Guitar name can't be NULL")
+                raise ValueError("Name cannot be empty")
             self._name = name
         except Exception as e:
             Logger.error("GuitarModel.setName", e)
+
     
     def getBaseDamage(self):
-        return self._base_damage
-    
+        return self._baseDamage
+
     def setBaseDamage(self, damage):
         try:
             if damage < 0:
-                raise ValueError("Base damage can't be negative")
-            self._base_damage = damage
+                raise ValueError("Base damage cannot be negative")
+            self._baseDamage = damage
         except Exception as e:
             Logger.error("GuitarModel.setBaseDamage", e)
+
     
     def getSpecialEffect(self):
-        return self._special_effect
-    
+        return self._specialEffect
+
     def setSpecialEffect(self, effect):
-        self._special_effect = effect
+        self._specialEffect = effect
+
     
     def getEffectChance(self):
-        return self._effect_chance
-    
+        return self._effectChance
+
     def setEffectChance(self, chance):
         try:
             if not 0 <= chance <= 100:
-                raise ValueError("Effect chance must be between 0 and 100")
-            self._effect_chance = chance
+                raise ValueError("Effect chance must be 0-100")
+            self._effectChance = chance
         except Exception as e:
             Logger.error("GuitarModel.setEffectChance", e)
+
     
     def getDescription(self):
-        """
-        Get a description of the guitar.
-        
-        Returns:
-            str: Formatted description string
-        """
         try:
-            desc = f"{self._name} (Dégâts: {self._base_damage})"
-            if self._special_effect:
-                desc += f"\nEffet spécial: {self._special_effect} ({self._effect_chance}% chance)"
+            desc = f"{self._name} (Damage: +{self._baseDamage})"
+            if self._specialEffect:
+                desc += f" | Effect: {self._specialEffect} ({self._effectChance}%)"
             return desc
         except Exception as e:
             Logger.error("GuitarModel.getDescription", e)
             return "Unknown Guitar"
-
-
-# === GUITAR FACTORY CLASS ===
-
 class GuitarFactory:
     """
     Factory class for creating predefined guitars in the game.
@@ -162,7 +131,7 @@ class GuitarFactory:
             GuitarModel: Inflatable guitar instance with lower damage
         """
         try:
-            guitar = GuitarModel("Guitare Gonflable", 3)  # Lower damage than La Pelle (5)
+            guitar = GuitarModel("Guitare Gonflable", 3)
             Logger.debug("GuitarFactory.createGuitareGonflable", "Guitare Gonflable created")
             return guitar
         except Exception as e:
