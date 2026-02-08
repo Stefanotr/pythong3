@@ -437,16 +437,19 @@ class ActView:
                                         return GameState.QUIT.value
                                     elif pause_result == GameState.LOGOUT.value:
                                         Logger.debug("ActView.run", "Logout requested from pause menu")
-                                        # Stop all audio before logout
+                                       
                                         if self.combat_controller and hasattr(self.combat_controller, 'stop_all_audio'):
                                             self.combat_controller.stop_all_audio()
                                         if self.rhythm_controller and hasattr(self.rhythm_controller, 'stop_all_audio'):
                                             self.rhythm_controller.stop_all_audio()
 
+
+
+
                                         return GameState.LOGOUT.value
                                     elif pause_result == GameState.MAIN_MENU.value:
                                         Logger.debug("ActView.run", "Main menu requested from pause menu")
-                                        # Stop all audio before returning to main menu
+                                      
                                         if self.combat_controller and hasattr(self.combat_controller, 'stop_all_audio'):
                                             self.combat_controller.stop_all_audio()
 
@@ -454,8 +457,11 @@ class ActView:
                                             self.rhythm_controller.stop_all_audio()
                                         return GameState.MAIN_MENU.value
                                     
-                                    else:  # CONTINUE or anything else
-                                        # Resume all audio and notes when continuing
+                                    else: 
+                                       
+
+
+
                                         if self.combat_controller and hasattr(self.combat_controller, 'is_paused'):
                                             self.combat_controller.is_paused = False
                                             if hasattr(self.combat_controller, 'resume_audio'):
@@ -718,14 +724,14 @@ class ActView:
                 context="act2" 
             )
             
-            # Transition to rhythm phase
+           
             self.phase = "rhythm"
             
             Logger.debug("ActView._init_rhythm_phase", "Rhythm phase initialized")
             
         except Exception as e:
             Logger.error("ActView._init_rhythm_phase", e)
-            # Fallback: skip rhythm phase
+          
             self.phase = "finished"
 
 
