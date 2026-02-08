@@ -569,7 +569,7 @@ class ActView:
             
             self.rhythm_model = RhythmModel()
             
-            self.rhythm_view = RhythmView(self.screen_width, self.screen_height, backgroundImagePath =bg_image)
+            self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path="Game/Assets/woodstock.png")
             
             self.rhythm_controller = RhythmController(
                 self.rhythm_model, 
