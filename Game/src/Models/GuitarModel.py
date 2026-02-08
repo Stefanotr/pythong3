@@ -122,7 +122,7 @@ class GuitarFactory:
     def createGuitareGonflable():
         
         try:
-            guitar = GuitarModel("Guitare Gonflable", 3)  # Lower damage than La Pelle (5)
+            guitar = GuitarModel("Guitare Gonflable", 3)  
             Logger.debug("GuitarFactory.createGuitareGonflable", "Guitare Gonflable created")
             return guitar
         except Exception as e:

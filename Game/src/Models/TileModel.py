@@ -77,7 +77,7 @@ class TileModel:
         except Exception as e:
 
             Logger.error("TileModel.getImage", e)
-            # Return default surface if error
+           
             default = pygame.Surface((32, 32))
             default.fill((128, 128, 128))
             return default

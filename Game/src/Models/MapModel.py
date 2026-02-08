@@ -385,7 +385,7 @@ class MapModel:
       
         try:
             if isinstance(tile_kinds, list):
-                self.tile_kinds = tile_kinds.copy()  # Store a copy
+                self.tile_kinds = tile_kinds.copy() 
                 Logger.debug("MapModel.setTileKinds", "Tile kinds set", count=len(self.tile_kinds))
             else:
                 Logger.error("MapModel.setTileKinds", ValueError("Tile kinds must be a list"))
@@ -414,7 +414,7 @@ class MapModel:
 
 
         try:
-            # Return a deep copy to prevent external modification
+            
             return [row.copy() for row in self.tiles] if hasattr(self, 'tiles') and self.tiles else []
         except Exception as e:
             Logger.error("MapModel.getTiles", e)
@@ -424,7 +424,7 @@ class MapModel:
        
         try:
             if isinstance(tiles, list):
-                # Store a deep copy
+              
                 self.tiles = [row.copy() if isinstance(row, list) else row for row in tiles]
                 Logger.debug("MapModel.setTiles", "Tiles set", rows=len(self.tiles))
             else:
