@@ -1,14 +1,9 @@
 from enum import Enum
 
-
 class GameState(Enum):
-    """Centralized game state identifiers.
-
-    Values are strings for backward compatibility with existing return values.
-    """
 
     QUIT = "QUIT"
-    LOGOUT = "LOGOUT"  # Return to login
+    LOGOUT = "LOGOUT"
     MAIN_MENU = "MAIN_MENU"
     ACT1 = "ACT1"
     ACT2 = "ACT2"

@@ -1,32 +1,9 @@
-"""
-Act2View Module
 
-Alias for Act 2 functionality using ActView.
-This module maintains backward compatibility while using the unified ActView class.
-"""
-
-import pygame
-import os
-from Views.Act1View import ActView
-from Utils.Logger import Logger
-
-
-# === ACT 2 VIEW ALIAS ===
-
-class Act2View:
-    """
-    Backward compatibility alias for Act 2.
-    Delegates to ActView with Act 2 configuration.
-    """
     
     def __new__(cls, screen, player=None, sequence_controller=None):
-        """Create an ActView instance with Act 2 configuration"""
         return ActView.create_act2(screen, player, sequence_controller)
 
-
-# For imports that directly reference Act2View
 if __name__ == "__main__":
-    """Test Act 2"""
     try:
         Logger.debug("Act2View.__main__", "Standalone test starting")
         

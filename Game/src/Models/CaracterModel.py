@@ -3,7 +3,6 @@ from Utils.Logger import Logger
 class CaracterModel:
     def __init__(self, name, x=175, y=175, type="PNJ"):
 
-        #Types possible: PNJ, SBIRE, BOSS, PLAYER (we can add more if needed)
         self._type = type
         self._name = name
         self._health = 100
@@ -14,9 +13,9 @@ class CaracterModel:
         self._drunkenness = 0
         self._coma_risk = 0
         self._selected_bottle = None
-        self._current_action = "idle"  # idle, attacking, drinking, dodging
-        self._action_timer = 0  # Timer for action animation
-        self._currency = 0  # Player currency (starts at 0)
+        self._current_action = "idle"
+        self._action_timer = 0
+        self._currency = 0
 
     def getType(self):
         return self._type
@@ -78,13 +77,6 @@ class CaracterModel:
         return self._current_action
     
     def setCurrentAction(self, action, duration=30):
-        """
-        Set the current action for the character.
-        
-        Args:
-            action: Action type (idle, attacking, drinking, dodging)
-            duration: How long to display this action (in frames)
-        """
         self._current_action = action
         self._action_timer = duration
         Logger.debug("CaracterModel.setCurrentAction", f"Action set to {action}", duration=duration)
@@ -93,7 +85,6 @@ class CaracterModel:
         return self._action_timer
     
     def updateActionTimer(self):
-        """Decrement action timer, reset to idle when done"""
         if self._action_timer > 0:
             self._action_timer -= 1
         elif self._current_action != "idle":
@@ -121,7 +112,6 @@ class CaracterModel:
     def setSelectedBottle(self, bottle):
         self._selected_bottle = bottle
     def getCurrency(self):
-        """Get player currency"""
         try:
             return self._currency
         except Exception as e:
@@ -129,7 +119,6 @@ class CaracterModel:
             return 0
 
     def setCurrency(self, amount):
-        """Set player currency"""
         try:
             self._currency = max(0, amount)
             Logger.debug("CaracterModel.setCurrency", "Currency set", amount=self._currency)
@@ -137,7 +126,6 @@ class CaracterModel:
             Logger.error("CaracterModel.setCurrency", e)
 
     def addCurrency(self, amount):
-        """Add to player currency"""
         try:
             self._currency = max(0, self._currency + amount)
             Logger.debug("CaracterModel.addCurrency", "Currency added", amount=amount, total=self._currency)

@@ -1,35 +1,8 @@
-"""
-ShopModel Module
 
-Manages shop state, available items, player currency, and purchase logic.
-"""
-
-from Utils.Logger import Logger
-
-
-# === SHOP MODEL CLASS ===
-
-class ShopModel:
-    """
-    Model for managing shop state and items.
-    Handles available items, player currency, and purchase transactions.
-    """
-    
-    # === INITIALIZATION ===
-    
-    def __init__(self, player):
-        """
-        Initialize the shop model.
-        
-        Args:
-            player: PlayerModel instance to track currency and inventory
-        """
         try:
             self.player = player
             
-            # All shop items in a single list (all alcohol categories together)
             self.available_items = [
-                # Light Beers
                 {
                     "name": "Light Beer",
                     "type": "bottle",
@@ -52,7 +25,6 @@ class ShopModel:
                     "bonus_damage": 3,
                     "accuracy_penalty": 5
                 },
-                # Cocktails
                 {
                     "name": "Mojito",
                     "type": "bottle",
@@ -97,7 +69,6 @@ class ShopModel:
                     "bonus_damage": 2,
                     "accuracy_penalty": 3
                 },
-                # Vodka
                 {
                     "name": "Vodka",
                     "type": "bottle",
@@ -109,7 +80,6 @@ class ShopModel:
                     "bonus_damage": 4,
                     "accuracy_penalty": 8
                 },
-                # Rum Varieties
                 {
                     "name": "Rum",
                     "type": "bottle",
@@ -133,7 +103,6 @@ class ShopModel:
                     "bonus_damage": 5,
                     "accuracy_penalty": 10
                 },
-                # Whiskey & Spirits
                 {
                     "name": "Whiskey",
                     "type": "bottle",
@@ -167,7 +136,6 @@ class ShopModel:
                     "bonus_damage": 6,
                     "accuracy_penalty": 12
                 },
-                # Tequila
                 {
                     "name": "Tequila",
                     "type": "bottle",
@@ -179,7 +147,6 @@ class ShopModel:
                     "bonus_damage": 6,
                     "accuracy_penalty": 12
                 },
-                # Extreme
                 {
                     "name": "Absinthe",
                     "type": "bottle",
@@ -191,7 +158,6 @@ class ShopModel:
                     "bonus_damage": 8,
                     "accuracy_penalty": 18
                 },
-                # Upgrades
                 {
                     "name": "Amplifier",
                     "type": "upgrade",
@@ -202,7 +168,6 @@ class ShopModel:
                 }
             ]
             
-            # Pagination state
             self.selected_index = 0
             self.current_page = 0
             self.items_per_page = 8
@@ -216,15 +181,8 @@ class ShopModel:
             Logger.error("ShopModel.__init__", e)
             raise
     
-    # === GETTERS / SETTERS ===
     
     def getPlayer(self):
-        """
-        Get the player model instance.
-        
-        Returns:
-            PlayerModel: Player model instance
-        """
         try:
             return self.player
         except Exception as e:
@@ -232,12 +190,6 @@ class ShopModel:
             return None
     
     def setPlayer(self, player):
-        """
-        Set the player model instance.
-        
-        Args:
-            player: PlayerModel instance
-        """
         try:
             self.player = player
             Logger.debug("ShopModel.setPlayer", "Player set", player_name=player.getName() if player else "None")
@@ -245,12 +197,6 @@ class ShopModel:
             Logger.error("ShopModel.setPlayer", e)
     
     def getPlayerCurrency(self):
-        """
-        Get the player's current currency.
-        
-        Returns:
-            int: Current currency amount
-        """
         try:
             return self.player.getCurrency()
         except Exception as e:
@@ -258,12 +204,6 @@ class ShopModel:
             return 0
     
     def setPlayerCurrency(self, amount):
-        """
-        Set the player's currency amount.
-        
-        Args:
-            amount: New currency amount
-        """
         try:
             self.player.setCurrency(max(0, amount))
             Logger.debug("ShopModel.setPlayerCurrency", "Currency updated", amount=self.player.getCurrency())
@@ -271,12 +211,6 @@ class ShopModel:
             Logger.error("ShopModel.setPlayerCurrency", e)
     
     def getAvailableItems(self):
-        """
-        Get the list of available shop items.
-        
-        Returns:
-            list: List of item dictionaries
-        """
         try:
             return self.available_items.copy()
         except Exception as e:
@@ -284,15 +218,9 @@ class ShopModel:
             return []
     
     def setAvailableItems(self, items):
-        """
-        Set the list of available shop items.
-        
-        Args:
-            items: List of item dictionaries
-        """
         try:
             if isinstance(items, list):
-                self.available_items = items.copy()  # Store a copy
+                self.available_items = items.copy()
                 Logger.debug("ShopModel.setAvailableItems", "Available items set", count=len(self.available_items))
             else:
                 Logger.error("ShopModel.setAvailableItems", ValueError("Items must be a list"))
@@ -300,12 +228,6 @@ class ShopModel:
             Logger.error("ShopModel.setAvailableItems", e)
     
     def getSelectedIndex(self):
-        """
-        Get the currently selected item index.
-        
-        Returns:
-            int: Selected item index
-        """
         try:
             return self.selected_index
         except Exception as e:
@@ -313,12 +235,6 @@ class ShopModel:
             return 0
     
     def setSelectedIndex(self, index):
-        """
-        Set the selected item index.
-        
-        Args:
-            index: Item index to select
-        """
         try:
             if 0 <= index < len(self.available_items):
                 self.selected_index = index
@@ -327,12 +243,6 @@ class ShopModel:
             Logger.error("ShopModel.setSelectedIndex", e)
     
     def getPurchaseMessage(self):
-        """
-        Get the last purchase message.
-        
-        Returns:
-            str: Purchase message
-        """
         try:
             return self.purchase_message
         except Exception as e:
@@ -340,12 +250,6 @@ class ShopModel:
             return ""
     
     def setPurchaseMessage(self, message):
-        """
-        Set the purchase message.
-        
-        Args:
-            message: Purchase message string
-        """
         try:
             self.purchase_message = str(message) if message else ""
             Logger.debug("ShopModel.setPurchaseMessage", "Purchase message set", purchase_message=self.purchase_message)
@@ -353,12 +257,6 @@ class ShopModel:
             Logger.error("ShopModel.setPurchaseMessage", e)
     
     def isPurchaseSuccess(self):
-        """
-        Check if the last purchase was successful.
-        
-        Returns:
-            bool: True if purchase succeeded, False otherwise
-        """
         try:
             return self.purchase_success
         except Exception as e:
@@ -366,30 +264,14 @@ class ShopModel:
             return False
     
     def setPurchaseSuccess(self, success):
-        """
-        Set the purchase success status.
-        
-        Args:
-            success: True if purchase succeeded, False otherwise
-        """
         try:
             self.purchase_success = bool(success)
             Logger.debug("ShopModel.setPurchaseSuccess", "Purchase success set", success=self.purchase_success)
         except Exception as e:
             Logger.error("ShopModel.setPurchaseSuccess", e)
     
-    # === PURCHASE LOGIC ===
     
     def purchaseItem(self, item_index):
-        """
-        Attempt to purchase an item.
-        
-        Args:
-            item_index: Index of the item to purchase (absolute index)
-            
-        Returns:
-            bool: True if purchase succeeded, False otherwise
-        """
         try:
             if item_index < 0 or item_index >= len(self.available_items):
                 self.setPurchaseMessage("Invalid item selection")
@@ -400,7 +282,6 @@ class ShopModel:
             item = self.available_items[item_index]
             price = item["price"]
             
-            # Check if player has enough currency
             if self.player.getCurrency() < price:
                 self.setPurchaseMessage(f"Not enough currency! Need ${price}, have ${self.player.getCurrency()}")
                 self.setPurchaseSuccess(False)
@@ -408,21 +289,17 @@ class ShopModel:
                            required=price, available=self.player.getCurrency())
                 return False
             
-            # Apply item effect
             try:
                 if item["type"] == "bottle":
                     from Models.BottleModel import BottleModel
                     
-                    # Get bottle properties from item
                     alcohol_level = item.get("alcohol_level", 0)
                     bonus_damage = item.get("bonus_damage", 0)
                     accuracy_penalty = item.get("accuracy_penalty", 0)
                     hp_restore = item.get("hp_restore", 0)
                     
-                    # Create bottle with dynamic properties
                     bottle = BottleModel(item["name"], alcohol_level, bonus_damage, accuracy_penalty)
                     
-                    # Apply any HP restoration
                     if hp_restore > 0:
                         current_hp = self.player.getHealth()
                         self.player.setHealth(min(100, current_hp + hp_restore))
@@ -433,19 +310,17 @@ class ShopModel:
                         self.setPurchaseMessage(f"Purchased {item['name']}! Bottle added to inventory.")
                         Logger.debug("ShopModel.purchaseItem", f"{item['name']} purchased")
                     
-                    # Add to player inventory
                     if hasattr(self.player, 'inventory'):
                         self.player.inventory.add_item(bottle)
                     
                 elif item["type"] == "upgrade":
                     if item["effect"] == "upgrade_damage":
                         current_damage = self.player.getDamage()
-                        self.player.setDamage(current_damage + 3)  # Amplifier gives +3
+                        self.player.setDamage(current_damage + 3)
                         self.setPurchaseMessage(f"Purchased {item['name']}! Damage increased by +3.")
                         Logger.debug("ShopModel.purchaseItem", "Amplifier purchased", 
                                    new_damage=self.player.getDamage())
                 
-                # Deduct currency
                 self.player.setCurrency(self.player.getCurrency() - price)
                 self.setPurchaseSuccess(True)
                 Logger.debug("ShopModel.purchaseItem", "Purchase successful", 
@@ -464,10 +339,7 @@ class ShopModel:
             self.setPurchaseSuccess(False)
             return False
 
-    # === PAGINATION ===
-
     def nextPage(self):
-        """Move to the next page of items"""
         try:
             max_page = (len(self.available_items) - 1) // self.items_per_page
             if self.current_page < max_page:
@@ -478,7 +350,6 @@ class ShopModel:
             Logger.error("ShopModel.nextPage", e)
 
     def previousPage(self):
-        """Move to the previous page of items"""
         try:
             if self.current_page > 0:
                 self.current_page -= 1
@@ -488,11 +359,9 @@ class ShopModel:
             Logger.error("ShopModel.previousPage", e)
 
     def getCurrentPage(self):
-        """Get current page number"""
         return self.current_page
 
     def getPageCount(self):
-        """Get total number of pages"""
         try:
             return (len(self.available_items) - 1) // self.items_per_page + 1
         except Exception as e:
@@ -500,7 +369,6 @@ class ShopModel:
             return 1
 
     def getItemsForCurrentPage(self):
-        """Get items for the current page"""
         try:
             start_idx = self.current_page * self.items_per_page
             end_idx = start_idx + self.items_per_page
@@ -510,7 +378,6 @@ class ShopModel:
             return []
 
     def getItemIndexOnCurrentPage(self, page_index):
-        """Convert page-relative item index to absolute index"""
         try:
             return self.current_page * self.items_per_page + page_index
         except Exception as e:

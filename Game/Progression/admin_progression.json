@@ -1,5 +1,5 @@
 {
-  "current_stage": 8,
+  "current_stage": 2,
   "level": 0,
   "hp": 100,
   "max_hp": 100,
@@ -8,8 +8,8 @@
   "coma_risk": 0,
   "currency": 2652,
   "position": {
-    "x": 404,
-    "y": 432
+    "x": 1598,
+    "y": 378
   },
   "inventory": [
     {
@@ -93,5 +93,5 @@
   ],
   "completed_acts": [],
   "completed_rhythms": [],
-  "last_save": "2026-02-08T00:46:29.446103"
+  "last_save": "2026-02-08T16:29:51.037619"
 }

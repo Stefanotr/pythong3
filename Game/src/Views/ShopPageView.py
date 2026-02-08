@@ -1,33 +1,4 @@
-"""
-ShopPageView Module
 
-Handles the visual representation of the shop page.
-Displays shop interface for purchasing items (View-only, MVC pattern).
-"""
-
-import pygame
-from Utils.Logger import Logger
-from Views.InventoryView import InventoryView
-
-
-# === SHOP PAGE VIEW CLASS ===
-
-class ShopPageView:
-    """
-    View class for rendering the shop interface.
-    Displays shop background, items, and UI elements (view-only, no logic).
-    """
-    
-    # === INITIALIZATION ===
-    
-    def __init__(self, screen, shop_model):
-        """
-        Initialize the shop page view.
-        
-        Args:
-            screen: Pygame surface to draw on
-            shop_model: ShopModel instance containing shop state
-        """
         try:
             self.screen = screen
             self.shop_model = shop_model
@@ -37,15 +8,12 @@ class ShopPageView:
             Logger.debug("ShopPageView.__init__", "Shop page view initialized", 
                         width=self.screen_width, height=self.screen_height)
             
-            # Load background image
             try:
                 self.background = pygame.image.load('Game/Assets/Shop.png')
-                # Scale to screen size
                 self.background = pygame.transform.scale(self.background, (self.screen_width, self.screen_height))
                 Logger.debug("ShopPageView.__init__", "Background image loaded")
             except FileNotFoundError as e:
                 Logger.error("ShopPageView.__init__", e)
-                # Create default background if image not found
                 self.background = pygame.Surface((self.screen_width, self.screen_height))
                 self.background.fill((50, 50, 50))
                 Logger.debug("ShopPageView.__init__", "Using default background")
@@ -53,7 +21,6 @@ class ShopPageView:
                 Logger.error("ShopPageView.__init__", e)
                 raise
             
-            # Font setup
             try:
                 self.title_font = pygame.font.SysFont("Arial", 48, bold=True)
                 self.item_font = pygame.font.SysFont("Arial", 24)
@@ -64,7 +31,6 @@ class ShopPageView:
                 self.item_font = pygame.font.Font(None, 24)
                 self.small_font = pygame.font.Font(None, 18)
             
-            # Inventory view for displaying owned bottles
             try:
                 self.inventory_view = InventoryView(self.screen_width, self.screen_height)
                 Logger.debug("ShopPageView.__init__", "Inventory view initialized")
@@ -72,38 +38,29 @@ class ShopPageView:
                 Logger.error("ShopPageView.__init__", e)
                 self.inventory_view = None
             
-            # Message timer
             self.message_timer = 0
                 
         except Exception as e:
             Logger.error("ShopPageView.__init__", e)
             raise
 
-    # === RENDERING ===
     
     def draw(self, player=None):
-        """
-        Draw the shop interface to the screen.
-        Renders background, items, currency, pagination, and navigation buttons.
-        """
         try:
-            # Draw background
             try:
                 self.screen.blit(self.background, (0, 0))
             except Exception as e:
                 Logger.error("ShopPageView.draw", e)
             
-            # Draw title
             try:
                 title_text = "SHOP"
-                title_surf = self.title_font.render(title_text, True, (255, 215, 0))  # Gold
+                title_surf = self.title_font.render(title_text, True, (255, 215, 0))
                 title_x = self.screen_width // 2 - title_surf.get_width() // 2
                 title_y = 30
                 self.screen.blit(title_surf, (title_x, title_y))
             except Exception as e:
                 Logger.error("ShopPageView.draw", e)
             
-            # Draw currency
             try:
                 currency_text = f"Currency: ${self.shop_model.getPlayerCurrency()}"
                 currency_surf = self.item_font.render(currency_text, True, (255, 255, 0))
@@ -113,7 +70,6 @@ class ShopPageView:
             except Exception as e:
                 Logger.error("ShopPageView.draw", e)
             
-            # Draw items
             try:
                 items = self.shop_model.getItemsForCurrentPage()
                 selected_index = self.shop_model.getSelectedIndex()
@@ -126,36 +82,30 @@ class ShopPageView:
                 for i, item in enumerate(items):
                     item_y = item_y_start + i * item_spacing
                     
-                    # Calculate absolute index on this page
                     abs_index = self.shop_model.getItemIndexOnCurrentPage(i)
                     
-                    # Highlight selected item
                     if abs_index == selected_index:
                         highlight_rect = pygame.Rect(35, item_y - 8, self.screen_width - 70, 60)
                         pygame.draw.rect(self.screen, (255, 215, 0, 100), highlight_rect, 3)
                     
-                    # Item name and category
                     name_text = item["name"]
                     category_text = f"({item.get('category', 'Item')})"
                     name_color = (255, 255, 255) if abs_index == selected_index else (200, 200, 200)
                     name_surf = self.item_font.render(f"{name_text} {category_text}", True, name_color)
                     self.screen.blit(name_surf, (60, item_y))
                     
-                    # Price
                     price_text = f"${item['price']}"
                     price_color = (0, 255, 0) if self.shop_model.getPlayerCurrency() >= item['price'] else (255, 100, 100)
                     price_surf = self.item_font.render(price_text, True, price_color)
                     price_x = self.screen_width - price_surf.get_width() - 50
                     self.screen.blit(price_surf, (price_x, item_y))
                     
-                    # Description (shorter)
-                    desc_text = item["description"][:65]  # Limit description length
+                    desc_text = item["description"][:65]
                     desc_surf = self.small_font.render(desc_text, True, (150, 150, 150))
                     self.screen.blit(desc_surf, (60, item_y + 25))
             except Exception as e:
                 Logger.error("ShopPageView.draw", e)
             
-            # Draw navigation buttons (Previous/Next) at the bottom
             try:
                 current_page = self.shop_model.getCurrentPage()
                 page_count = self.shop_model.getPageCount()
@@ -164,7 +114,6 @@ class ShopPageView:
                 button_width = 130
                 button_height = 40
                 
-                # Previous button
                 prev_x = self.screen_width // 2 - 180
                 prev_rect = pygame.Rect(prev_x, button_y, button_width, button_height)
                 prev_enabled = current_page > 0
@@ -176,7 +125,6 @@ class ShopPageView:
                 self.screen.blit(prev_text, (prev_text_x, prev_text_y))
                 self.prev_button_rect = prev_rect if prev_enabled else None
                 
-                # Next button
                 next_x = self.screen_width // 2 + 50
                 next_rect = pygame.Rect(next_x, button_y, button_width, button_height)
                 next_enabled = current_page < page_count - 1
@@ -188,7 +136,6 @@ class ShopPageView:
                 self.screen.blit(next_text, (next_text_x, next_text_y))
                 self.next_button_rect = next_rect if next_enabled else None
                 
-                # Draw pagination info below buttons
                 page_text = f"Page {current_page + 1} / {page_count}"
                 page_surf = self.small_font.render(page_text, True, (150, 150, 255))
                 page_x = self.screen_width // 2 - page_surf.get_width() // 2
@@ -197,7 +144,6 @@ class ShopPageView:
             except Exception as e:
                 Logger.error("ShopPageView.draw - buttons", e)
             
-            # Draw purchase message
             try:
                 if self.shop_model.getPurchaseMessage():
                     message = self.shop_model.getPurchaseMessage()
@@ -209,7 +155,6 @@ class ShopPageView:
             except Exception as e:
                 Logger.error("ShopPageView.draw", e)
             
-            # Draw instructions
             try:
                 instruction_text = "UP/DOWN: Choose Item  |  LEFT/RIGHT: Change Page  |  ENTER: Buy  |  ESC: Exit"
                 instruction_surf = self.small_font.render(instruction_text, True, (150, 150, 150))
@@ -219,7 +164,6 @@ class ShopPageView:
             except Exception as e:
                 Logger.error("ShopPageView.draw", e)
             
-            # --- DISPLAY PLAYER INVENTORY (Bottom Right) ---
             try:
                 if player and hasattr(player, 'inventory') and self.inventory_view:
                     self.inventory_view.draw_shop_inventory(

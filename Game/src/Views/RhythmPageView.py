@@ -1,64 +1,23 @@
-"""
-RhythmPageView Module
 
-Handles the final rhythm sequence view.
-Uses existing RhythmModel, RhythmController, and RhythmView classes.
-"""
-
-import pygame
-import os
-from Models.PlayerModel import PlayerModel
-from Controllers.GameState import GameState
-from Models.RhythmModel import RhythmModel
-from Controllers.RhythmController import RhythmController
-from Views.RhythmView import RhythmView
-from Views.CaracterView import CaracterView
-from Views.PauseMenuView import PauseMenuView
-from Views.FinTransitionPageView import FinTransitionPageView
-from Utils.Logger import Logger
-from Utils.AssetManager import AssetManager
-from Controllers.GameSequenceController import GameSequenceController
-from Songs.SevenNationArmy import load_seven_nation_army
-from Songs.AnotherOneBitesTheDust import load_another_one
-
-# === RHYTHM PAGE VIEW CLASS ===
-
-class RhythmPageView:
-    """
-    View class for the classic rhythm sequence.
-    Wraps existing rhythm classes in a game loop structure.
-    """
     
-    # === INITIALIZATION ===
     
     def __init__(self, screen, player=None, sequence_controller=None, context="act1"):
-        """
-        Initialize the rhythm page view.
-        
-        Args:
-            screen: Pygame surface for rendering
-            player: Optional PlayerModel instance to preserve state (if None, creates new)
-            sequence_controller: Optional GameSequenceController for stage navigation
-            context: Context for reward calculation ("act1" by default)
-        """
+
         try:
             self.screen = screen
             self.sequence_controller = sequence_controller
-            self.context = context  # Store context for reward calculation
+            self.context = context
             
-            # Get screen dimensions and create resizable window
             try:
                 screen_info = pygame.display.Info()
                 self.screen_width = screen_info.current_w
                 self.screen_height = screen_info.current_h
                 
-                # Set window to center
                 try:
                     os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
                 except:
                     pass
                 
-                # Create fullscreen window at full screen size
                 self.screen = pygame.display.set_mode(
                     (self.screen_width, self.screen_height),
                     pygame.FULLSCREEN
@@ -68,25 +27,20 @@ class RhythmPageView:
                            width=self.screen_width, height=self.screen_height)
             except Exception as e:
                 Logger.error("RhythmPageView.__init__", e)
-                # Fallback to screen size
                 self.screen_width, self.screen_height = screen.get_size()
             
             Logger.debug("RhythmPageView.__init__", "Rhythm page view initialized")
             
-            # === PLAYER INITIALIZATION ===
             
             try:
                 if player is not None:
-                    # Use provided player to preserve state (drunkenness, etc.)
                     self.johnny = player
-                    # Ensure health is full for rhythm game (but keep drunkenness)
                     self.johnny.setHealth(100)
                     Logger.debug("RhythmPageView.__init__", "Using provided player", 
                                name=self.johnny.getName(), 
                                health=self.johnny.getHealth(),
                                drunkenness=self.johnny.getDrunkenness())
                 else:
-                    # Create new player if none provided
                     self.johnny = PlayerModel("Lola Coma", 60, 60)
                     self.johnny.setHealth(100)
                     self.johnny.setDrunkenness(0)
@@ -96,13 +50,10 @@ class RhythmPageView:
                 Logger.error("RhythmPageView.__init__", e)
                 raise
             
-            # === RHYTHM SYSTEM INITIALIZATION ===
             
             try:
-                # Create rhythm model
                 self.rhythm_model = RhythmModel()
                 
-                # Load player config for character view
                 asset_manager = AssetManager()
                 try:
                     player_config = asset_manager.load_player_config()
@@ -111,7 +62,6 @@ class RhythmPageView:
                     Logger.error("RhythmPageView.__init__", f"Failed to load player_config: {e}")
                     player_config = None
                 
-                # Create character view for displaying the player
                 self.character_view = None
                 try:
                     self.character_view = CaracterView("Game/Assets/lola.png", base_name="lola", 
@@ -124,17 +74,13 @@ class RhythmPageView:
                     print(f"[ERROR] Failed to create character view: {e}")
                     Logger.error("RhythmPageView.__init__", f"Failed to create character view: {e}")
                 
-                # Create rhythm view with context-specific background
                 bg_image = "Game/Assets/barconcert.png" if context == "act1" else "Game/Assets/woodstock.png"
                 self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image, character_view=None)
                 
-                # Create a boss for attack simulation on missed notes
                 from Models.CaracterModel import CaracterModel
                 rhythm_boss = CaracterModel("Final Boss", 80, 80)
-                rhythm_boss.setDamage(10)  # Stronger boss for final sequence
+                rhythm_boss.setDamage(10)
                 
-                # Create rhythm controller
-                # Load appropriate song based on context
                 song = load_another_one() if self.context == "act2" else load_seven_nation_army()
                 self.rhythm_controller = RhythmController(
                     self.rhythm_model, 
@@ -151,28 +97,20 @@ class RhythmPageView:
                 Logger.error("RhythmPageView.__init__", e)
                 raise
             
-            # === COUNTDOWN STATE ===
             
             self.countdown_active = True
-            self.countdown_timer = 5 * 60  # 5 seconds at 60fps
+            self.countdown_timer = 5 * 60
             self.game_complete = False
-            self.last_feedback = ""  # Track last feedback for animation trigger
+            self.last_feedback = ""
 
             
         except Exception as e:
             Logger.error("RhythmPageView.__init__", e)
             raise
     
-    # === MAIN LOOP ===
     
     def run(self):
-        """
-        Main loop for the rhythm page view.
-        Handles events, updates game state, and renders rhythm game.
-        
-        Returns:
-            str: Result ("COMPLETE" or "QUIT")
-        """
+
         try:
             clock = pygame.time.Clock()
             running = True
@@ -180,7 +118,6 @@ class RhythmPageView:
             
             while running:
                 try:
-                    # === EVENT HANDLING ===
                     
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:
@@ -188,17 +125,14 @@ class RhythmPageView:
                             return GameState.QUIT.value
                         
                         elif event.type == pygame.VIDEORESIZE:
-                            # Handle window resize
                             try:
                                 new_width = event.w
                                 new_height = event.h
                                 self.screen_width = new_width
                                 self.screen_height = new_height
                                 
-                                # Recreate display with new dimensions
                                 self.screen = pygame.display.set_mode((new_width, new_height), pygame.RESIZABLE)
                                 
-                                # Update rhythm view with new dimensions
                                 try:
                                     bg_image = "Game/Assets/barconcert.png" if self.context == "act1" else "Game/Assets/woodstock.png"
                                     self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image)
@@ -211,29 +145,23 @@ class RhythmPageView:
                                 Logger.error("RhythmPageView.run", e)
                         
                         elif event.type == pygame.KEYDOWN:
-                            # === HANDLE F11 FOR FULLSCREEN TOGGLE ===
                             if event.key == pygame.K_F11:
                                 try:
                                     self._toggle_fullscreen()
                                 except Exception as e:
                                     Logger.error("RhythmPageView.run", e)
                             
-                            # === HANDLE NUMERIC KEYS (1-8) FOR STAGE NAVIGATION ===
                             if self.sequence_controller and event.key >= pygame.K_1 and event.key <= pygame.K_8:
-                                stage_number = event.key - pygame.K_1 + 1  # Convert to 1-8
+                                stage_number = event.key - pygame.K_1 + 1
                                 if self.sequence_controller.handle_numeric_input(stage_number):
                                     Logger.debug("RhythmPageView.run", "Navigation to stage requested", 
                                                stage=stage_number, 
                                                stage_name=self.sequence_controller.get_current_stage_name())
-                                    # Return a special code to indicate stage change
                                     return f"STAGE_{stage_number}"
                             
-                            # === HANDLE ESCAPE KEY ===
                             elif event.key == pygame.K_ESCAPE:
-                                # Open pause menu (only if countdown is finished)
                                 if not self.countdown_active:
                                     try:
-                                        # Pause all audio and notes before showing menu
                                         if self.rhythm_controller:
                                             self.rhythm_controller.is_paused = True
                                             self.rhythm_controller.pause_audio()
@@ -243,24 +171,20 @@ class RhythmPageView:
 
                                         if pause_result == GameState.QUIT.value:
                                             Logger.debug("RhythmPageView.run", "Quit requested from pause menu")
-                                            # Stop all audio before quitting
                                             if self.rhythm_controller:
                                                 self.rhythm_controller.stop_all_audio()
                                             return GameState.QUIT.value
                                         elif pause_result == GameState.LOGOUT.value:
                                             Logger.debug("RhythmPageView.run", "Logout requested from pause menu")
-                                            # Stop all audio before logout
                                             if self.rhythm_controller:
                                                 self.rhythm_controller.stop_all_audio()
                                             return GameState.LOGOUT.value
                                         elif pause_result == GameState.MAIN_MENU.value:
                                             Logger.debug("RhythmPageView.run", "Main menu requested from pause menu")
-                                            # Stop all audio before returning to main menu
                                             if self.rhythm_controller:
                                                 self.rhythm_controller.stop_all_audio()
                                             return GameState.MAIN_MENU.value
-                                        else:  # CONTINUE or anything else
-                                            # Resume audio and notes when continuing
+                                        else:
                                             if self.rhythm_controller:
                                                 self.rhythm_controller.is_paused = False
                                                 self.rhythm_controller.resume_audio()
@@ -269,14 +193,12 @@ class RhythmPageView:
                                         Logger.error("RhythmPageView.run", e)
                         
                         elif event.type == pygame.VIDEORESIZE:
-                            # Handle window resize
                             try:
                                 new_width = event.w
                                 new_height = event.h
                                 self.screen_width = new_width
                                 self.screen_height = new_height
                                 
-                                # Update screen if it's a resizable window
                                 try:
                                     try:
                                         os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
@@ -284,14 +206,11 @@ class RhythmPageView:
                                         Logger.error("RhythmPageView.run", e)
                                     self.screen = pygame.display.set_mode((new_width, new_height), pygame.RESIZABLE)
                                 except Exception:
-                                    # Screen might not be resizable, just update dimensions
                                     pass
                                 
-                                # Recreate rhythm view with new dimensions
                                 try:
                                     bg_image = "Game/Assets/barconcert.png" if self.context == "act1" else "Game/Assets/woodstock.png"
                                     self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image)
-                                    # Update controller with new view
                                     self.rhythm_controller.view = self.rhythm_view
                                     Logger.debug("RhythmPageView.run", "Window resized, rhythm view updated", 
                                                width=new_width, height=new_height)
@@ -301,14 +220,11 @@ class RhythmPageView:
                             except Exception as e:
                                 Logger.error("RhythmPageView.run", e)
                         
-                        # Countdown events (no skipping allowed)
-                        # Rhythm game events
                         if not self.countdown_active:
                             try:
                                 if self.rhythm_controller:
                                     self.rhythm_controller.handle_input(event)
                                 
-                                # Check for completion (SPACE to finish)
                                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                                     if self.isRhythmComplete():
                                         self.game_complete = True
@@ -317,23 +233,17 @@ class RhythmPageView:
                             except Exception as e:
                                 Logger.error("RhythmPageView.run", e)
                     
-                    # === UPDATE ===
                     
-                    # Always update controller (handles countdown animation AND game)
                     try:
                         if self.rhythm_controller:
                             self.rhythm_controller.update()
                     except Exception as e:
                         Logger.error("RhythmPageView.run", e)
                     
-                    # === TRIGGER CHARACTER ANIMATION ON GOOD HITS ===
                     try:
                         if self.rhythm_model and self.johnny:
                             feedback = getattr(self.rhythm_model, 'feedback', '')
-                            # Check if the feedback has changed and is a good hit (not a miss)
                             if feedback and feedback != self.last_feedback and "MISS" not in feedback:
-                                # Trigger music animation when player makes a good hit
-                                # Duration is 30 frames (animates through the 3 frames)
                                 self.johnny.setCurrentAction("musique", duration=30)
                             self.last_feedback = feedback
                     except Exception as e:
@@ -346,7 +256,6 @@ class RhythmPageView:
                             Logger.debug("RhythmPageView.run", "Countdown finished, starting rhythm game")
                     else:
                         try:
-                            # Check if rhythm is complete
                             if self.isRhythmComplete() and not self.game_complete:
                                 self.game_complete = True
                                 running = False
@@ -354,7 +263,6 @@ class RhythmPageView:
                         except Exception as e:
                             Logger.error("RhythmPageView.run", e)
                     
-                    # === RENDERING ===
                     
                     try:
                         if self.countdown_active:
@@ -363,21 +271,17 @@ class RhythmPageView:
                             if self.rhythm_view and self.rhythm_model:
                                 self.rhythm_view.draw(self.screen, self.rhythm_model, self.johnny)
                                 
-                                # Draw character on the left side
                                 if self.character_view and self.johnny:
                                     try:
-                                        # Temporarily set player position to (0,0) for offset-based drawing
                                         original_x = self.johnny.getX()
                                         original_y = self.johnny.getY()
                                         self.johnny.setX(0)
                                         self.johnny.setY(0)
                                         
-                                        # Position: 15% from left, centered vertically
                                         player_x = int(self.screen_width * 0.15)
                                         player_y = self.screen_height // 2
                                         self.character_view.drawCaracter(self.screen, self.johnny, offset=(player_x, player_y), is_map=True)
                                         
-                                        # Restore original position
                                         self.johnny.setX(original_x)
                                         self.johnny.setY(original_y)
                                     except Exception as e:
@@ -390,22 +294,17 @@ class RhythmPageView:
                     
                 except Exception as e:
                     Logger.error("RhythmPageView.run", e)
-                    # Continue running even if one frame fails
                     continue
             
-            # === DETERMINE RESULT ===
             
             try:
-                # Log game_complete status after loop ends
                 Logger.debug("RhythmPageView.run", "Main loop ended", 
                            game_complete=self.game_complete,
                            running=running)
                 
                 if self.game_complete:
-                    # Calculate and apply rewards from rhythm game
                     self.rhythm_controller.end_concert()
                     
-                    # Check if it's a victory or defeat based on crowd satisfaction
                     is_victory = self.rhythm_model.crowd_satisfaction > 0
                     
                     Logger.debug("RhythmPageView.run", "Rhythm game completed", 
@@ -420,7 +319,6 @@ class RhythmPageView:
                                    screen=self.screen,
                                    screen_size=self.screen.get_size() if self.screen else None)
                         
-                        # Show victory transition screen with 5-second auto-advance
                         transition = FinTransitionPageView(
                             self.screen,
                             message="Stage Complete!",
@@ -439,7 +337,6 @@ class RhythmPageView:
                                    screen=self.screen,
                                    screen_size=self.screen.get_size() if self.screen else None)
                         
-                        # Show defeat transition screen with 3-second auto-advance
                         transition = FinTransitionPageView(
                             self.screen,
                             message="Game Over",
@@ -463,22 +360,18 @@ class RhythmPageView:
             Logger.error("RhythmPageView.run", e)
             return GameState.QUIT.value
     
-    # === FULLSCREEN TOGGLE ===
     
     def _toggle_fullscreen(self):
-        """Toggle between fullscreen and resizable window modes."""
         try:
             current_flags = self.screen.get_flags()
             
             if current_flags & pygame.FULLSCREEN:
-                # Currently fullscreen, switch to resizable
                 self.screen = pygame.display.set_mode(
                     (self.screen_width, self.screen_height),
                     pygame.RESIZABLE
                 )
                 Logger.debug("RhythmPageView._toggle_fullscreen", "Switched to RESIZABLE mode")
             else:
-                # Currently resizable, switch to fullscreen
                 screen_info = pygame.display.Info()
                 self.screen_width = screen_info.current_w
                 self.screen_height = screen_info.current_h
@@ -488,60 +381,41 @@ class RhythmPageView:
                 )
                 Logger.debug("RhythmPageView._toggle_fullscreen", "Switched to FULLSCREEN mode")
             
-            # Recreate rhythm view with new dimensions
             bg_image = "Game/Assets/barconcert.png" if self.context == "act1" else "Game/Assets/woodstock.png"
             self.rhythm_view = RhythmView(self.screen_width, self.screen_height, background_image_path=bg_image)
             
         except Exception as e:
             Logger.error("RhythmPageView._toggle_fullscreen", e)
     
-    # === RHYTHM COMPLETION CHECK ===
     
     def isRhythmComplete(self):
-        """
-        Check if the rhythm game is complete.
-        
-        Returns:
-            bool: True if all notes are completed OR public satisfaction reaches 0 (loss) OR > 100 (shouldn't happen)
-        """
         try:
             if not self.rhythm_model:
                 return True
             
-            # Check if all notes are inactive (completed or missed)
             active_notes = [n for n in self.rhythm_model.notes if n.get("active", False)]
             
-            # Check if public satisfaction has reached 0 (defeat) or if all notes are done
             if self.rhythm_model.crowd_satisfaction <= 0:
                 Logger.debug("RhythmPageView.isRhythmComplete", "Game over - crowd satisfaction too low", 
                            satisfaction=self.rhythm_model.crowd_satisfaction)
                 return True
             
-            # Complete if no active notes remain
             return len(active_notes) == 0
             
         except Exception as e:
             Logger.error("RhythmPageView.isRhythmComplete", e)
             return True
     
-    # === RENDERING ===
     
     def drawCountdown(self):
-        """
-        Draw the 5-second countdown before starting the rhythm game.
-        Displays large numbers: 5, 4, 3, 2, 1, GO!
-        """
         try:
-            # Black background
             try:
                 self.screen.fill((0, 0, 0))
             except Exception as e:
                 Logger.error("RhythmPageView.drawCountdown", e)
             
-            # Calculate remaining seconds (countdown from 5 to 0)
             remaining_seconds = (self.countdown_timer // 60)
             
-            # Determine countdown text
             if remaining_seconds >= 5:
                 countdown_text = "5"
             elif remaining_seconds >= 4:
@@ -555,29 +429,24 @@ class RhythmPageView:
             else:
                 countdown_text = "GO!"
             
-            # Font setup
             try:
                 if countdown_text == "GO!":
-                    font_size = int(self.screen_height * 0.105)  # 5% increase
+                    font_size = int(self.screen_height * 0.105)
                 else:
-                    font_size = int(self.screen_height * 0.126)  # 5% increase
+                    font_size = int(self.screen_height * 0.126)
                 countdown_font = pygame.font.SysFont("Arial", font_size, bold=True)
             except Exception as e:
                 Logger.error("RhythmPageView.drawCountdown", e)
                 countdown_font = pygame.font.Font(None, 100)
             
-            # Render countdown text
             try:
-                countdown_surf = countdown_font.render(countdown_text, True, (255, 215, 0))  # Gold color
-                countdown_shadow = countdown_font.render(countdown_text, True, (100, 80, 0))  # Dark shadow
+                countdown_surf = countdown_font.render(countdown_text, True, (255, 215, 0))
+                countdown_shadow = countdown_font.render(countdown_text, True, (100, 80, 0))
                 
-                # Center on screen
                 countdown_x = (self.screen_width - countdown_surf.get_width()) // 2
                 countdown_y = (self.screen_height - countdown_surf.get_height()) // 2
                 
-                # Draw shadow first
                 self.screen.blit(countdown_shadow, (countdown_x + 5, countdown_y + 5))
-                # Draw text
                 self.screen.blit(countdown_surf, (countdown_x, countdown_y))
             except Exception as e:
                 Logger.error("RhythmPageView.drawCountdown", e)
@@ -586,31 +455,22 @@ class RhythmPageView:
             Logger.error("RhythmPageView.drawCountdown", e)
     
     def drawIntro(self):
-        """
-        Draw the final rhythm sequence introduction screen.
-        Displays story text, title, and instructions.
-        (DEPRECATED - replaced by countdown)
-        """
         try:
-            # Black background
             try:
                 self.screen.fill((10, 10, 15))
             except Exception as e:
                 Logger.error("RhythmPageView.draw_intro", e)
             
-            # Fonts (10% augmentation, storytelling +100%)
             try:
                 title_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.0462), bold=True)
-                text_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.0348))  # +100% for storytelling
+                text_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.0348))
                 small_font = pygame.font.SysFont("Arial", int(self.screen_height * 0.0139))
             except Exception as e:
                 Logger.error("RhythmPageView.draw_intro", e)
-                # Use default fonts if SysFont fails
                 title_font = pygame.font.Font(None, 48)
-                text_font = pygame.font.Font(None, 36)  # +100% for storytelling
+                text_font = pygame.font.Font(None, 36)
                 small_font = pygame.font.Font(None, 14)
             
-            # Title
             try:
                 title_text = "FINAL RHYTHM SEQUENCE"
                 title_surf = title_font.render(title_text, True, (255, 215, 0))
@@ -624,7 +484,6 @@ class RhythmPageView:
             except Exception as e:
                 Logger.error("RhythmPageView.draw_intro", e)
             
-            # Story
             try:
                 story_lines = [
                     "This is it! The final performance!",
@@ -653,7 +512,6 @@ class RhythmPageView:
             except Exception as e:
                 Logger.error("RhythmPageView.draw_intro", e)
             
-            # Instructions
             try:
                 instruction = "Press SPACE to start"
                 inst_surf = small_font.render(instruction, True, (150, 150, 150))
@@ -662,7 +520,6 @@ class RhythmPageView:
             except Exception as e:
                 Logger.error("RhythmPageView.draw_intro", e)
             
-            # Blinking animation
             try:
                 if (self.intro_timer // 30) % 2 == 0:
                     skip_text = "(or wait 3 seconds)"
