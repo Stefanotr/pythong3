@@ -66,10 +66,10 @@ class PauseMenuController(BaseController):
                         return self.mapButtonAction(action)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                mousePos = event.pos
+                mouse_pos = event.pos
                 for buttonController in self.button_controllers:
                     try:
-                        if buttonController.isClicked(mousePos):
+                        if buttonController.isClicked(mouse_pos):
                             action = buttonController.action
                             Logger.debug(
                                 "PauseMenuController.handleInput",

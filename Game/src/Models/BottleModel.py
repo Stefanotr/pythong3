@@ -3,12 +3,12 @@ from Utils.Logger import Logger
 
 class BottleModel:
 
-    def __init__(self, name, alcoholLevel=30, bonusDamage=0, accuracyPenalty=0):
+    def __init__(self, name, alcohol_level=30, bonus_damage=0, accuracy_penalty=0):
         try:
             self._name = name
-            self._accuracyPenalty = accuracyPenalty
-            self._bonusDamage = bonusDamage
-            self._alcoholLevel = alcoholLevel
+            self._accuracy_penalty = accuracy_penalty
+            self._bonus_damage = bonus_damage
+            self._alcohol_level = alcohol_level
             
             Logger.debug("BottleModel.__init__", f"Bottle created: {name}")
         except Exception as e:
@@ -35,47 +35,47 @@ class BottleModel:
 
     def getAlcoholLevel(self):
         try:
-            return self._alcoholLevel
+            return self._alcohol_level
         except Exception as e:
             Logger.error("BottleModel.getAlcoholLevel", e)
             return 0
 
-    def setAlcoholLevel(self, alcoholLevel):
+    def setAlcoholLevel(self, alcohol_level):
         try:
-            if alcoholLevel < 0:
+            if alcohol_level < 0:
                 raise ValueError("Alcohol level cannot be negative")
-            self._alcoholLevel = alcoholLevel
-            Logger.debug("BottleModel.setAlcoholLevel", f"Level set: {alcoholLevel}%")
+            self._alcohol_level = alcohol_level
+            Logger.debug("BottleModel.setAlcoholLevel", f"Level set: {alcohol_level}%")
         except Exception as e:
             Logger.error("BottleModel.setAlcoholLevel", e)
 
 
     def getBonusDamage(self):
         try:
-            return self._bonusDamage
+            return self._bonus_damage
         except Exception as e:
             Logger.error("BottleModel.getBonusDamage", e)
             return 0
 
-    def setBonusDamage(self, bonusDamage):
+    def setBonusDamage(self, bonus_damage):
         try:
-            self._bonusDamage = bonusDamage
-            Logger.debug("BottleModel.setBonusDamage", f"Damage bonus: +{bonusDamage}")
+            self._bonus_damage = bonus_damage
+            Logger.debug("BottleModel.setBonusDamage", f"Damage bonus: +{bonus_damage}")
         except Exception as e:
             Logger.error("BottleModel.setBonusDamage", e)
 
 
     def getAccuracyPenalty(self):
         try:
-            return self._accuracyPenalty
+            return self._accuracy_penalty
         except Exception as e:
             Logger.error("BottleModel.getAccuracyPenalty", e)
             return 0.0
 
-    def setAccuracyPenalty(self, accuracyPenalty):
+    def setAccuracyPenalty(self, accuracy_penalty):
         try:
-            self._accuracyPenalty = accuracyPenalty
-            Logger.debug("BottleModel.setAccuracyPenalty", f"Penalty: -{accuracyPenalty}%")
+            self._accuracy_penalty = accuracy_penalty
+            Logger.debug("BottleModel.setAccuracyPenalty", f"Penalty: -{accuracy_penalty}%")
         except Exception as e:
             Logger.error("BottleModel.setAccuracyPenalty", e)
 

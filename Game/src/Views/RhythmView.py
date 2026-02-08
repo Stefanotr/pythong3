@@ -137,7 +137,7 @@ class RhythmView:
         good_surf.fill((50, 255, 50, 8))  
         screen.blit(good_surf, good_rect)
 
-    def draw(self, screen, rhythm_model, character_model, note_speed=0.5, countdown_val=0):
+    def draw(self, screen, rhythm_model, character_model, note_speed=0.5, count_down_val=0):
         self.time += 1
         
         if self.background_image:
@@ -301,17 +301,17 @@ class RhythmView:
         except Exception as e:
             pass
 
-        if countdown_val > 0:
+        if count_down_val > 0:
             over = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
             over.fill((0, 0, 0, 150))
             screen.blit(over, (0, 0))
             
-            col = (100, 255, 100) if countdown_val > 3 else ((255, 200, 0) if countdown_val > 1 else (255, 50, 50))
+            col = (100, 255, 100) if count_down_val > 3 else ((255, 200, 0) if count_down_val > 1 else (255, 50, 50))
             ready = self.title_font.render("PRÊT ?", True, (255, 255, 255))
             screen.blit(ready, (self.screen_width//2 - ready.get_width()//2, self.screen_height//2 - 150))
             
-            nb = self.huge_font.render(str(countdown_val), True, col)
-            nb_shadow = self.huge_font.render(str(countdown_val), True, (0, 0, 0))
+            nb = self.huge_font.render(str(count_down_val), True, col)
+            nb_shadow = self.huge_font.render(str(count_down_val), True, (0, 0, 0))
             
             nb_x = self.screen_width//2 - nb.get_width()//2
             nb_y = self.screen_height//2 - nb.get_height()//2

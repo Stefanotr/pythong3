@@ -214,7 +214,7 @@ class CaracterView:
             return pygame.transform.scale(original_image, self.sprite_size)
         except Exception as e:
             Logger.error("CaracterView.loadSpriteForPath", e)
-            sprite = pygame.Surface(self.spriteSize)
+            sprite = pygame.Surface(self.sprite_size)
             sprite.fill((255, 0, 255))
             return sprite
 
