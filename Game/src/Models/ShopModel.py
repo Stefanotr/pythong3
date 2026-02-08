@@ -242,4 +242,5 @@ class ShopModel:
         except Exception as e:
             Logger.error("ShopModel.getItemIndexOnCurrentPage", e)
             return 0
+       
 

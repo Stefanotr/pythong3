@@ -68,19 +68,11 @@ class GuitarModel:
             Logger.error("GuitarModel.getDescription", e)
             return "Unknown Guitar"
 class GuitarFactory:
-    """
-    Factory class for creating predefined guitars in the game.
-    Provides static methods to create different guitar types.
-    """
     
-    @staticmethod
+    
+    
     def createLaPelle():
-        """
-        Create the starting guitar - La Pelle.
         
-        Returns:
-            GuitarModel: Starting guitar instance
-        """
         try:
             guitar = GuitarModel("La Pelle", 5)
             Logger.debug("GuitarFactory.createLaPelle", "La Pelle created")
@@ -89,14 +81,9 @@ class GuitarFactory:
             Logger.error("GuitarFactory.createLaPelle", e)
             raise
     
-    @staticmethod
+   
     def createElectroChoc():
-        """
-        Create the electric guitar - L'Électro-Choc.
         
-        Returns:
-            GuitarModel: Electric guitar instance with paralyze effect
-        """
         try:
             guitar = GuitarModel("L'Électro-Choc", 12, "paralyze", 25)
             Logger.debug("GuitarFactory.createElectroChoc", "L'Électro-Choc created")
@@ -107,12 +94,7 @@ class GuitarFactory:
     
     @staticmethod
     def createHacheDeGuerre():
-        """
-        Create the ultimate guitar - La Hache de Guerre.
-        
-        Returns:
-            GuitarModel: Ultimate guitar instance with bleed effect
-        """
+       
         try:
             guitar = GuitarModel("La Hache de Guerre", 20, "bleed", 40)
             Logger.debug("GuitarFactory.createHacheDeGuerre", "La Hache de Guerre created")
@@ -123,13 +105,7 @@ class GuitarFactory:
     
     @staticmethod
     def createGuitareGonflable():
-        """
-        Create the inflatable guitar - Guitare Gonflable.
-        Found on the ground in Act 2, weaker than La Pelle.
         
-        Returns:
-            GuitarModel: Inflatable guitar instance with lower damage
-        """
         try:
             guitar = GuitarModel("Guitare Gonflable", 3)
             Logger.debug("GuitarFactory.createGuitareGonflable", "Guitare Gonflable created")

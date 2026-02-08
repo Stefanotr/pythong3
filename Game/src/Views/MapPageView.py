@@ -930,7 +930,7 @@ class MapPageView(PageView):
                 
                 prompt_surface = pygame.Surface((prompt_width, prompt_height), pygame.SRCALPHA)
                 prompt_surface.fill((0, 0, 0, 180))  
-                pygame.draw.rect(prompt_surface, (255, 215, 0), (0, 0, prompt_width, prompt_height), 3, border_radius=10)
+                pygame.draw.rect(prompt_surface, (255, 215, 0), (0, 0, prompt_width, prompt_height), width=3, border_radius=10)
                 self.screen.blit(prompt_surface, (prompt_x, prompt_y))
             except Exception as e:
                 Logger.error("MapPageView.drawShopPrompt", e)

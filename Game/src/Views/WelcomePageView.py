@@ -65,7 +65,7 @@ class WelcomPageView(PageView):
             
             try:
                 self.quit_button = ButtonView(
-                    imagePath='Game/Assets/buttonQuit.png',
+                    image_path='Game/Assets/buttonQuit.png',
                     position=(quit_x, quit_y),
                     size=quit_size,
                 )
@@ -355,11 +355,11 @@ class WelcomPageView(PageView):
                 
                 mouse_pos = pygame.mouse.get_pos()
                 if self.logout_button.collidepoint(mouse_pos):
-                    pygame.draw.rect(self.screen, logout_hover_color, self.logout_button, borderRadius =5)
+                    pygame.draw.rect(self.screen, logout_hover_color, self.logout_button)
                 else:
-                    pygame.draw.rect(self.screen, logout_color, self.logout_button, borderRadius =5)
+                    pygame.draw.rect(self.screen, logout_color, self.logout_button)
                 
-                pygame.draw.rect(self.screen, (255, 255, 255), self.logout_button, 2, borderRadius =5)
+                pygame.draw.rect(self.screen, (255, 255, 255), self.logout_button, width=2)
                 
                 font = pygame.font.SysFont("Arial", 20)
                 text_surf = font.render(self.logout_button_text, True, (255, 255, 255))
@@ -467,7 +467,7 @@ class WelcomPageView(PageView):
                 Logger.error("WelcomPageView.savePlayerProgression", f"Failed to serialize inventory: {e}")
             
             progression = {
-                "currentStage": sequence_controller.get_current_stage(),
+                "currentStage": sequence_controller.getCurrentStage(),
                 "level": player.getLevel(),
                 "hp": player.getHealth(),
                 "maxHp": 100,  

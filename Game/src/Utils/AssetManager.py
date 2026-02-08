@@ -31,12 +31,7 @@ class AssetManager:
             raise
 
     def loadBossesConfig(self):
-        """
-        Load boss configuration from JSON file.
-        
-        Returns:
-            dict: Boss configuration data
-        """
+ 
         try:
             if not os.path.exists(self.bosses_config_path):
                 Logger.warn("AssetManager.loadBossesConfig", 
@@ -56,12 +51,6 @@ class AssetManager:
             return {}
     
     def saveBossesConfig(self, config):
-        """
-        Save boss configuration to JSON file.
-        
-        Args:
-            config: Boss configuration data
-        """
         try:
             os.makedirs(self.config_dir, exist_ok=True)
             with open(self.bosses_config_path, 'w', encoding='utf-8') as f:
@@ -73,15 +62,7 @@ class AssetManager:
             raise
     
     def getBossByBame(self, boss_name):
-        """
-        Get a specific boss configuration by name.
-        
-        Args:
-            boss_name: Name of the boss
-            
-        Returns:
-            dict: Boss configuration or None if not found
-        """
+      
         try:
             config = self.loadBossesConfig()
             bosses = config.get("bosses", [])
@@ -97,15 +78,7 @@ class AssetManager:
             return None
     
     def getBossByAct(self, act_num):
-        """
-        Get boss configuration for a specific act.
         
-        Args:
-            act_num: Act number (1, 2, 3, etc.)
-            
-        Returns:
-            dict: Boss configuration or None if not found
-        """
         try:
             config = self.loadBossesConfig()
             bosses = config.get("bosses", [])
@@ -122,12 +95,7 @@ class AssetManager:
     
 
     def loadPlayerConfig(self):
-        """
-        Load player base configuration from JSON file.
         
-        Returns:
-            dict: Player configuration data (the 'player' object from JSON)
-        """
         try:
             if not os.path.exists(self.player_config_path):
                 Logger.warn("AssetManager.loadPlayerConfig", 
@@ -148,12 +116,7 @@ class AssetManager:
             return {}
     
     def save_player_config(self, config):
-        """
-        Save player configuration to JSON file.
         
-        Args:
-            config: Player configuration data
-        """
         try:
             os.makedirs(self.config_dir, exist_ok=True)
             with open(self.player_config_path, 'w', encoding='utf-8') as f:
@@ -166,13 +129,7 @@ class AssetManager:
     
 
     def save_player_progression(self, player_name, progression_data):
-        """
-        Save player progression data.
         
-        Args:
-            player_name: Name of the player (used as filename)
-            progression_data: Player progression data (dict)
-        """
         try:
             os.makedirs(self.progression_dir, exist_ok=True)
             safe_name = "".join(c for c in player_name if c.isalnum() or c in (' ', '_')).rstrip()
@@ -188,15 +145,7 @@ class AssetManager:
             raise
     
     def load_player_progression(self, player_name):
-        """
-        Load player progression data.
         
-        Args:
-            player_name: Name of the player
-            
-        Returns:
-            dict: Progression data or empty dict if not found
-        """
         try:
             safe_name = "".join(c for c in player_name if c.isalnum() or c in (' ', '_')).rstrip()
             progression_file = os.path.join(self.progression_dir, f"{safe_name}_progression.json")
@@ -219,12 +168,7 @@ class AssetManager:
             return {}
     
     def list_saved_progressions(self):
-        """
-        List all saved player progressions.
         
-        Returns:
-            list: List of player names with saved progression
-        """
         try:
             if not os.path.exists(self.progression_dir):
                 return []
@@ -242,15 +186,7 @@ class AssetManager:
     
 
     def get_asset_image_path(self, asset_path):
-        """
-        Normalize asset image path (for cross-platform compatibility).
-        
-        Args:
-            asset_path: Relative asset path (e.g., "Game/Assets/lola.png")
-            
-        Returns:
-            str: Normalized asset path
-        """
+   
         try:
             return asset_path.replace("\\", "/")
         except Exception as e:
@@ -258,15 +194,7 @@ class AssetManager:
             return asset_path
     
     def asset_exists(self, asset_path):
-        """
-        Check if an asset file exists.
-        
-        Args:
-            asset_path: Path to asset (relative to project root)
-            
-        Returns:
-            bool: True if asset exists
-        """
+       
         try:
             return os.path.exists(asset_path)
         except Exception as e:

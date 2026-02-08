@@ -1,9 +1,4 @@
-"""
-UserManager Module
 
-Manages user authentication, progression data, and the relationship between credentials and player data.
-Handles encrypting/decrypting passwords and linking credentials to player progression files.
-"""
 
 import json
 import os
@@ -83,7 +78,6 @@ class UserManager:
             except Exception as e:
                 Logger.error("UserManager.saveCredentialsData", f"Could not create directory: {e}")
             
-            # Try to remove old file if it exists (to handle locked files)
             try:
                 if os.path.exists(cred_path):
                     os.remove(cred_path)
@@ -93,35 +87,23 @@ class UserManager:
             except Exception as e:
                 Logger.debug("UserManager.saveCredentialsData", f"Could not remove old file: {e}")
             
-            # Write new credentials file
             with open(cred_path, 'w', encoding='utf-8') as f:
                 json.dump(credentials, f, indent=2)
             
             Logger.debug("UserManager.saveCredentialsData", "Credentials saved successfully", path=cred_path)
             
-            # Try to hide the file on Windows
             try:
                 import subprocess
                 subprocess.run(['attrib', '+h', cred_path], check=False, capture_output=True)
             except Exception:
-                pass  # Non-Windows system, file hiding not needed
+                pass 
         except Exception as e:
             Logger.error("UserManager.saveCredentialsData", e)
             raise
     
 
     def registerUser(self, username, password):
-        """
-        Register a new user with username and password.
-        Creates player progression file.
-        
-        Args:
-            username: Username for the new account
-            password: Password for the new account
-            
-        Returns:
-            True if registration successful, False if username already exists
-        """
+
         try:
             if self.userExists(username):
                 Logger.debug("UserManager.registerUser", "Registration failed: username already exists", username=username)

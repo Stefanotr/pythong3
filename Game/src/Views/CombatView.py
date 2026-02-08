@@ -263,12 +263,12 @@ class CombatView:
 
         ratio = current / maximum if maximum > 0 else 0
         
-        pygame.draw.rect(screen, (20, 20, 20), (x, y, width, height), borderRadius =8)
+        pygame.draw.rect(screen, (20, 20, 20), (x, y, width, height), border_radius=8)
         
         filled_width = int(width * ratio)
-        pygame.draw.rect(screen, color, (x, y, filled_width, height), borderRadius =8)
+        pygame.draw.rect(screen, color, (x, y, filled_width, height), border_radius=8)
         
-        pygame.draw.rect(screen, (100, 100, 100), (x, y, width, height), 2, borderRadius =8)
+        pygame.draw.rect(screen, (100, 100, 100), (x, y, width, height), 2, border_radius=8)
         
         hp_text = f"{label}: {current}/{maximum}"
         text_surf = self.font.render(hp_text, True, (255, 255, 255))
@@ -280,12 +280,12 @@ class CombatView:
 
         ratio = current / maximum if maximum > 0 else 0
         
-        pygame.draw.rect(screen, (20, 20, 20), (x, y, width, height), borderRadius =6)
+        pygame.draw.rect(screen, (20, 20, 20), (x, y, width, height), border_radius=6)
         
         filled_width = int(width * ratio)
-        pygame.draw.rect(screen, color, (x, y, filled_width, height), borderRadius =6)
+        pygame.draw.rect(screen, color, (x, y, filled_width, height), border_radius=6)
         
-        pygame.draw.rect(screen, (80, 80, 80), (x, y, width, height), 2, borderRadius =6)
+        pygame.draw.rect(screen, (80, 80, 80), (x, y, width, height), 2, border_radius=6)
         
         text_surf = self.small_font.render(label, True, (255, 255, 255))
         text_x = x + width // 2 - text_surf.get_width() // 2
@@ -314,7 +314,7 @@ class CombatView:
                 status_effects.append(f"Disgusted ({combat_model.getEnemyStatus('disgusted')})")
         
         for i, effect in enumerate(status_effects):
-            effect_surf = self.smallFont.render(effect, True, (255, 200, 0))
+            effect_surf = self.small_font.render(effect, True, (255, 200, 0))
             screen.blit(effect_surf, (x, y + i * 25))
     
     def drawCombatLog(self, screen, combat_model):
@@ -484,11 +484,11 @@ class CombatView:
                 if combat_model.getWinner() == "PLAYER":
                     message = "VICTOIRE !"
                     color = self.player_color
-                    subMessage = f"You defeated {combat_model.getEnemy().getName()}!"
+                    sub_message = f"You defeated {combat_model.getEnemy().getName()}!"
                 else:
                     message = "DÉFAITE"
                     color = self.enemy_color
-                    subMessage = f"{combat_model.getEnemy().getName()} knocked you out!"
+                    sub_message = f"{combat_model.getEnemy().getName()} knocked you out!"
             except Exception as e:
                 Logger.error("CombatView.drawCombatEnd", e)
                 message = "COMBAT ENDED"
@@ -517,7 +517,7 @@ class CombatView:
             
             try:
                 instruction = "Press SPACE to continue"
-                inst_surf = self.smallFont.render(instruction, True, (200, 200, 200))
+                inst_surf = self.small_font.render(instruction, True, (200, 200, 200))
                 inst_x = self.screen_width // 2 - inst_surf.get_width() // 2
                 screen.blit(inst_surf, (inst_x, msg_y + 150))
             except Exception as e:
@@ -530,9 +530,9 @@ class CombatView:
 
         try:
             
-            pygame.draw.rect(screen, self.panel_color, (x, y, width, height), borderRadius =12)
+            pygame.draw.rect(screen, self.panel_color, (x, y, width, height), border_radius=12)
             
-            pygame.draw.rect(screen, accent_color, (x, y, width, height), 3, borderRadius =12)
+            pygame.draw.rect(screen, accent_color, (x, y, width, height), 3, border_radius=12)
         except Exception as e:
             Logger.error("CombatView.drawPanel", e)
     

@@ -102,7 +102,7 @@ class LoginPageView(PageView):
             
             try:
                 self.quit_button_view = ButtonView(
-                    imagePath ='Game/Assets/buttonQuit.png',
+                    image_path ='Game/Assets/buttonQuit.png',
                     position=(quit_x, quit_y),
                     size=(btn_width, btn_height)
                 )
@@ -299,7 +299,7 @@ class LoginPageView(PageView):
             self.screen.blit(self.background, (0, 0))
             
             title_text = "Connexion" if self.mode == "login" else "S'inscrire"
-            title_surface = self.fontLarge.render(title_text, True, self.colorText)
+            title_surface = self.font_large.render(title_text, True, self.color_text)
             title_rect = title_surface.get_rect(center=(self.width // 2, 80))
             self.screen.blit(title_surface, title_rect)
             
@@ -411,7 +411,7 @@ class LoginPageView(PageView):
                     "success": True,
                     "user": self.successful_user,
                     "progression": self.successful_progression,
-                    "isAdmin": self.login_model.is_user_admin(),
+                    "isAdmin": self.login_model.isUserAdmin(),
                     "width": self.width,
                     "height": self.height
                 }

@@ -1,9 +1,4 @@
-"""
-MapModel Module
 
-Represents the game map loaded from a file.
-Manages tile data, tile types, and map dimensions.
-"""
 
 import pygame
 from Utils.Logger import Logger
@@ -12,14 +7,7 @@ from Utils.Logger import Logger
 class MapModel:
 
     def __init__(self, mapFile, tileKinds, tileSize):
-        """
-        Initialize the map model by loading map data from file.
-        
-        Args:
-            map_file: Path to the map file
-            tile_kinds: List of TileModel instances representing tile types
-            tile_size: Size of each tile in pixels
-        """
+   
         try:
             self.tile_kinds = tileKinds
             self.tile_size = tileSize

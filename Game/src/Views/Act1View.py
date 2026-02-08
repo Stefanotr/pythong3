@@ -209,7 +209,7 @@ class ActView:
             self.victory = False
             self._combat_started = False
             self.show_intro = True
-            self.intro_timer = 180  
+            self.intro_timer = 900  
             self.phase = "intro"  
             
             Logger.debug("ActView.__init__", "Act initialized successfully")
@@ -310,7 +310,7 @@ class ActView:
                                 
                                 try:
                                     bg_image = self.act_config.get('backgroundImage', 'Game/Assets/grosbillfight.png')
-                                    self.combat_view = CombatView(self.screen_width, self.screen_height, backgroundImagePath =bg_image)
+                                    self.combat_view = CombatView(self.screen_width, self.screen_height, background_image_path =bg_image)
                                 except Exception as e:
                                     Logger.error("ActView.run", e)
                                 
@@ -627,7 +627,7 @@ class ActView:
                 small_font = pygame.font.Font(None, 14)
             
             try:
-                title_text = self.actConfig.get('title', "ACT")
+                title_text = self.act_config.get('title', "ACT")
                 title_surf = title_font.render(title_text, True, (255, 215, 0))
                 title_shadow = title_font.render(title_text, True, (100, 80, 0))
                 
@@ -640,7 +640,7 @@ class ActView:
                 Logger.error("ActView.drawIntro", e)
             
             try:
-                story_lines = self.actConfig.get('storyLines', [])
+                story_lines = self.act_config.get('storyLines', [])
                 
                 story_y = title_y + 120
                 for line in story_lines:

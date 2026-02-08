@@ -219,11 +219,11 @@ class PauseMenuView:
                     
                     mouse_pos = pygame.mouse.get_pos()
                     if self.logout_button.collidepoint(mouse_pos):
-                        pygame.draw.rect(self.screen, logout_hover_color, self.logout_button, borderRadius =5)
+                        pygame.draw.rect(self.screen, logout_hover_color, self.logout_button, border_radius=5)
                     else:
-                        pygame.draw.rect(self.screen, logout_color, self.logout_button, borderRadius =5)
+                        pygame.draw.rect(self.screen, logout_color, self.logout_button, border_radius=5)
                     
-                    pygame.draw.rect(self.screen, (255, 255, 255), self.logout_button, 2, borderRadius =5)
+                    pygame.draw.rect(self.screen, (255, 255, 255), self.logout_button, 2, border_radius=5)
                     
                     font = pygame.font.SysFont("Arial", 18)
                     text_surf = font.render(self.logout_button_text, True, (255, 255, 255))

@@ -104,8 +104,8 @@ class RhythmCombatView:
             color_good = (255, 100, 255)  
             color_bad = (255, 50, 50)
         
-        pygame.draw.rect(screen, (20, 20, 20), (x - 2, y - 2, width + 4, height + 4), borderRadius=8)
-        pygame.draw.rect(screen, (40, 40, 40), (x, y, width, height), borderRadius=6)
+        pygame.draw.rect(screen, (20, 20, 20), (x - 2, y - 2, width + 4, height + 4), border_radius=8)
+        pygame.draw.rect(screen, (40, 40, 40), (x, y, width, height), border_radius=6)
         
         filled_width = int(width * ratio)
         if ratio > 0.5:
@@ -114,9 +114,9 @@ class RhythmCombatView:
             color = color_bad
             
         if filled_width > 0:
-            pygame.draw.rect(screen, color, (x, y, filled_width, height), borderRadius=6)
+            pygame.draw.rect(screen, color, (x, y, filled_width, height), border_radius=6)
         
-        pygame.draw.rect(screen, (100, 100, 100), (x, y, width, height), 2, borderRadius=6)
+        pygame.draw.rect(screen, (100, 100, 100), (x, y, width, height), 2, border_radius=6)
         
         label_surf = self.font.render(label, True, (255, 255, 255))
         screen.blit(label_surf, (x, y - 20))
@@ -144,7 +144,7 @@ class RhythmCombatView:
             pygame.draw.line(guitar_surf, (20, 20, 30, alpha), (i, 0), (i, guitar_rect.height))
         
         screen.blit(guitar_surf, guitar_rect)
-        pygame.draw.rect(screen, (80, 120, 180), guitar_rect, 2, borderRadius=10)
+        pygame.draw.rect(screen, (80, 120, 180), guitar_rect, 2, border_radius=10)
         
         hit_line_y = rhythm_model.hit_line_y
         

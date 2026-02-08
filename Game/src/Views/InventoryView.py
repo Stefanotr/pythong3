@@ -31,8 +31,8 @@ class InventoryView:
             
             box_width = 200
             box_height = 100
-            pygame.draw.rect(screen, (20, 20, 40), (x - box_width//2, y, box_width, box_height), borderRadius =8)
-            pygame.draw.rect(screen, (100, 100, 150), (x - box_width//2, y, box_width, box_height), 2, borderRadius =8)
+            pygame.draw.rect(screen, (20, 20, 40), (x - box_width//2, y, box_width, box_height), border_radius=8)
+            pygame.draw.rect(screen, (100, 100, 150), (x - box_width//2, y, box_width, box_height), 2, border_radius=8)
             
             title_surf = self.big_font.render("INVENTORY", True, (200, 200, 255))
             screen.blit(title_surf, (x - title_surf.get_width()//2, y + 5))
@@ -67,8 +67,8 @@ class InventoryView:
             adjusted_x = x - box_width - 50  
             adjusted_y = y - box_height - 80  
             
-            pygame.draw.rect(screen, (20, 20, 40), (adjusted_x, adjusted_y, box_width, box_height), borderRadius =10)
-            pygame.draw.rect(screen, (100, 100, 150), (adjusted_x, adjusted_y, box_width, box_height), 2, borderRadius =10)
+            pygame.draw.rect(screen, (20, 20, 40), (adjusted_x, adjusted_y, box_width, box_height), border_radius=10)
+            pygame.draw.rect(screen, (100, 100, 150), (adjusted_x, adjusted_y, box_width, box_height), 2, border_radius=10)
             
             title_surf = small_title_font.render("INVENTORY", True, (200, 200, 255))
             screen.blit(title_surf, (adjusted_x + 10, adjusted_y + 3))
